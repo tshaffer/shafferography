@@ -29,13 +29,13 @@ import {
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
-  app.get('/', getIndex);
-  app.get('/app', getIndex);
-  app.get('/index.html', getIndex);
-  app.get('/css/app.css', getCSS);
-  app.get('/build/bundle.js', getBundle);
-  app.get('/build/bundle.js.map', getBundleMap);
-  app.get('/images/test.jpg', getImage);
+  // app.get('/', getIndex);
+  // app.get('/app', getIndex);
+  // app.get('/index.html', getIndex);
+  // app.get('/css/app.css', getCSS);
+  // app.get('/build/bundle.js', getBundle);
+  // app.get('/build/bundle.js.map', getBundleMap);
+  // app.get('/images/test.jpg', getImage);
 
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);

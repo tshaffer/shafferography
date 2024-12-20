@@ -76,7 +76,7 @@ const App = (props: AppProps) => {
 
   // Fetch the access token from the cookie
   const fetchAccessToken = async () => {
-    debugger;
+    // debugger;
     console.log('Fetching access token from /auth/token...');
     try {
       console.log('invoke fetch on auth/token');

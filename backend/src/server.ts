@@ -24,7 +24,14 @@ const PORT = process.env.PORT || 8080;
 
 app.use(cookieParser());
 app.use(express.json()); // Parse JSON requests
-app.use(cors());
+
+// app.use(cors());
+// const cors = require('cors');
+app.use(cors({
+  origin: 'http://localhost:5173', // Vite's dev server URL
+  credentials: true
+}));
+
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 

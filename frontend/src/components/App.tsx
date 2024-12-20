@@ -40,7 +40,7 @@ export interface AppProps {
 }
 
 const App = (props: AppProps) => {
-  
+
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [showSearchSpecDialog, setShowSearchSpecDialog] = React.useState(false);
@@ -76,12 +76,18 @@ const App = (props: AppProps) => {
 
   // Fetch the access token from the cookie
   const fetchAccessToken = async () => {
+    debugger;
     console.log('Fetching access token from /auth/token...');
     try {
-      const response = await fetch('http://localhost:8080/auth/token', {
+      console.log('invoke fetch on auth/token');
+      const response = await fetch('http://localhost:8080/auth/token', {  // successfully invokes server function
+      // const response = await fetch('http://localhost:5173/auth/token', {  // fails to invoke server function
+      // const response = await fetch('/auth/token', { // fails to invoke server function
         method: 'GET',
         credentials: 'include', // Include HTTP-only cookies
       });
+      console.log('response from fetch on auth/token', response);
+      // debugger;
 
       if (response.ok) {
         const data = await response.json();
@@ -103,7 +109,8 @@ const App = (props: AppProps) => {
       }
     } catch (error) {
       console.error('Error fetching access token:', error);
-      logout(); // Logout if fetching fails
+      // debugger;
+      // logout(); // Logout if fetching fails
     }
   };
 
@@ -217,7 +224,9 @@ const App = (props: AppProps) => {
 
   if (!isLoggedIn) {
     return (
-      <a href="/auth/google">Login with Google</a>
+      // const response = await fetch('http://localhost:8080/auth/token', {
+      <a href="http://localhost:8080/auth/google">Login with Google</a>
+      // <a href="/auth/google">Login with Google</a>
     );
   }
 
@@ -234,7 +243,7 @@ const App = (props: AppProps) => {
 
     const formData = new FormData();
     const allowedExtensions = ['.json']; // Allowed file extensions
-  
+
     // Append only files with allowed extensions
     Array.from(peopleTakeoutFiles).forEach((file) => {
       const fileExtension = file.name.split('.').pop()?.toLowerCase();
@@ -245,7 +254,7 @@ const App = (props: AppProps) => {
 
     try {
       const response = await uploadPeopleTakeouts(formData);
-  
+
       if (response.ok) {
         setSuccessMessage('Folder uploaded successfully!');
       } else {

@@ -19,18 +19,16 @@ const GridView = (props: GridViewProps) => {
 
   React.useEffect(() => {
 
-    console.log('GridView React.useEffect for GridView invoked');
-
     const divElement = document.getElementById('centerColumn') as HTMLDivElement | null;
     if (divElement) {
-      console.log('set scroll position: ', props.scrollPosition);
+      // console.log('set scroll position: ', props.scrollPosition);
       divElement.scrollTop = props.scrollPosition;
     } else {
-      console.log('divElement does not exist');
+      // console.log('divElement does not exist');
     }
 
     return () => {
-      console.log('GridView React.useEffect for removing event listener invoked');
+      // console.log('GridView React.useEffect for removing event listener invoked');
     };
   }, []);
 

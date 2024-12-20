@@ -210,12 +210,15 @@ const App = (props: AppProps) => {
 
   // Main useEffect to handle authentication and token refreshing
   React.useEffect(() => {
+    console.log('React.useEffect triggered.');
     props.onLoadKeywordData()
       .then(function () {
         return props.onLoadTakeouts();
       }).then(function () {
-        return props.onLoadMediaItems();
+        console.log('invoke onLoadMediaItems');
+        props.onLoadMediaItems();
       }).then(function () {
+        console.log('return from onLoadMediaItems');
         return props.onLoadDeletedMediaItems();
       }).then(function () {
         return props.onSetAppInitialized();

@@ -1,4 +1,3 @@
-import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { MediaItem } from '../types';
@@ -24,7 +23,7 @@ const GridRow = (props: GridRowProps) => {
   if (props.allMediaItems.length === 0) {
     return null;
   }
-
+  
   const getGridCell = (mediaItemIndex: number, cellWidth: number): JSX.Element => {
     return (
       <GridCell

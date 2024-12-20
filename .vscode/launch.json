@@ -4,20 +4,15 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug shafferographer backend",
+      "name": "Debug shafferography",
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/backend/src/server.ts",
+      "program": "${workspaceFolder}/backend/dist/server.js",
       "preLaunchTask": "tsc: build - backend",
+      "cwd": "${workspaceFolder}/backend",
       "outFiles": [
         "${workspaceFolder}/backend/dist/**/*.js"
-      ],
-      "cwd": "${workspaceFolder}/backend",
-      "runtimeArgs": [
-        "--nolazy",
-        "-r",
-        "ts-node/register"
       ],
       "envFile": "${workspaceFolder}/backend/.env",
       "sourceMaps": true

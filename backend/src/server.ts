@@ -111,6 +111,10 @@ app.get('/', (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '../public', 'index.html'));
 });
 
+const staticImagesPath = path.join(__dirname, '../public/images');
+console.log('staticImagesPath:', staticImagesPath);
+app.use('/images', express.static(staticImagesPath));
+
 // OAuth Login Route
 app.get(
   '/auth/google',

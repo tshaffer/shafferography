@@ -70,9 +70,8 @@ export const loadMediaItems = (): any => {
 };
 
 export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction => {
-  return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    console.log('loadMediaItemsFromSearchSpec');
+  return (dispatch: TedTaggerDispatch, getState: any) => {
 
     const state: TedTaggerState = getState();
 
@@ -88,8 +87,6 @@ export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction =
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
-        console.log('mediaItemsResponse');
-        console.log(mediaItemsResponse);
 
         const mediaItems: MediaItem[] = [];
         const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;

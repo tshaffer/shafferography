@@ -3,7 +3,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
-import { loadMediaItems, loadKeywordData, loadTakeouts, importFromTakeout, loadDeletedMediaItems } from '../controllers';
+import { loadMediaItems, loadKeywordData, loadTakeouts, importFromTakeout, loadDeletedMediaItems, uploadRawMedia } from '../controllers';
 import { TedTaggerDispatch, setAppInitialized } from '../models';
 import { getKeywordRootNodeId, getPhotoLayout, getSelectedMediaItems } from '../selectors';
 import { Button } from '@mui/material';
@@ -49,6 +49,7 @@ const App = (props: AppProps) => {
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
 
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
+  const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [mergingPeople, setMergingPeople] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -285,6 +286,47 @@ const App = (props: AppProps) => {
     setShowUploadToGoogleDialog(false);
   };
 
+  const handleImportFilesSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
+    if (event.target.files) {
+      setSelectedFiles(event.target.files);
+      setError(null); // Reset error message when new folder is selected
+      setSuccessMessage(null); // Reset success message
+    }
+  };
+
+  const handleImport = async () => {
+    if (!selectedFiles) {
+      setError('Please select file(s) first');
+      return;
+    }
+
+    setImporting(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    const formData = new FormData();
+
+    // Append all files in the folder to the FormData object
+    Array.from(selectedFiles).forEach((file) => {
+      formData.append('files', file, file.name);
+    });
+
+    try {
+      const response = await uploadRawMedia(formData);
+
+      if (response.ok) {
+        setSuccessMessage('Import completed successfully!');
+      } else {
+        const errorMessage = await response.text();
+        setError(`Import failed: ${errorMessage}`);
+      }
+    } catch (err) {
+      setError(`Import failed: ${err}`);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   const handleRetrievePeople = async () => {
     console.log('handleRetrievePeople');
     const albumNames = await getAlbumNamesWherePeopleNotRetrieved();
@@ -317,6 +359,27 @@ const App = (props: AppProps) => {
 
   };
 
+  const renderImport = (): JSX.Element => {
+    return (
+      <div>
+        <input
+          type="file"
+          accept=".jpg,.heic,image/jpeg,image/heic"
+          onChange={handleImportFilesSelect}
+          id="importFilesInput"
+          name="file"
+          multiple
+          style={{ marginBottom: '1rem' }}
+        />
+        <button onClick={handleImport} disabled={importing}>
+          {importing ? 'Importing...' : 'Import Files'}
+        </button>
+        {error && <p style={{ color: 'red' }}>{error}</p>}
+        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+      </div>
+    );
+  };
+
   const renderLeftPanel = (): JSX.Element => {
     return (
       <div className='leftColumnStyle'>
@@ -332,6 +395,7 @@ const App = (props: AppProps) => {
           onImportFromTakeout={handleImportFromTakeout}
           onClose={handleCloseImportFromTakeoutDialog}
         />
+        {renderImport()}
         <Button onClick={() => setShowUploadToGoogleDialog(true)} disabled={props.selectedMediaItems.length === 0}
         >Upload to Google</Button>
         <UploadToGoogleDialog

@@ -246,7 +246,7 @@ export const uploadAndImportEndpoint = async (request: Request, response: Respon
 export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: Response, next: any) => {
 
   // TEDTODO - should not be hard coded
-  const peopleTakeoutFilesDir = '/Users/tedshaffer/Documents/Projects/shafferography/shafferographyServer/public/peopleTakeoutFiles';
+  const peopleTakeoutFilesDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles';
 
   try {
     const uploadedPeopleTakeoutFiles: Express.Multer.File[] = await uploadPeopleTakeoutFiles(request, response);
@@ -322,7 +322,7 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
         })
       }
 
-      const people: string[]| null = takeoutMetadata.people ? takeoutMetadata.people : null;
+      const people: string[] | null = takeoutMetadata.people ? takeoutMetadata.people : null;
 
       const updates: Partial<MediaItem> = {
         people,

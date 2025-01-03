@@ -54,7 +54,7 @@ export const importFromTakeout = async (googleAccessToken: string, albumName: st
 const addAllMediaItemsFromTakeout = async (googleAccessToken: string, takeoutFolder: string, googleMediaItemsInAlbum: GoogleMediaItem[], albumId: string, albumName: string): Promise<AddedTakeoutData> => {
 
   // TEDTODO - should not be hard coded
-  const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/shafferographyServer/public/images';
+  const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/images';
 
   // retrieve metadata files and image files from takeout folder
   takeoutFolder = path.join('public/takeouts', takeoutFolder);

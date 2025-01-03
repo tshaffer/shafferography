@@ -20,6 +20,7 @@ import GridView from './GridView';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import { uploadToGoogle, getAlbumNamesWherePeopleNotRetrieved } from '../controllers';
 import { uploadPeopleTakeouts } from '../controllers';
+import ImportFromDriveDialog from './ImportFromDriveDialog';
 
 declare module 'react' {
   interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
@@ -47,8 +48,8 @@ const App = (props: AppProps) => {
   const [showImportFromTakeoutDialog, setShowImportFromTakeoutDialog] = React.useState(false);
   const [showMergePeopleDialog, setShowMergePeopleDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
+  const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
 
-  const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
   const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [mergingPeople, setMergingPeople] = useState(false);
@@ -82,8 +83,8 @@ const App = (props: AppProps) => {
     try {
       console.log('invoke fetch on auth/token');
       const response = await fetch('http://localhost:8080/auth/token', {  // successfully invokes server function
-      // const response = await fetch('http://localhost:5173/auth/token', {  // fails to invoke server function
-      // const response = await fetch('/auth/token', { // fails to invoke server function
+        // const response = await fetch('http://localhost:5173/auth/token', {  // fails to invoke server function
+        // const response = await fetch('/auth/token', { // fails to invoke server function
         method: 'GET',
         credentials: 'include', // Include HTTP-only cookies
       });
@@ -282,20 +283,18 @@ const App = (props: AppProps) => {
     setShowMergePeopleDialog(false);
   };
 
+  const handleCloseImportFromDriveDialog = () => {
+    setShowImportFromDriveDialog(false);
+  };
+
   const handleCloseUploadToGoogleDialogDialog = () => {
     setShowUploadToGoogleDialog(false);
   };
 
-  const handleImportFilesSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      setSelectedFiles(event.target.files);
-      setError(null); // Reset error message when new folder is selected
-      setSuccessMessage(null); // Reset success message
-    }
-  };
+  const handleImportFromDrive = async (files: FileList) => {
 
-  const handleImport = async () => {
-    if (!selectedFiles) {
+    console.log('handleImportFromDrive', files);
+    if (!files) {
       setError('Please select file(s) first');
       return;
     }
@@ -307,7 +306,7 @@ const App = (props: AppProps) => {
     const formData = new FormData();
 
     // Append all files in the folder to the FormData object
-    Array.from(selectedFiles).forEach((file) => {
+    Array.from(files).forEach((file) => {
       formData.append('files', file, file.name);
     });
 
@@ -325,6 +324,9 @@ const App = (props: AppProps) => {
     } finally {
       setImporting(false);
     }
+
+    
+
   };
 
   const handleRetrievePeople = async () => {
@@ -361,24 +363,13 @@ const App = (props: AppProps) => {
 
   const renderImport = (): JSX.Element => {
     return (
-      <div>
-        <input
-          type="file"
-          accept=".jpg,.heic,image/jpeg,image/heic"
-          onChange={handleImportFilesSelect}
-          id="importFilesInput"
-          name="file"
-          multiple
-          style={{ marginBottom: '1rem' }}
-        />
-        <button onClick={handleImport} disabled={importing}>
-          {importing ? 'Importing...' : 'Import Files'}
-        </button>
-        {error && <p style={{ color: 'red' }}>{error}</p>}
-        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
-      </div>
+      <ImportFromDriveDialog
+        open={showImportFromDriveDialog}
+        onImportFromDrive={handleImportFromDrive}
+        onClose={handleCloseImportFromDriveDialog}
+      />
     );
-  };
+  }
 
   const renderLeftPanel = (): JSX.Element => {
     return (
@@ -395,7 +386,7 @@ const App = (props: AppProps) => {
           onImportFromTakeout={handleImportFromTakeout}
           onClose={handleCloseImportFromTakeoutDialog}
         />
-        {renderImport()}
+        <Button onClick={() => setShowImportFromDriveDialog(true)}>Import from Drive</Button>
         <Button onClick={() => setShowUploadToGoogleDialog(true)} disabled={props.selectedMediaItems.length === 0}
         >Upload to Google</Button>
         <UploadToGoogleDialog
@@ -405,6 +396,7 @@ const App = (props: AppProps) => {
         />
         <Button onClick={handleRetrievePeople}>Retrieve People</Button>
         <Button onClick={() => setShowMergePeopleDialog(true)}>Merge People</Button>
+        {renderImport()}
         <MergePeopleDialog
           open={showMergePeopleDialog}
           onMergePeople={handleMergePeople}

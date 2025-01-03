@@ -196,8 +196,8 @@ async function getLocalStorageMediaItem(fullPath: string): Promise<MediaItem> {
 const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaItems: MediaItem[]): Promise<any> => {
 
   // TEDTODO - should not be hard coded
-  const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/shafferographyServer/public/images';
-  const uploadsDir = '/Users/tedshaffer/Documents/Projects/shafferography/shafferographyServer/public/uploads';
+  const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/images';
+  const uploadsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/uploads';
 
   for (const mediaItem of mediaItems) {
     const mediaItemFileName = mediaItem.fileName;

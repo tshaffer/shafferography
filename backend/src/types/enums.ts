@@ -19,3 +19,10 @@ export enum DateSearchRuleType {
   IsBefore = 'isBefore',
   IsAfter = 'isAfter',
 }
+
+export enum ReviewLevel {
+  Unreviewed = 'unreviewed',
+  ReadyForReview = 'readyForReview',
+  ReadyForUpload = 'readyForUpload',
+  UploadedToGoogle = 'uploadedToGoogle',
+}

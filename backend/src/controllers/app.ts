@@ -25,14 +25,16 @@ import {
   addAutoPersonKeywordsToDb,
   getAutoPersonKeywordNodesFromDb,
   getKeywordsFromDb,
-  updateMediaItemFieldsInDb
+  updateMediaItemFieldsInDb,
+  updateMediaItemsFieldsInDb,
+  getMediaItemsFromDbByReviewLevels
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, UploadMediaFilesResponse, StringToStringLUT } from '../types';
 import {
   fsDeleteFiles,
   getJsonFromFile
 } from '../utilities';
-import { MatchRule } from 'enums';
+import { MatchRule, ReviewLevel } from 'enums';
 import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
 import { importFiles, uploadFiles, uploadPeopleTakeoutFiles } from './uploadImport';
@@ -58,6 +60,12 @@ export const getMediaItemsToDisplay = async (request: Request, response: Respons
   );
   response.json(mediaItems);
 };
+
+export const getMediaItemsByReviewLevels = async (request: Request, response: Response) => {
+  const reviewLevels: ReviewLevel[] = JSON.parse(request.query.reviewLevels as string);
+  const mediaItems: MediaItem[] = await getMediaItemsFromDbByReviewLevels(reviewLevels);
+  response.json(mediaItems);
+}
 
 export const getMediaItemsToDisplayFromSearchSpec = async (request: Request, response: Response) => {
 
@@ -162,6 +170,16 @@ export const importFromTakeoutEndpoint = async (request: Request, response: Resp
   const takeout: Takeout = await getTakeoutById(id);
   const addedTakeoutData: AddedTakeoutData = await importFromTakeout(googleAccessToken, takeout.albumName, takeout.path);
   response.json(addedTakeoutData);
+}
+
+export const updateReviewLevelEndpoint = async (request: Request, response: Response, next: any) => {
+  const { mediaItemIds, reviewLevel } = request.body;
+  const updates: Partial<MediaItem> = {
+    reviewLevel
+  };
+
+  await updateMediaItemsFieldsInDb(mediaItemIds, updates);
+  response.sendStatus(200);
 }
 
 export const deleteMediaItems = async (request: Request, response: Response, next: any) => {

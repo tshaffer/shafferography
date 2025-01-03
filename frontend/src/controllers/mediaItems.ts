@@ -6,15 +6,17 @@ import {
   addMediaItems,
   addKeywordToMediaItemIdsRedux,
   removeKeywordFromMediaItemIdsRedux,
-  replaceMediaItems,
+  replaceMediaItemsRedux,
   deleteMediaItemsRedux,
   addDeletedMediaItems,
   removeDeletedMediaItemRedux,
   clearDeletedMediaItemsRedux,
-  setDeletedMediaItems
+  setDeletedMediaItems,
+  setReviewLevelRedux
 } from '../models';
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
+  ReviewLevel,
 } from '../types';
 import { cloneDeep, isEmpty, isNil, isString } from 'lodash';
 import {
@@ -69,6 +71,44 @@ export const loadMediaItems = (): any => {
   };
 };
 
+const replaceMediaItems = (mediaItemsResponse: any): any => {
+  return (dispatch: TedTaggerDispatch) => {
+    console.log('mediaItemsResponse');
+    console.log((mediaItemsResponse as any).data);
+    const mediaItems: MediaItem[] = [];
+    const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
+
+    // derive mediaItems from serverMediaItems
+    for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
+      const mediaItem: MediaItem = cloneDeep(mediaItemEntityFromServer) as MediaItem;
+      mediaItems.push(mediaItem as MediaItem);
+    }
+
+    dispatch(replaceMediaItemsRedux(mediaItems));
+  };
+}
+
+export const loadMediaItemsByReviewLevels = (reviewLevels: ReviewLevel[]): TedTaggerAnyPromiseThunkAction => {
+
+  return (dispatch: TedTaggerDispatch) => {
+
+    console.log('loadMediaItemsByReviewLevels entry');
+    console.log('reviewLevels');
+    console.log(reviewLevels);
+
+    let path = serverUrl
+      + apiUrlFragment
+      + 'mediaItemsByReviewLevels';
+
+    path += '?reviewLevels=' + JSON.stringify(reviewLevels);
+
+    return axios.get(path)
+      .then((mediaItemsResponse: any) => {
+        dispatch(replaceMediaItems(mediaItemsResponse));
+      });
+  };
+};
+
 export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction => {
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
@@ -87,19 +127,7 @@ export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction =
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
-
-        const mediaItems: MediaItem[] = [];
-        const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
-
-        // derive mediaItems from serverMediaItems
-        for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-          // TEDTODO - replace any
-          const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
-          mediaItems.push(mediaItem as MediaItem);
-        }
-
-        dispatch(replaceMediaItems(mediaItems));
-
+        dispatch(replaceMediaItems(mediaItemsResponse));
       });
   };
 };
@@ -178,7 +206,7 @@ export const deleteMediaItems = (mediaItemIds: string[]): any => {
         }
       }
       dispatch(addDeletedMediaItems(deletedMediaItems));
-      
+
       return Promise.resolve();
     }).catch((error) => {
       console.log('error');
@@ -226,7 +254,6 @@ export const clearDeletedMediaItems = (): any => {
     });
   };
 };
-
 
 export const removeDeletedMediaItem = (mediaItemId: string): any => {
 
@@ -276,3 +303,24 @@ export const redownloadMediaItem = (mediaItemId: string): any => {
   };
 };
 
+export const setReviewLevel = (mediaItemIds: string[], reviewLevel: ReviewLevel): any => {
+
+  return (dispatch: TedTaggerDispatch) => {
+
+    const path = serverUrl + apiUrlFragment + 'updateReviewLevel';
+
+    const updateReviewLevelBody = { mediaItemIds, reviewLevel };
+
+    return axios.post(
+      path,
+      updateReviewLevelBody
+    ).then((response) => {
+      dispatch(setReviewLevelRedux(mediaItemIds, reviewLevel));
+      return Promise.resolve();
+    }).catch((error) => {
+      console.log('error');
+      console.log(error);
+      return Promise.reject();
+    });
+  };
+}

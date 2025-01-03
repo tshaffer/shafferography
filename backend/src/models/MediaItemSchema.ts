@@ -31,6 +31,7 @@ const MediaitemSchema = new Schema(
       name: String, default: ''
     }],
     keywordNodeIds: [String],
+    reviewLevel: { type: String, required: true },                // review level
   }
 );
 

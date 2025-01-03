@@ -36,3 +36,11 @@ export enum PhotoLayout {
   Loupe = 'loupe',
   Survey = 'survey',
 }
+
+export enum ReviewLevel {
+  Mixed = 'mixed',
+  Unreviewed = 'unreviewed',
+  ReadyForReview = 'readyForReview',
+  ReadyForUpload = 'readyForUpload',
+  UploadedToGoogle = 'uploadedToGoogle',
+}

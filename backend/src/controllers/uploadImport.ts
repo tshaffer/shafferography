@@ -5,7 +5,7 @@ import * as fs from 'fs';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { GeoData, MediaItem, UploadMediaFilesResponse } from '../types';
+import { GeoData, MediaItem, ReviewLevel, UploadMediaFilesResponse } from '../types';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { fsCopyFile, getShardedDirectory, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
@@ -187,7 +187,8 @@ async function getLocalStorageMediaItem(fullPath: string): Promise<MediaItem> {
     geoData,
     people: null,
     peopleRetrievedFromGoogle: false,
-    keywordNodeIds: []
+    keywordNodeIds: [],
+    reviewLevel: ReviewLevel.Unreviewed,
   }
 
   return mediaItem;

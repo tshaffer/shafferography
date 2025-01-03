@@ -26,6 +26,8 @@ import {
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   uploadPeopleTakeoutsEndpoint,
+  updateReviewLevelEndpoint,
+  getMediaItemsByReviewLevels,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
@@ -39,6 +41,7 @@ export const createRoutes = (app: express.Application) => {
 
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
+  app.get('/api/v1/mediaItemsByReviewLevels', getMediaItemsByReviewLevels);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
   app.get('/api/v1/takeouts', getTakeouts);
@@ -63,5 +66,6 @@ export const createRoutes = (app: express.Application) => {
 
   app.post('/api/v1/redownloadMediaItem', redownloadMediaItemEndpoint);
 
+  app.post('/api/v1/updateReviewLevel', updateReviewLevelEndpoint);
 };
 

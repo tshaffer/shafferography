@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { isEqual, isNil } from "lodash";
-import { AddedTakeoutData, Keyword, KeywordData, KeywordNode, MediaItem, StringToMediaItem } from '../types';
+import { AddedTakeoutData, Keyword, KeywordData, KeywordNode, MediaItem, ReviewLevel, StringToMediaItem } from '../types';
 import { GoogleAlbum, GoogleMediaItem } from "googleTypes";
 import { GooglePhotoAPIs, getAlbumMediaItemsFromGoogle, getGoogleAlbumDataByName } from "./googlePhotos";
 import { addAutoPersonKeywordsToDb, addMediaItemToMediaItemsDBTable, deleteMediaItemsFromDb, getAllMediaItemsFromDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb, getMediaItemsInAlbumFromDb, updateMediaItemInDb } from "./dbInterface";
@@ -184,6 +184,7 @@ const addAllMediaItemsFromTakeout = async (googleAccessToken: string, takeoutFol
           people: valueOrNull(takeoutMetadata.people),
           peopleRetrievedFromGoogle: true,
           keywordNodeIds,
+          reviewLevel: ReviewLevel.UploadedToGoogle,
         }
 
         addedMediaItems.push(dbMediaItem);
@@ -311,6 +312,7 @@ export const getTakeoutAlbumMediaItems = async (takeoutFolder: string, googleMed
           people: valueOrNull(takeoutMetadata.people),
           peopleRetrievedFromGoogle: true,
           keywordNodeIds: [],
+          reviewLevel: ReviewLevel.UploadedToGoogle,
         }
 
         mediaItems.push(mediaItem);

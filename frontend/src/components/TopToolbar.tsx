@@ -16,13 +16,15 @@ import DeleteSweepIcon from '@mui/icons-material/DeleteSweep';
 import DownloadIcon from '@mui/icons-material/Download';
 import DeselectIcon from '@mui/icons-material/Deselect';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
+import TuneIcon from '@mui/icons-material/Tune';
 
-import { MediaItem, PhotoLayout } from '../types';
+import { MediaItem, PhotoLayout, ReviewLevel } from '../types';
 import { getSelectedMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getDisplayMetadata, getSurveyModeZoomFactor, getDeletedMediaItems, getLoupeViewMediaItemIds, getMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId } from '../selectors';
 import ConfirmationDialog from './ConfirmationDialog';
-import { deleteMediaItems, deselectAllPhotos, redownloadMediaItem, selectPhoto } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, redownloadMediaItem, selectPhoto, setReviewLevel } from '../controllers';
 import DeletedMediaItemsDialog from './DeletedMediaItemsDialog';
 import { sliderContainerXTranslate } from '../constants';
+import SetReviewLevelsDialog from './SetReviewLevelsDialog';
 
 export interface TopToolbarProps {
   mediaItems: MediaItem[];
@@ -48,12 +50,14 @@ export interface TopToolbarProps {
   onSelectPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
   onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
+  onSetReviewsLevel: (mediaItemIds: string[], reviewLevel: ReviewLevel) => any;
 }
 
 const TopToolbar = (props: TopToolbarProps) => {
 
   const [showConfirmationDialog, setShowConfirmationDialog] = React.useState(false);
   const [showDeletedMediaItemsDialog, setShowDeletedMediaItemsDialog] = React.useState(false);
+  const [showSetReviewLevelDialog, setShowSetReviewLevelDialog] = React.useState(false);
 
   function handleSliderChange(event: Event, value: number | number[]): void {
     props.onSetNumGridColumns(value as number);
@@ -126,6 +130,10 @@ const TopToolbar = (props: TopToolbarProps) => {
     setShowDeletedMediaItemsDialog(false);
   };
 
+  const handleCloseSetReviewLevelDialog = () => {
+    setShowSetReviewLevelDialog(false);
+  };
+
   const deleteLoupeViewMediaItem = () => {
 
     const loupeViewMediaItemId = props.loupeViewMediaItemId;
@@ -187,6 +195,12 @@ const TopToolbar = (props: TopToolbarProps) => {
 
   function handleDeleteSelectedPhotos() {
     setShowConfirmationDialog(true);
+  }
+
+  const handleSetReviewLevel = (reviewLevel: ReviewLevel) => {
+    console.log('set review level', reviewLevel);
+    props.onSetReviewsLevel(props.selectedMediaItemIds, reviewLevel);
+    setShowSetReviewLevelDialog(false);
   }
 
   const getPhotoLayoutPropsUI = (): JSX.Element | null => {
@@ -265,6 +279,13 @@ const TopToolbar = (props: TopToolbarProps) => {
           onClose={handleCloseDeletedMediaItemsDialog}
         />
       </div>
+      <div>
+        <SetReviewLevelsDialog
+          open={showSetReviewLevelDialog}
+          onClose={handleCloseSetReviewLevelDialog}
+          onSetReviewLevel={handleSetReviewLevel}
+        />
+      </div>
       <div className='toolbarIconButtonContainer'>
         <div>
           <Tooltip title="Grid">
@@ -331,6 +352,15 @@ const TopToolbar = (props: TopToolbarProps) => {
           {getPhotoLayoutPropsUI()}
         </div>
         <div>
+        <Tooltip title="Set Review Levels">
+            <span>
+              <IconButton
+                disabled={props.selectedMediaItemIds.length === 0}
+                onClick={() => {setShowSetReviewLevelDialog(true);}}>
+                <TuneIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="Redownload Image">
             <span>
               <IconButton
@@ -402,6 +432,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSelectPhoto: selectPhoto,
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
     onRemoveLoupeViewMediaItemId: removeLoupeViewMediaItemId,
+    onSetReviewsLevel: setReviewLevel,
   }, dispatch);
 };
 

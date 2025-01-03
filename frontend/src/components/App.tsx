@@ -10,6 +10,7 @@ import { Button } from '@mui/material';
 
 import Keywords from './Keywords';
 import SearchSpecDialog from './SearchSpecDialog';
+import ViewByReviewLevelsDialog from './ViewByReviewLevelsDialog';
 import ImportFromTakeoutDialog from './ImportFromTakeoutDialog';
 import MergePeopleDialog from './MergePeopleDialog';
 import LoupeViewController from './LoupeViewController';
@@ -45,6 +46,7 @@ const App = (props: AppProps) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [showSearchSpecDialog, setShowSearchSpecDialog] = React.useState(false);
+  const [showViewByReviewsLevelDialog, setShowViewByReviewsLevelDialog] = React.useState(false);
   const [showImportFromTakeoutDialog, setShowImportFromTakeoutDialog] = React.useState(false);
   const [showMergePeopleDialog, setShowMergePeopleDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
@@ -275,6 +277,10 @@ const App = (props: AppProps) => {
     setShowSearchSpecDialog(false);
   };
 
+  const handleCloseViewByReviewsLevelDialog = () => {
+    setShowViewByReviewsLevelDialog(false);
+  };
+
   const handleCloseImportFromTakeoutDialog = () => {
     setShowImportFromTakeoutDialog(false);
   };
@@ -374,6 +380,11 @@ const App = (props: AppProps) => {
   const renderLeftPanel = (): JSX.Element => {
     return (
       <div className='leftColumnStyle'>
+        <Button onClick={() => setShowViewByReviewsLevelDialog(true)}>View by Review Levels</Button>
+        <ViewByReviewLevelsDialog
+          open={showViewByReviewsLevelDialog}
+          onClose={handleCloseViewByReviewsLevelDialog}
+        />
         <Keywords />
         <Button onClick={() => setShowSearchSpecDialog(true)}>Set Search Spec</Button>
         <SearchSpecDialog

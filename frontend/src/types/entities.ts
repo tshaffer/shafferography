@@ -1,3 +1,5 @@
+import { ReviewLevel } from "./enums";
+
 export interface GeoData {
   latitude: number;
   longitude: number;
@@ -28,6 +30,7 @@ export interface ServerMediaItem {
   geoData?: GeoData,
   people?: ServerPerson[],
   keywordNodeIds: string[],
+  reviewLevel: ReviewLevel,
 }
 
 export interface MediaItem {
@@ -47,6 +50,7 @@ export interface MediaItem {
   geoData?: GeoData,
   people?: string[],
   keywordNodeIds: string[],
+  reviewLevel: ReviewLevel,
 }
 
 export interface Keyword {

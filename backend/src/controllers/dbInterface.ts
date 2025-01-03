@@ -21,7 +21,7 @@ import {
   User,
 } from '../types';
 import { Document } from 'mongoose';
-import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, SearchRuleType } from '../types/enums';
+import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, ReviewLevel, SearchRuleType } from '../types/enums';
 import { getTakeoutModel } from '../models';
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
@@ -68,6 +68,23 @@ export const getMediaItemsToDisplayFromDb = async (
   for (const document of documents) {
     const mediaItem: MediaItem = document.toObject() as MediaItem;
     mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
+    mediaItems.push(mediaItem);
+  }
+  return mediaItems;
+}
+
+export const getMediaItemsFromDbByReviewLevels = async (
+  reviewLevels: ReviewLevel[],
+): Promise<MediaItem[]> => {
+
+  const mediaItemModel = getMediaitemModel();
+
+  const query = mediaItemModel.find({ reviewLevel: { $in: reviewLevels } }).sort({ creationTime: -1 });
+  const documents: any = await query.exec();
+  const mediaItems: MediaItem[] = [];
+  for (const document of documents) {
+    const mediaItem: MediaItem = document.toObject() as MediaItem;
+    mediaItem.uniqueId = document.uniqueId.toString();
     mediaItems.push(mediaItem);
   }
   return mediaItems;
@@ -429,6 +446,26 @@ export const updateMediaItemFieldsInDb = async (
     return updatedDoc;
   } catch (err) {
     console.error('Error updating media item:', err);
+    throw err;
+  }
+};
+
+export const updateMediaItemsFieldsInDb = async (
+  uniqueIds: string[],
+  updates: Partial<MediaItem>
+): Promise<any> => {
+  const mediaItemModel = getMediaitemModel();
+
+  try {
+    // Construct the filter to match multiple documents
+    const filter = { uniqueId: { $in: uniqueIds } };
+
+    // Perform the update for all matching documents
+    const updateResult = await mediaItemModel.updateMany(filter, updates).exec();
+
+    return updateResult; // Contains metadata about the update operation
+  } catch (err) {
+    console.error('Error updating media items:', err);
     throw err;
   }
 };

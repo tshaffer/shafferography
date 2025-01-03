@@ -4,6 +4,19 @@ import { connect } from 'react-redux';
 
 import libheif from 'libheif-js/wasm-bundle';
 
+/*
+  Unreviewed:     VisibilityOffIcon = 'unreviewed',
+  ReadyForReview: GradingIcon = 'readyForReview',
+  UploadIcon:     ReadyForUpload = 'readyForUpload',
+  CloudQueueIcon: UploadedToGoogle = 'uploadedToGoogle',
+*/
+// import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import GradingIcon from '@mui/icons-material/Grading';
+// import PreviewIcon from '@mui/icons-material/Preview';
+import UploadIcon from '@mui/icons-material/Upload';
+import CloudQueueIcon from '@mui/icons-material/CloudQueue';
+
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } from '../models';
 
 import '../styles/TedTagger.css';
@@ -30,6 +43,23 @@ export interface GridCellProps extends GridCellPropsFromParent {
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetPhotoLayoutRedux: (photoLayout: PhotoLayout) => any;
 }
+
+
+// const softGray = 'rgba(255, 255, 255, 0.8)';
+const mutedWhite = 'rgba(255, 255, 255, 0.9)';
+// const softBlack = 'rgba(0, 0, 0, 0.6)';
+// const lightBlue = '#80D8FF';
+// const mutedYellow = '#FFD54F';
+// const desaturatedGreen = '#A5D6A7';
+// const transparentAccent = 'rgba(255, 87, 34, 0.7)';
+
+const reviewLevelIconStyle: React.CSSProperties = {
+  position: 'absolute',
+  top: '8px',
+  left: '8px',
+  fontSize: '30px',
+  color: mutedWhite,
+};
 
 const GridCell = (props: GridCellProps) => {
 
@@ -92,6 +122,22 @@ const GridCell = (props: GridCellProps) => {
   }, [photoUrl, isHeic]);
 
 
+  const renderReviewLevelIcon = (): JSX.Element => {
+    switch (props.mediaItem.reviewLevel) {
+      case 'unreviewed':
+      default:
+        return <VisibilityOffIcon style={reviewLevelIconStyle} />;
+      case 'readyForReview':
+        return <GradingIcon style={reviewLevelIconStyle} />;
+      case 'readyForUpload':
+        return <UploadIcon style={reviewLevelIconStyle} />;
+      case 'uploadedToGoogle':
+        return <CloudQueueIcon style={reviewLevelIconStyle} />;
+      // default:
+      //   return <PreviewIcon style={reviewLevelsIconStyle} />;
+    }
+  }
+
   const handleDoubleClick = () => {
     props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);
     props.onSetPhotoLayoutRedux(PhotoLayout.Loupe);
@@ -152,7 +198,6 @@ const GridCell = (props: GridCellProps) => {
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
-
   let borderAttr: string = borderSizeStr + ' ';
   borderAttr += props.isSelected ? ' solid blue' : ' solid white';
 
@@ -175,6 +220,7 @@ const GridCell = (props: GridCellProps) => {
     >
       <div
         style={{
+          position: 'relative',
           display: 'inline-block',
           width: widthAttribute,
           height: divHeightAttribute,
@@ -192,6 +238,8 @@ const GridCell = (props: GridCellProps) => {
           loading='lazy'
         />
         )}
+        {/* Icon overlay */}
+        {renderReviewLevelIcon()}
       </div>
     </Tooltip>
   );

@@ -1,4 +1,4 @@
-import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule } from "enums";
+import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, ReviewLevel } from "enums";
 
 export interface GeoData {
   latitude: number;
@@ -27,6 +27,7 @@ export interface MediaItem {
   people?: string[],
   peopleRetrievedFromGoogle: boolean,
   keywordNodeIds: string[],
+  reviewLevel: ReviewLevel,
 }
 
 export interface DateRangeSpecification {

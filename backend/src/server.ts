@@ -115,22 +115,17 @@ const staticImagesPath = path.join(__dirname, '../public/images');
 console.log('staticImagesPath:', staticImagesPath);
 app.use('/images', express.static(staticImagesPath));
 
-// OAuth Login Route
+// OAuth Login Route (Updated to remove redundant scopes)
 app.get(
   '/auth/google',
   (req, res, next) => {
-    // Clear session and any relevant cookies
     if (req.session) {
       req.session.destroy((err) => {
-        if (err) {
-          console.error('Error clearing session:', err);
-        } else {
-          console.log('Session cleared successfully.');
-        }
+        if (err) console.error('Error clearing session:', err);
+        else console.log('Session cleared successfully.');
       });
     }
-    res.clearCookie('connect.sid'); // Clear session cookie if using express-session
-
+    res.clearCookie('connect.sid');
     console.log('Redirecting to Google for authentication...');
     next();
   },
@@ -147,9 +142,63 @@ app.get(
       'https://www.googleapis.com/auth/photoslibrary.sharing',
     ],
     accessType: 'offline',
-    prompt: 'select_account consent', // Force Google to re-prompt account and re-consent
+    prompt: 'select_account consent',
   })
 );
+
+// New Route to Fetch User Profile
+app.get('/user-profile', ensureAuthenticated, (req: Request, res: Response) => {
+  const user = req.user as UserWithToken;
+  if (!user || !user.email) {
+    res.status(404).json({ error: 'User profile not found' });
+    return;
+  }
+
+  // Respond with user details
+  res.json({
+    name: req.user?.name || 'Unknown User',
+    email: user.email,
+    googleId: user.googleId,
+  });
+});
+
+// OAuth Login Route
+// app.get(
+//   '/auth/google',
+//   (req, res, next) => {
+//     // Clear session and any relevant cookies
+//     if (req.session) {
+//       req.session.destroy((err) => {
+//         if (err) {
+//           console.error('Error clearing session:', err);
+//         } else {
+//           console.log('Session cleared successfully.');
+//         }
+//       });
+//     }
+//     res.clearCookie('connect.sid'); // Clear session cookie if using express-session
+
+//     console.log('Redirecting to Google for authentication...');
+//     next();
+//   },
+//   passport.authenticate('google', {
+//     scope: [
+//       'profile',
+//       'email',
+//       'https://www.googleapis.com/auth/photoslibrary',
+//       'https://www.googleapis.com/auth/photoslibrary.appendonly',
+//       'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata',
+//       'https://www.googleapis.com/auth/photoslibrary.readonly',
+//       'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
+//       'https://www.googleapis.com/auth/photoslibrary.readonly.originals',
+//       'https://www.googleapis.com/auth/photoslibrary.sharing',
+//       'https://www.googleapis.com/auth/userinfo.profile',
+//       'https://www.googleapis.com/auth/userinfo.email',
+//     ],
+//     accessType: 'offline',
+//     prompt: 'select_account consent', // Force Google to re-prompt account and re-consent
+//   })
+// );
 
 // OAuth Callback Route
 app.get(

@@ -101,3 +101,9 @@ export interface GridRowData {
   rowHeight: number;
   cellWidths: number[];
 }
+
+export interface GoogleUserProfile {
+  googleId: string;
+  email: string;
+  name: string;
+}

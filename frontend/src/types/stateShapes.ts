@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { MediaItem, Takeout } from './entities';
+import { GoogleUserProfile, MediaItem, Takeout } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -23,6 +23,7 @@ export interface AppState {
   appInitialized: boolean;
   mainDisplayMode: MainDisplayMode;
   fullScreenMediaItemId: string;
+  googleUserProfile: GoogleUserProfile | null;
 }
 
 export interface MediaItemsState {

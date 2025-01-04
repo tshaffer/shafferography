@@ -91,7 +91,8 @@ export interface AddedTakeoutData {
 export interface User {
   googleId: string;
   email: string;
-  refreshToken: string;
+  name: string; // Add this property
+  refreshToken?: string;
 }
 
 export interface UserWithToken extends User {

@@ -18,8 +18,8 @@ import DeselectIcon from '@mui/icons-material/Deselect';
 import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import TuneIcon from '@mui/icons-material/Tune';
 
-import { MediaItem, PhotoLayout, ReviewLevel } from '../types';
-import { getSelectedMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getDisplayMetadata, getSurveyModeZoomFactor, getDeletedMediaItems, getLoupeViewMediaItemIds, getMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId } from '../selectors';
+import { GoogleUserProfile, MediaItem, PhotoLayout, ReviewLevel } from '../types';
+import { getSelectedMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getDisplayMetadata, getSurveyModeZoomFactor, getDeletedMediaItems, getLoupeViewMediaItemIds, getMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getGoogleUserProfile } from '../selectors';
 import ConfirmationDialog from './ConfirmationDialog';
 import { deleteMediaItems, deselectAllPhotos, redownloadMediaItem, selectPhoto, setReviewLevel } from '../controllers';
 import DeletedMediaItemsDialog from './DeletedMediaItemsDialog';
@@ -31,6 +31,7 @@ export interface TopToolbarProps {
   mediaItemIds: string[];
   selectedMediaItems: MediaItem[];
   selectedMediaItemIds: string[];
+  googleUserProfile: GoogleUserProfile | null;
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
   numGridColumns: number;
@@ -256,6 +257,18 @@ const TopToolbar = (props: TopToolbarProps) => {
     return null;
   };
 
+  const renderUserProfile = (): JSX.Element => {
+    if (props.googleUserProfile) {
+      return (
+        <span>{props.googleUserProfile.name}</span>
+      );
+    } else {
+      return (
+        <span>Not signed in</span>
+      );
+    }
+  }
+
   let confirmationDialogMessage = 'Are you sure you want to delete ';
   if (props.selectedMediaItemIds.length === 1) {
     confirmationDialogMessage += props.selectedMediaItems[0].fileName + '?';
@@ -351,12 +364,12 @@ const TopToolbar = (props: TopToolbarProps) => {
           </Tooltip>
           {getPhotoLayoutPropsUI()}
         </div>
-        <div>
-        <Tooltip title="Set Review Levels">
+        <div style={{ paddingRight: '10px' }}>
+          <Tooltip title="Set Review Levels">
             <span>
               <IconButton
                 disabled={props.selectedMediaItemIds.length === 0}
-                onClick={() => {setShowSetReviewLevelDialog(true);}}>
+                onClick={() => { setShowSetReviewLevelDialog(true); }}>
                 <TuneIcon />
               </IconButton>
             </span>
@@ -394,6 +407,7 @@ const TopToolbar = (props: TopToolbarProps) => {
               </IconButton>
             </span>
           </Tooltip>
+          {renderUserProfile()}
         </div>
       </div>
 
@@ -415,6 +429,7 @@ function mapStateToProps(state: any) {
     photoLayout: getPhotoLayout(state),
     displayMetadata: getDisplayMetadata(state),
     deletedMediaItems: getDeletedMediaItems(state),
+    googleUserProfile: getGoogleUserProfile(state),
   };
 }
 

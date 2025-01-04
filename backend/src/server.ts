@@ -67,16 +67,21 @@ passport.use(
 
         const encryptedRefreshToken = encrypt(refreshToken);
 
-        updateUserInDb(profile.id,
-          { email: profile.emails[0].value, refreshToken: encryptedRefreshToken },
-        );
+        // Update the user in the database with their name
+        await updateUserInDb(profile.id, {
+          email: profile.emails[0].value,
+          name: profile.displayName, // Add name to the database update
+          refreshToken: encryptedRefreshToken,
+        });
 
+        // Add name to the session
         const userWithToken: UserWithToken = {
           googleId: profile.id,
           email: profile.emails[0].value,
+          name: profile.displayName, // Include name in the session object
           refreshToken: encryptedRefreshToken,
           accessToken,
-        }
+        };
 
         return done(null, userWithToken);
       } catch (error) {
@@ -115,22 +120,17 @@ const staticImagesPath = path.join(__dirname, '../public/images');
 console.log('staticImagesPath:', staticImagesPath);
 app.use('/images', express.static(staticImagesPath));
 
-// OAuth Login Route
+// OAuth Login Route (Updated to remove redundant scopes)
 app.get(
   '/auth/google',
   (req, res, next) => {
-    // Clear session and any relevant cookies
     if (req.session) {
       req.session.destroy((err) => {
-        if (err) {
-          console.error('Error clearing session:', err);
-        } else {
-          console.log('Session cleared successfully.');
-        }
+        if (err) console.error('Error clearing session:', err);
+        else console.log('Session cleared successfully.');
       });
     }
-    res.clearCookie('connect.sid'); // Clear session cookie if using express-session
-
+    res.clearCookie('connect.sid');
     console.log('Redirecting to Google for authentication...');
     next();
   },
@@ -147,9 +147,25 @@ app.get(
       'https://www.googleapis.com/auth/photoslibrary.sharing',
     ],
     accessType: 'offline',
-    prompt: 'select_account consent', // Force Google to re-prompt account and re-consent
+    prompt: 'select_account consent',
   })
 );
+
+// New Route to Fetch User Profile
+app.get('/user-profile', ensureAuthenticated, (req: Request, res: Response) => {
+  const user = req.user as UserWithToken;
+
+  if (!user || !user.email || !user.name) {
+    res.status(404).json({ error: 'User profile not found' });
+    return;
+  }
+
+  res.json({
+    name: user.name, // Include name in the response
+    email: user.email,
+    googleId: user.googleId,
+  });
+});
 
 // OAuth Callback Route
 app.get(

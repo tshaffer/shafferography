@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
 import { loadMediaItems, loadKeywordData, loadTakeouts, importFromTakeout, loadDeletedMediaItems, uploadRawMedia } from '../controllers';
-import { TedTaggerDispatch, setAppInitialized } from '../models';
+import { TedTaggerDispatch, setAppInitialized, setGoogleUserProfile } from '../models';
 import { getKeywordRootNodeId, getPhotoLayout, getSelectedMediaItems } from '../selectors';
 import { Button } from '@mui/material';
 
@@ -39,6 +39,7 @@ export interface AppProps {
   onSetAppInitialized: () => any;
   keywordRootNodeId: string;
   onImportFromTakeout: (id: string) => void;
+  onSetGoogleUserProfile: (googleUserProfile: any) => void;
 }
 
 const App = (props: AppProps) => {
@@ -141,6 +142,7 @@ const App = (props: AppProps) => {
         saveTokens(accessToken, expiresIn, googleId);
         setAccessToken(accessToken);
         setIsLoggedIn(true);
+        fetchUserProfile();
       } else {
         console.warn('Failed to refresh access token. Logging out...');
         logout();
@@ -209,8 +211,22 @@ const App = (props: AppProps) => {
     } else {
       console.log('Tokens are valid. User is logged in.');
       setIsLoggedIn(true);
+      fetchUserProfile();
     }
   }, []);
+
+  const fetchUserProfile = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/user-profile', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to fetch user profile');
+      const data = await response.json();
+      console.log('User Profile:', data);
+      props.onSetGoogleUserProfile(data);
+      return data;
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // Main useEffect to handle authentication and token refreshing
   React.useEffect(() => {
@@ -330,9 +346,6 @@ const App = (props: AppProps) => {
     } finally {
       setImporting(false);
     }
-
-    
-
   };
 
   const handleRetrievePeople = async () => {
@@ -478,6 +491,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetAppInitialized: setAppInitialized,
     onLoadTakeouts: loadTakeouts,
     onImportFromTakeout: importFromTakeout,
+    onSetGoogleUserProfile: setGoogleUserProfile,
   }, dispatch);
 };
 

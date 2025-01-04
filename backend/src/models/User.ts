@@ -7,6 +7,7 @@ const UserSchema = new Schema(
   {
     googleId: { type: String, required: true },
     email: { type: String, required: true },
+    name: { type: String, required: true }, // Add this field
     refreshToken: { type: String, required: true },
   }
 );

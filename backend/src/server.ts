@@ -67,16 +67,21 @@ passport.use(
 
         const encryptedRefreshToken = encrypt(refreshToken);
 
-        updateUserInDb(profile.id,
-          { email: profile.emails[0].value, refreshToken: encryptedRefreshToken },
-        );
+        // Update the user in the database with their name
+        await updateUserInDb(profile.id, {
+          email: profile.emails[0].value,
+          name: profile.displayName, // Add name to the database update
+          refreshToken: encryptedRefreshToken,
+        });
 
+        // Add name to the session
         const userWithToken: UserWithToken = {
           googleId: profile.id,
           email: profile.emails[0].value,
+          name: profile.displayName, // Include name in the session object
           refreshToken: encryptedRefreshToken,
           accessToken,
-        }
+        };
 
         return done(null, userWithToken);
       } catch (error) {
@@ -149,14 +154,14 @@ app.get(
 // New Route to Fetch User Profile
 app.get('/user-profile', ensureAuthenticated, (req: Request, res: Response) => {
   const user = req.user as UserWithToken;
-  if (!user || !user.email) {
+
+  if (!user || !user.email || !user.name) {
     res.status(404).json({ error: 'User profile not found' });
     return;
   }
 
-  // Respond with user details
   res.json({
-    name: req.user?.name || 'Unknown User',
+    name: user.name, // Include name in the response
     email: user.email,
     googleId: user.googleId,
   });

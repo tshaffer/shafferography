@@ -112,12 +112,8 @@ passport.deserializeUser(async (googleId: string, done) => {
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Serve the SPA on the root route (index.html)
-// app.get('/', (req: Request, res: Response) => {
-//   res.sendFile(path.join(__dirname, '../public', 'index.html'));
-// });
-
 // Fallback route to serve index.html for SPA
-app.get('*', (req: Request, res: Response) => {
+app.get('/', (req: Request, res: Response) => {
   const frontendPath = path.join(__dirname, '../../frontend', 'index.html');
   console.log('frontendPath:', frontendPath);
   res.sendFile(frontendPath);

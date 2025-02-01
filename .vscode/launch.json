@@ -8,13 +8,19 @@
       "skipFiles": [
         "<node_internals>/**"
       ],
-      "program": "${workspaceFolder}/backend/dist/server.js",
+      "program": "${workspaceFolder}/backend/src/server.ts",
       "preLaunchTask": "tsc: build - backend",
-      "cwd": "${workspaceFolder}/backend",
       "outFiles": [
         "${workspaceFolder}/backend/dist/**/*.js"
       ],
+      "cwd": "${workspaceFolder}/backend",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only"
+      ],
       "envFile": "${workspaceFolder}/backend/.env",
+      "runtimeExecutable": "node",
       "sourceMaps": true
     }
   ]

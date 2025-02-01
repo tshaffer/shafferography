@@ -8,7 +8,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { GeoData, MediaItem, ReviewLevel, UploadMediaFilesResponse } from '../types';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
-import { fsCopyFile, getShardedDirectory, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
+import { convertHEICFileToJPEGWithEXIF, fsCopyFile, getShardedDirectory, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
 import { DateTime } from 'luxon';
 import { addMediaItemToMediaItemsDBTable } from './dbInterface';
 
@@ -194,20 +194,21 @@ async function getLocalStorageMediaItem(fullPath: string): Promise<MediaItem> {
   return mediaItem;
 }
 
-const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaItems: MediaItem[]): Promise<any> => {
+const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaItems: MediaItem[], imageFilePaths: string[]): Promise<any> => {
 
   // TEDTODO - should not be hard coded
   const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/images';
   const uploadsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/uploads';
 
-  for (const mediaItem of mediaItems) {
+  for (let index = 0; index < mediaItems.length; index++) {
+    const mediaItem = mediaItems[index];
     const mediaItemFileName = mediaItem.fileName;
     if (isImageFile(mediaItemFileName)) {
       const fileSuffix = path.extname(mediaItemFileName);
       const shardedFileName = mediaItem.uniqueId + fileSuffix;
 
       const baseDir: string = await getShardedDirectory(mediaItemsDir, mediaItem.uniqueId);
-      // const from = path.join(takeoutFolder, googleFileName);
+
       const where = path.join(baseDir, shardedFileName);
 
       console.log('mediaItemFileName', mediaItemFileName);
@@ -220,9 +221,20 @@ const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaIt
       await addMediaItemToMediaItemsDBTable(mediaItem);
 
       const sourcePath: string = path.join(uploadsDir, mediaItemFileName);
-      // const sourcePath: string = mediaItem.filePath;
       console.log('copy file from: ', sourcePath, ' to: ', where);
       await fsCopyFile(sourcePath, where);
+
+      const filePath = imageFilePaths[index];
+      const fileExtension = path.extname(filePath);
+      if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
+        const shardedFileName = mediaItem.uniqueId + fileExtension;
+        const where = path.join(baseDir, shardedFileName);
+        // const dirname = path.dirname(filePath); // Extracts the directory path
+        const heicFileName = path.basename(filePath); // Replaces .heic with .jpg
+        const sourcePath: string = path.join(uploadsDir, heicFileName);
+        console.log('copy heic file from: ', sourcePath, ' to: ', where);
+        await fsCopyFile(sourcePath, where);
+      }
     }
   }
 
@@ -231,15 +243,38 @@ const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaIt
 
 export const importFiles = async (imageFilePaths: string[]): Promise<any> => {
 
-  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(imageFilePaths);
+  // convert HEIC files to JPEG
+  const updatedFilePaths: string[] = await convertFilesToJpeg(imageFilePaths);
+
+  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(updatedFilePaths);
 
   // skip step that checks for image file existence in db
 
   // add the mediaItems to the db
-  await addMediaItemsFromLocalStorage('', localStorageMediaItems);
+  await addMediaItemsFromLocalStorage('', localStorageMediaItems, imageFilePaths);
 
   console.log('localStorageMediaItems:', localStorageMediaItems.length);
 
   return Promise.resolve();
 }
 
+const convertFilesToJpeg = async (filePaths: string[]): Promise<string[]> => {
+
+  const updatedFilePaths: string[] = [];
+
+  for (const filePath of filePaths) {
+    const fileExtension = path.extname(filePath);
+    if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
+      const inputFilePath = filePath;
+      const dirname = path.dirname(inputFilePath); // Extracts the directory path
+      const newFilename = path.basename(inputFilePath, fileExtension) + ".jpg"; // Replaces .heic with .jpg
+      const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
+      console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
+      await convertHEICFileToJPEGWithEXIF(inputFilePath, outputFilePath);
+      updatedFilePaths.push(outputFilePath);
+    } else {
+      updatedFilePaths.push(filePath);
+    }
+  }
+  return Promise.resolve(updatedFilePaths);
+}

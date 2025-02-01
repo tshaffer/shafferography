@@ -5,6 +5,7 @@ import { GooglePhotoAPIs } from "./googlePhotos";
 import { BatchCreateGoogleMediaItem, CreateGoogleAlbumResponse, CreateMediaItemsResponse, MediaItem, NewMediaItemResult, UploadToGoogleResults } from '../types';
 import { isNil } from 'lodash';
 import { getMediaItemFromDb } from './dbInterface';
+import path from 'path';
 
 // A function to upload a media file
 export const uploadMediaItem = async (googleAccessToken: string, filePath: string, fileName: string): Promise<string> => {
@@ -160,7 +161,7 @@ export const addMediaItemsToAlbum = async (
 // 3. add media items to album
 // 4. update records in db
 export const uploadToGoogle = async (googleAccessToken: string, albumName: string, mediaItemIds: string[]): Promise<UploadToGoogleResults> => {
-  
+
   console.log('uploadToGoogle: ');
   console.log('googleAccessToken: ', googleAccessToken);
   console.log('albumName: ', albumName);
@@ -171,24 +172,38 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
     // Create Album
     const googleAlbumResponse: CreateGoogleAlbumResponse = await createGoogleAlbum(googleAccessToken, albumName);
     console.log('googleAlbumResponse: ', googleAlbumResponse);
-    // const { id, title, productUrl, isWriteable } = googleAlbumResponse;
     const albumId = googleAlbumResponse.id;
 
     // Upload Media Items
     const createdMediaItemIds: string[] = [];
     const createdMediaItems: BatchCreateGoogleMediaItem[] = [];
     for (const mediaItemId of mediaItemIds) {
-      
+
       const mediaItem: MediaItem = await getMediaItemFromDb(mediaItemId);
       if (isNil(mediaItem)) {
         console.error('Media item not found in db');
         throw new Error('Media item not found in db');
       }
 
-      const uploadToken: string = await uploadMediaItem(googleAccessToken, mediaItem.filePath, mediaItem.fileName);
+      let mediaItemFilePath = mediaItem.filePath;
+      let mediaItemFileName = mediaItem.fileName;
+
+      // if the media item is a converted file, substitute the original file
+      const fileExtension = path.extname(mediaItem.filePath);
+      if (fileExtension.toLowerCase() === '.jpg') {
+        const dirname = path.dirname(mediaItem.filePath); // Extracts the directory path
+        const shardedFileName = path.basename(mediaItem.filePath, fileExtension) + ".heic";
+        const heicFilePath = path.join(dirname, shardedFileName);
+        if (fse.existsSync(heicFilePath)) {
+          mediaItemFilePath = heicFilePath;
+          mediaItemFileName = path.parse(mediaItem.fileName).name + ".heic";
+        }
+      }
+
+      const uploadToken: string = await uploadMediaItem(googleAccessToken, mediaItemFilePath, mediaItemFileName);
       console.log('uploadToken: ', uploadToken);
 
-      const googleMediaItem: CreateMediaItemsResponse = await createMediaItem(googleAccessToken, uploadToken, mediaItem.fileName);
+      const googleMediaItem: CreateMediaItemsResponse = await createMediaItem(googleAccessToken, uploadToken, mediaItemFileName);
       console.log('googleMediaItem: ', googleMediaItem);
       const newMediaItemResults: [NewMediaItemResult] = googleMediaItem.newMediaItemResults
       const resultToken = newMediaItemResults[0].uploadToken;
@@ -205,7 +220,7 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
     await addMediaItemsToAlbum(googleAccessToken, albumId, createdMediaItemIds);
     console.log('successful uploadToGoogle: ');
 
-    return { albumId, mediaItemIds, createdMediaItems};
+    return { albumId, mediaItemIds, createdMediaItems };
 
   } catch (error) {
     throw new Error('Failed to upload media to Google');

@@ -2,8 +2,6 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import libheif from 'libheif-js/wasm-bundle';
-
 /*
   Unreviewed:     VisibilityOffIcon = 'unreviewed',
   ReadyForReview: GradingIcon = 'readyForReview',
@@ -65,62 +63,11 @@ const GridCell = (props: GridCellProps) => {
 
   const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
-  const { fileName } = props.mediaItem;
-  const isHeic = fileName.toLowerCase().endsWith('.heic');
-
   const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);
 
   const mediaItem: MediaItem = props.mediaItem;
 
   const photoUrl = getPhotoUrl(mediaItem);
-
-  React.useEffect(() => {
-    const renderHeicImage = async () => {
-      if (isHeic && canvasRef.current) {
-        try {
-
-          // Fetch the HEIC file from the server as ArrayBuffer
-          const response = await fetch(photoUrl);
-          if (!response.ok) throw new Error('Failed to fetch HEIC file');
-
-          const arrayBuffer = await response.arrayBuffer();
-
-          // Decode the HEIC image using libheif-js
-          const heifDecoder = new libheif.HeifDecoder();
-          const heifImage = heifDecoder.decode(arrayBuffer);
-
-          const image = heifImage[0];
-          const width = image.get_width();
-          const height = image.get_height();
-
-          const canvas = canvasRef.current;
-
-          canvas.width = width;
-          canvas.height = height;
-
-          const context = canvas.getContext('2d')!;
-          const imageData = context!.createImageData(width, height);
-
-          await new Promise<void>((resolve, reject) => {
-            image.display(imageData, (displayData: any) => {
-              if (!displayData) {
-                return reject(new Error('HEIF processing error'));
-              }
-
-              resolve();
-            });
-          });
-
-          context.putImageData(imageData, 0, 0);
-        } catch (error) {
-          console.error('Error decoding HEIC image:', error);
-        }
-      }
-    };
-
-    renderHeicImage();
-  }, [photoUrl, isHeic]);
-
 
   const renderReviewLevelIcon = (): JSX.Element => {
     switch (props.mediaItem.reviewLevel) {
@@ -229,15 +176,12 @@ const GridCell = (props: GridCellProps) => {
         onClick={handleClicks}
       >
         {metadataJsx}
-        {isHeic ? (
-          <canvas ref={canvasRef} style={{ width: '100%', height: '100%' }} />
-        ) : (<img
+        <img
           src={photoUrl}
           width={widthAttribute}
           height={imgHeightAttribute}
           loading='lazy'
         />
-        )}
         {/* Icon overlay */}
         {renderReviewLevelIcon()}
       </div>

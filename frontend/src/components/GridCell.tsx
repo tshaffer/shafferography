@@ -8,10 +8,8 @@ import { connect } from 'react-redux';
   UploadIcon:     ReadyForUpload = 'readyForUpload',
   CloudQueueIcon: UploadedToGoogle = 'uploadedToGoogle',
 */
-// import RemoveCircleIcon from '@mui/icons-material/RemoveCircle';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import GradingIcon from '@mui/icons-material/Grading';
-// import PreviewIcon from '@mui/icons-material/Preview';
 import UploadIcon from '@mui/icons-material/Upload';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 
@@ -42,7 +40,6 @@ export interface GridCellProps extends GridCellPropsFromParent {
   onSetPhotoLayoutRedux: (photoLayout: PhotoLayout) => any;
 }
 
-
 // const softGray = 'rgba(255, 255, 255, 0.8)';
 const mutedWhite = 'rgba(255, 255, 255, 0.9)';
 // const softBlack = 'rgba(0, 0, 0, 0.6)';
@@ -55,13 +52,11 @@ const reviewLevelIconStyle: React.CSSProperties = {
   position: 'absolute',
   top: '8px',
   left: '8px',
-  fontSize: '30px',
+  fontSize: '20px',
   color: mutedWhite,
 };
 
 const GridCell = (props: GridCellProps) => {
-
-  const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
 
   const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);
 
@@ -80,8 +75,6 @@ const GridCell = (props: GridCellProps) => {
         return <UploadIcon style={reviewLevelIconStyle} />;
       case 'uploadedToGoogle':
         return <CloudQueueIcon style={reviewLevelIconStyle} />;
-      // default:
-      //   return <PreviewIcon style={reviewLevelsIconStyle} />;
     }
   }
 

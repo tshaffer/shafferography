@@ -1,6 +1,12 @@
 import * as React from 'react';
-import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import { useSelector } from 'react-redux';
+import { MediaItem } from '../types';
+import { getPhotoUrl } from '../utilities';
+import { borderSizeStr } from '../constants';
+import { isMediaItemSelected } from '../selectors';
+
+import { Tooltip, Typography } from '@mui/material';
+import dayjs, { Dayjs } from 'dayjs';
 
 /*
   Unreviewed:     VisibilityOffIcon = 'unreviewed',
@@ -13,31 +19,15 @@ import GradingIcon from '@mui/icons-material/Grading';
 import UploadIcon from '@mui/icons-material/Upload';
 import CloudQueueIcon from '@mui/icons-material/CloudQueue';
 
-import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } from '../models';
-
-import '../styles/TedTagger.css';
-import { MediaItem, PhotoLayout } from '../types';
-import { getDisplayMetadata, getKeywordLabelsForMediaItem, getMediaItems, isMediaItemSelected } from '../selectors';
-import { getPhotoUrl } from '../utilities';
-import { Tooltip, Typography } from '@mui/material';
-import dayjs, { Dayjs } from 'dayjs';
-import { selectPhoto } from '../controllers';
-import { borderSizeStr } from '../constants';
-
-export interface GridCellPropsFromParent {
+export interface GridCellProps {
   mediaItemIndex: number;
-  mediaItem: MediaItem
+  mediaItem: MediaItem;
   rowHeight: number;
   cellWidth: number;
-}
-
-export interface GridCellProps extends GridCellPropsFromParent {
-  displayMetadata: boolean;
-  isSelected: boolean;
-  keywordLabels: string[];
-  onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => any;
-  onSetLoupeViewMediaItemId: (id: string) => any;
-  onSetPhotoLayoutRedux: (photoLayout: PhotoLayout) => any;
+  onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
+  onSetLoupeViewMediaItemId: (id: string) => void;
+  onSetPhotoLayoutRedux: () => void;
+  displayMetadata: boolean; // ✅ Ensure this is passed correctly
 }
 
 // const softGray = 'rgba(255, 255, 255, 0.8)';
@@ -56,13 +46,21 @@ const reviewLevelIconStyle: React.CSSProperties = {
   color: mutedWhite,
 };
 
-const GridCell = (props: GridCellProps) => {
-
-  const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);
-
+const GridCell = React.memo((props: GridCellProps) => {
   const mediaItem: MediaItem = props.mediaItem;
-
   const photoUrl = getPhotoUrl(mediaItem);
+
+  // ✅ Fetch selection state inside GridCell instead of passing it as a prop
+  const isSelected = useSelector((state: any) => isMediaItemSelected(state, mediaItem));
+
+  const handleDoubleClick = () => {
+    props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);
+    props.onSetPhotoLayoutRedux();
+  };
+
+  const handleClickPhoto = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
+    props.onClickPhoto(props.mediaItem.uniqueId, e.metaKey, e.shiftKey);
+  };
 
   const renderReviewLevelIcon = (): JSX.Element => {
     switch (props.mediaItem.reviewLevel) {
@@ -78,31 +76,6 @@ const GridCell = (props: GridCellProps) => {
     }
   }
 
-  const handleDoubleClick = () => {
-    props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);
-    props.onSetPhotoLayoutRedux(PhotoLayout.Loupe);
-  };
-
-  const handleClickPhoto = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
-    props.onClickPhoto(props.mediaItem.uniqueId, e.metaKey, e.shiftKey);
-  };
-
-  const handleClicks = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
-    if (clickTimeout !== null) {
-      clearTimeout(clickTimeout);
-      setClickTimeout(null);
-      handleDoubleClick();
-    } else {
-      const clickTimeout = setTimeout(() => {
-        clearTimeout(clickTimeout);
-        setClickTimeout(null);
-        handleClickPhoto(e);
-      }, 200);
-      setClickTimeout(clickTimeout);
-    }
-  };
-
-
   const getMetadataJsx = (): JSX.Element | null => {
 
     if (!props.displayMetadata) {
@@ -111,92 +84,80 @@ const GridCell = (props: GridCellProps) => {
 
     const creationDate: Dayjs = dayjs(mediaItem.creationTime!);
     const formattedCreationDate: string = creationDate.format('MM/DD/YYYY hh:mm A');
-    const keywords: string = props.keywordLabels.join(', ');
+    // const keywords: string = props.keywordLabels.join(', ');
 
     return (
-      <div style={{
-        backgroundColor: 'silver',
-        minHeight: '60px',
-      }}
+      <Tooltip
+        title={props.mediaItem.fileName}
+        placement='top'
+        slotProps={{
+          popper: {
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, -32],
+                },
+              },
+            ],
+          },
+        }}
       >
-        <Typography variant='body2' color='black' fontSize='12px'>
-          {mediaItem.fileName}
-          <br />
-          {formattedCreationDate}
-          <br />
-          {keywords}
-        </Typography>
-      </div >
+        <div style={{
+          backgroundColor: 'silver',
+          minHeight: '60px',
+        }}
+        >
+          <Typography variant='body2' color='black' fontSize='12px'>
+            {mediaItem.fileName}
+            <br />
+            {formattedCreationDate}
+            {/* <br /> */}
+            {/* {keywords} */}
+          </Typography>
+        </div >
+      </Tooltip>
     );
 
   };
 
-  const widthAttribute: string = props.cellWidth.toString() + 'px';
-  const metadataHeight: number = props.displayMetadata ? 60 : 0;
-  const imgHeightAttribute: string = props.rowHeight.toString() + 'px';
-  const divHeightAttribute: string = (props.rowHeight + metadataHeight).toString() + 'px';
+  const widthAttribute = `${props.cellWidth}px`;
+
+  // ✅ Ensure image height is ONLY based on image area, NOT full row height
+  const imageHeight = props.rowHeight - (props.displayMetadata ? 60 : 0); // Subtract metadata height
+  const divHeightAttribute = `${props.rowHeight}px`; // Full row height, including metadata
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
-  let borderAttr: string = borderSizeStr + ' ';
-  borderAttr += props.isSelected ? ' solid blue' : ' solid white';
+  let borderAttr = `${borderSizeStr} ${isSelected ? 'solid blue' : 'solid white'}`;
 
   return (
-    <Tooltip
-      title={props.mediaItem.fileName}
-      placement='top'
-      slotProps={{
-        popper: {
-          modifiers: [
-            {
-              name: 'offset',
-              options: {
-                offset: [0, -32],
-              },
-            },
-          ],
-        },
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        width: widthAttribute,
+        height: divHeightAttribute, // ✅ Full row height (including metadata)
+        border: borderAttr,
       }}
+      onClick={handleClickPhoto}
+      onDoubleClick={handleDoubleClick}
     >
-      <div
+      {metadataJsx}
+      <img
+        src={photoUrl}
+        width={widthAttribute}
+        height={`${imageHeight}px`} // ✅ Image should stay within its original height
+        loading="lazy"
         style={{
-          position: 'relative',
-          display: 'inline-block',
-          width: widthAttribute,
-          height: divHeightAttribute,
-          border: borderAttr,
+          objectFit: 'contain', // ✅ Maintain correct aspect ratio
+          display: 'block', // ✅ Prevents unwanted spacing
         }}
-        onClick={handleClicks}
-      >
-        {metadataJsx}
-        <img
-          src={photoUrl}
-          width={widthAttribute}
-          height={imgHeightAttribute}
-          loading='lazy'
-        />
-        {/* Icon overlay */}
-        {renderReviewLevelIcon()}
-      </div>
-    </Tooltip>
+      />
+      {/* Icon overlay */}
+      {renderReviewLevelIcon()}
+    </div>
   );
-};
+});
 
-function mapStateToProps(state: any, ownProps: GridCellPropsFromParent) {
-  return {
-    displayMetadata: getDisplayMetadata(state),
-    isSelected: isMediaItemSelected(state, ownProps.mediaItem),
-    mediaItem: ownProps.mediaItem,
-    keywordLabels: getKeywordLabelsForMediaItem(state, getMediaItems(state)[ownProps.mediaItemIndex]),
-  };
-}
-
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    onClickPhoto: selectPhoto,
-    onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
-    onSetPhotoLayoutRedux: setPhotoLayoutRedux,
-  }, dispatch);
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(GridCell);
+export default GridCell;

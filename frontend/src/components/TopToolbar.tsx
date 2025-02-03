@@ -19,7 +19,7 @@ import FullscreenIcon from '@mui/icons-material/Fullscreen';
 import TuneIcon from '@mui/icons-material/Tune';
 
 import { GoogleUserProfile, MediaItem, PhotoLayout, ReviewLevel } from '../types';
-import { getSelectedMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getDisplayMetadata, getSurveyModeZoomFactor, getDeletedMediaItems, getLoupeViewMediaItemIds, getMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getGoogleUserProfile } from '../selectors';
+import { getSelectedMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getDisplayMetadata, getSurveyModeZoomFactor, getDeletedMediaItems, getLoupeViewMediaItemIds, getMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getGoogleUserProfile, getScrollPosition } from '../selectors';
 import ConfirmationDialog from './ConfirmationDialog';
 import { deleteMediaItems, deselectAllPhotos, redownloadMediaItem, selectPhoto, setReviewLevel } from '../controllers';
 import DeletedMediaItemsDialog from './DeletedMediaItemsDialog';
@@ -39,6 +39,7 @@ export interface TopToolbarProps {
   photoLayout: PhotoLayout;
   displayMetadata: boolean;
   deletedMediaItems: MediaItem[];
+  scrollPosition: number;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onSetSurveyModeZoomFactor: (numGridColumns: number) => void;
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
@@ -75,13 +76,9 @@ const TopToolbar = (props: TopToolbarProps) => {
       return;
     }
 
-    // capture the scroll position if transitioning out of Grid layout.
+    // 🛠️ Store scroll position using Redux state (not `scrollTop`)
     if (props.photoLayout === PhotoLayout.Grid && photoLayout !== PhotoLayout.Grid) {
-      const divElement = document.getElementById('centerColumn') as HTMLDivElement | null;
-      if (divElement) {
-        const scrollPosition: number = divElement.scrollTop;
-        props.onSetScrollPosition(scrollPosition);
-      }
+      props.onSetScrollPosition(props.scrollPosition); // Save Redux state instead
     }
 
     // transition to new layout
@@ -430,6 +427,7 @@ function mapStateToProps(state: any) {
     displayMetadata: getDisplayMetadata(state),
     deletedMediaItems: getDeletedMediaItems(state),
     googleUserProfile: getGoogleUserProfile(state),
+    scrollPosition: getScrollPosition(state),
   };
 }
 

@@ -28,9 +28,6 @@ const SetReviewLevelsDialog = (props: SetReviewLevelsDialogProps) => {
   const [reviewLevel, setReviewLevel] = React.useState<ReviewLevel>(ReviewLevel.Unreviewed);
 
   React.useEffect(() => {
-    console.log('SetReviewLevelsDialog useEffect');
-    console.log(props.selectedMediaItems);
-
     if (props.selectedMediaItems.length > 0) {
       let reviewLevel: ReviewLevel = props.selectedMediaItems[0].reviewLevel;
       if (props.selectedMediaItems.length > 1) {

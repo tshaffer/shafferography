@@ -22,9 +22,6 @@ export interface LoupeViewControllerProps {
 const LoupeViewController = (props: LoupeViewControllerProps) => {
 
   React.useEffect(() => {
-
-    console.log('LoupeViewController: React.useEffect - invoked');
-
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
         case 'ArrowRight':
@@ -72,12 +69,10 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
       const nextMediaItemIndex = loupeViewMediaItemIndex + 1;
       if (nextMediaItemIndex >= props.loupeViewMediaItemIds.length) {
-        console.log('at end');
         return;
       } else {
         const nextMediaItemId: string = props.loupeViewMediaItemIds[nextMediaItemIndex];
         const nextMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === nextMediaItemId);
-        console.log('nextMediaItem: ' + nextMediaItem);
         props.onSetLoupeViewMediaItemId(nextMediaItem!.uniqueId);
         if (props.selectedMediaItemIds.length === 1) {
           props.onDeselectAllPhotos(); // only perform the deselect if there's only a single selected item.
@@ -97,7 +92,6 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     // Remove the event listener when the component unmounts
     return () => {
-      console.log('LoupeViewController: React.useEffect - component unmounts');
       document.removeEventListener('keydown', handleKeyPress);
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };

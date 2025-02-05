@@ -158,6 +158,14 @@ const GridCell = React.memo((props: GridCellProps) => {
       {renderReviewLevelIcon()}
     </div>
   );
-});
+},
+  (prevProps, nextProps) => {
+    // ✅ Log changed props explicitly
+    const changedProps = (Object.keys(prevProps) as Array<keyof GridCellProps>).filter(
+      key => prevProps[key] !== nextProps[key]
+    );
+    return changedProps.length === 0;
+  }
+);
 
 export default GridCell;

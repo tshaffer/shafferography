@@ -47,7 +47,14 @@ const GridRow = React.memo((props: GridRowProps) => {
       </div>
     </div>
   );
-});
+},
+  (prevProps, nextProps) => {
+    // ✅ Log changed props explicitly
+    const changedProps = (Object.keys(prevProps) as Array<keyof GridRowProps>).filter(
+      key => prevProps[key] !== nextProps[key]
+    );
+    return changedProps.length === 0;
+  });
 
 export default connect((state: any) => ({
   allMediaItems: getMediaItems(state),

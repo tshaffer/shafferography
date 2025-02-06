@@ -1,10 +1,13 @@
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
 import { getDisplayMetadata, getMediaItems } from '../selectors';
 import GridCell from './GridCell';
 import { bordersSize } from '../constants';
+import { deselectAllPhotos, selectPhoto, selectAllPhotos } from '../controllers';
+import { useEffect, useState } from 'react';
+import { useSelector } from 'react-redux';
+import { shallowEqual } from 'react-redux';
 
 export interface GridRowPropsFromParent {
   mediaItemIndex: number;
@@ -14,22 +17,73 @@ export interface GridRowPropsFromParent {
 }
 
 export interface GridRowProps extends GridRowPropsFromParent {
-  allMediaItems: MediaItem[],
-  displayMetadata: boolean;
+  onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
+  onDeselectAllMediaItems: () => void;
+  onSelectAllPhotos: () => void;
 }
 
 const GridRow = (props: GridRowProps) => {
 
-  if (props.allMediaItems.length === 0) {
+  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
+
+  const allMediaItems = useSelector(getMediaItems, shallowEqual);
+  const displayMetadata = useSelector(getDisplayMetadata);
+
+  if (allMediaItems.length === 0) {
     return null;
   }
-  
+
+  /** Handles photo selection with shift-click support */
+  const handlePhotoClick = (mediaItemId: string, index: number, commandKey: boolean, shiftKey: boolean) => {
+    if (shiftKey && lastSelectedIndex !== null) {
+      // Select all photos in the range between lastSelectedIndex and index
+      const start = Math.min(lastSelectedIndex, index);
+      const end = Math.max(lastSelectedIndex, index);
+
+      for (let i = start; i <= end; i++) {
+        props.onClickPhoto(allMediaItems[i].uniqueId, false, false);
+      }
+    } else {
+      props.onClickPhoto(mediaItemId, commandKey, shiftKey);
+    }
+
+    setLastSelectedIndex(index);
+  };
+
+  /** Handles keyboard shortcuts (Ctrl + A for select all, Esc for deselect all) */
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'a' && (event.metaKey || event.ctrlKey)) {
+        event.preventDefault();
+        props.onSelectAllPhotos();
+      } else if (event.key === 'Escape') {
+        event.preventDefault();
+        props.onDeselectAllMediaItems();
+        setLastSelectedIndex(null);
+      }
+    };
+
+    if (document.getElementById("global-keydown-listener") === null) {
+      document.addEventListener('keydown', handleKeyDown);
+      const marker = document.createElement("div");
+      marker.id = "global-keydown-listener";
+      document.body.appendChild(marker);
+    }
+
+    return () => {
+      if (document.getElementById("global-keydown-listener") !== null) {
+        document.removeEventListener('keydown', handleKeyDown);
+        document.getElementById("global-keydown-listener")?.remove();
+      }
+    };
+  }, []);
+
   const getGridCell = (mediaItemIndex: number, cellWidth: number): JSX.Element => {
     return (
       <GridCell
         key={mediaItemIndex}
         mediaItemIndex={mediaItemIndex}
-        mediaItem={props.allMediaItems[mediaItemIndex]}
+        mediaItem={allMediaItems[mediaItemIndex]}
         rowHeight={props.rowHeight}
         cellWidth={cellWidth}
       />
@@ -38,40 +92,38 @@ const GridRow = (props: GridRowProps) => {
 
   const getGridCells = (): JSX.Element[] => {
     const gridCells: JSX.Element[] = [];
-    for (let index = props.mediaItemIndex; index < (props.mediaItemIndex + props.numMediaItems); index++) {
+    for (let index = props.mediaItemIndex; index < props.mediaItemIndex + props.numMediaItems; index++) {
       const cellWidth = props.cellWidths[index - props.mediaItemIndex];
-      const gridCellElement = getGridCell(index, cellWidth);
-      gridCells.push(gridCellElement);
+      gridCells.push(getGridCell(index, cellWidth));
     }
     return gridCells;
   };
 
   const gridCells = getGridCells();
-
-  const metadataHeight: number = props.displayMetadata ? 60 : 0;
-  const heightAttribute: string = (props.rowHeight + metadataHeight + bordersSize).toString() + 'px';
+  const metadataHeight: number = displayMetadata ? 60 : 0;
+  const heightAttribute = `${props.rowHeight + metadataHeight + bordersSize}px`;
 
   return (
-    <div style={{
-      height: heightAttribute,
-      backgroundColor: 'white',
-    }}>
+    <div style={{ height: heightAttribute, backgroundColor: 'white' }}>
       {gridCells}
     </div>
   );
-
 };
 
 function mapStateToProps(state: any, ownProps: any) {
   return {
-    allMediaItems: getMediaItems(state),
-    displayMetadata: getDisplayMetadata(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-  }, dispatch);
+  return bindActionCreators(
+    {
+      onClickPhoto: selectPhoto,
+      onDeselectAllMediaItems: deselectAllPhotos,
+      onSelectAllPhotos: selectAllPhotos,
+    },
+    dispatch
+  );
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(GridRow);

@@ -13,6 +13,8 @@ import App from './components/App';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { initializeDiagnostics } from './utilities';
 
+window.React = React;
+
 initializeDiagnostics();
 
 export const store = createStore(

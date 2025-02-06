@@ -17,6 +17,7 @@
     "@mui/material": "^5.9.0",
     "@mui/x-date-pickers": "^6.18.0",
     "@mui/x-tree-view": "^6.17.0",
+    "@types/reselect": "^2.0.27",
     "axios": "^0.27.2",
     "dayjs": "^1.11.10",
     "lodash": "^4.17.21",
@@ -30,6 +31,7 @@
     "redux": "^4.2.0",
     "redux-devtools-extension": "^2.13.9",
     "redux-thunk": "^2.4.1",
+    "reselect": "^5.1.1",
     "uuidv4": "^6.2.13"
   },
   "devDependencies": {

@@ -1,7 +1,15 @@
 
-import { TedTaggerDispatch, clearMediaItemSelection, deselectMediaItem, selectMediaItem, setLastClickedId } from '../models';
+import { TedTaggerDispatch, clearMediaItemSelection, deselectMediaItem, selectMediaItem, selectMediaItems, setLastClickedId } from '../models';
 import { MediaItem } from '../types';
 import { getLastClickedId, getMediaItems, getSelectedMediaItemIds } from '../selectors';
+
+export const selectAllPhotos = () => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    const mediaItems: MediaItem[] = getMediaItems(getState());
+    const ids = mediaItems.map((item) => item.uniqueId);
+    dispatch(selectMediaItems(ids));
+  };
+}
 
 export const deselectAllPhotos = () => {
   return (dispatch: TedTaggerDispatch, getState: any) => {

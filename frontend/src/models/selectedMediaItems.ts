@@ -7,6 +7,7 @@ import { TedTaggerModelBaseAction } from './baseAction';
 // Constants
 // ------------------------------------
 export const SELECT_MEDIA_ITEM = 'SELECT_MEDIA_ITEM';
+export const SELECT_MEDIA_ITEMS = 'SELECT_MEDIA_ITEMS';
 export const DESELECT_MEDIA_ITEM = 'DESELECT_MEDIA_ITEM';
 export const DESELECT_MEDIA_ITEM_SELECTION_ALL = 'DESELECT_MEDIA_ITEM_SELECTION_ALL';
 export const SET_LAST_CLICKED_ID = 'SET_LAST_CLICKED_ID';
@@ -14,6 +15,21 @@ export const SET_LAST_CLICKED_ID = 'SET_LAST_CLICKED_ID';
 // ------------------------------------
 // Actions
 // ------------------------------------
+
+interface SelectMediaItemsPayload {
+  uniqueIds: string[];
+}
+
+export const selectMediaItems = (
+  uniqueIds: string[],
+): any => {
+  return {
+    type: SELECT_MEDIA_ITEMS,
+    payload: {
+      uniqueIds
+    }
+  };
+};
 
 interface SelectMediaItemPayload {
   uniqueId: string;
@@ -81,28 +97,48 @@ const initialState: SelectedMediaItemsState =
 export const selectedMediaItemsStateReducer = (
   state: SelectedMediaItemsState = initialState,
   action: TedTaggerModelBaseAction<
-  SetLastClickedIdPayload & SelectMediaItemPayload & DeselectMediaItemPayload
+    SetLastClickedIdPayload & SelectMediaItemPayload & DeselectMediaItemPayload & SelectMediaItemsPayload
   >
 ): SelectedMediaItemsState => {
   switch (action.type) {
-    case DESELECT_MEDIA_ITEM_SELECTION_ALL: {
-      const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.selectedMediaItemIds = [];
-      return newState;
-    }
     case SET_LAST_CLICKED_ID: {
-      const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.lastClickedId = action.payload.uniqueId;
-      return newState;
+      return {
+        ...state,
+        lastClickedId: (action.payload as SetLastClickedIdPayload).uniqueId,
+      };
     }
-    case SELECT_MEDIA_ITEM: {
+    case "SELECT_MEDIA_ITEM":
+      if (state.selectedMediaItemIds.includes(action.payload.uniqueId)) {
+        return state; // ✅ Prevents unnecessary re-renders by returning the same object
+      }
+      return {
+        ...state,
+        selectedMediaItemIds: [...state.selectedMediaItemIds, action.payload.uniqueId], // 🔥 This should only create a new array when necessary
+      };
+    case DESELECT_MEDIA_ITEM:
+      if (!state.selectedMediaItemIds.includes(action.payload.uniqueId)) {
+        return state;
+      }
+      return {
+        ...state,
+        selectedMediaItemIds: state.selectedMediaItemIds.filter((id) => id !== action.payload.uniqueId),
+      };
+    case DESELECT_MEDIA_ITEM_SELECTION_ALL:
+      if (state.selectedMediaItemIds.length === 0) {
+        return state;
+      }
+      return {
+        ...state,
+        selectedMediaItemIds: [],
+      };
+    case SELECT_MEDIA_ITEMS: {
       const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.selectedMediaItemIds.push(action.payload.uniqueId);
+      newState.selectedMediaItemIds = [...newState.selectedMediaItemIds, ...(action.payload as SelectMediaItemsPayload).uniqueIds];
       return newState;
     }
     case DESELECT_MEDIA_ITEM: {
       const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.selectedMediaItemIds = newState.selectedMediaItemIds.filter((selectedId) => selectedId !== action.payload.uniqueId);
+      newState.selectedMediaItemIds = newState.selectedMediaItemIds.filter((selectedId) => selectedId !== (action.payload as SelectMediaItemPayload).uniqueId);
       return newState;
     }
     default:

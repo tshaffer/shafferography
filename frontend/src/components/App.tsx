@@ -17,6 +17,7 @@ import LoupeViewController from './LoupeViewController';
 import { MediaItem, PhotoLayout } from '../types';
 import SurveyView from './SurveyView';
 import TopToolbar from './TopToolbar';
+import SelectionToolbar from "./SelectionToolbar";
 import GridView from './GridView';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import { uploadToGoogle, getAlbumNamesWherePeopleNotRetrieved } from '../controllers';
@@ -466,6 +467,7 @@ const App = (props: AppProps) => {
     <div>
       <React.Fragment>
         <TopToolbar />
+        <SelectionToolbar />
       </React.Fragment>
       <div className='appStyle'>
         {photoDisplay}

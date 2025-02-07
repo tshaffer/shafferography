@@ -1,5 +1,6 @@
 export * from './AddKeywordDialog';
 export * from './App';
+export * from './AppShell';
 export * from './ConfirmationDialog';
 export * from './FullScreenPhoto';
 export * from './ImportFromTakeoutDialog';

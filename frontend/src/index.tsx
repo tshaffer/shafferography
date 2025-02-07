@@ -8,7 +8,7 @@ import { Provider } from 'react-redux';
 import thunkMiddleware from 'redux-thunk';
 import { rootReducer } from './models';
 
-import App from './components/App';
+import AppShell from './components/AppShell';
 
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { initializeDiagnostics } from './utilities';
@@ -30,7 +30,7 @@ root.render(
   <Provider store={store}>
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<App />} />
+        <Route path='/' element={<AppShell />} />
       </Routes>
     </BrowserRouter>
   </Provider>,

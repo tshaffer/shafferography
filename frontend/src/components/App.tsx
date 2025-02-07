@@ -467,7 +467,7 @@ const App = (props: AppProps) => {
     <div>
       <React.Fragment>
         <TopToolbar />
-        <SelectionToolbar />
+        {/* <SelectionToolbar /> */}
       </React.Fragment>
       <div className='appStyle'>
         {photoDisplay}

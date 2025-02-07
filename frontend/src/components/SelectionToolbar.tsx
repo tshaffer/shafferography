@@ -1,40 +1,19 @@
 import React from "react";
-import { connect } from "react-redux";
-import { clearSelectedMediaItems } from "../models";
-import { getSelectedMediaItemIds } from "../selectors";
-import { AppBar, Toolbar, Button, Typography } from "@mui/material";
+import { Typography, Box, Button, Toolbar } from "@mui/material";
 
-interface SelectionToolbarProps {
-  selectedCount: number;
-  onClearSelection: () => void;
-}
-
-const SelectionToolbar: React.FC<SelectionToolbarProps> = ({ selectedCount, onClearSelection }) => {
-  if (selectedCount === 0) return null; // Hide if no items are selected
+const SelectionToolbar: React.FC<{ selectedPhotos: number[]; setSelectedPhotos: (photos: number[]) => void }> = ({ selectedPhotos, setSelectedPhotos }) => {
+  if (selectedPhotos.length === 0) return null;
 
   return (
-    <AppBar position="fixed" color="primary" style={{ top: 0, zIndex: 1200 }}>
-      <Toolbar>
-        <Typography variant="h6" style={{ flexGrow: 1 }}>
-          {selectedCount} Selected
-        </Typography>
-        <Button color="inherit" onClick={onClearSelection}>
-          Clear Selection
-        </Button>
-        <Button color="inherit">Share</Button>
-        <Button color="inherit">Add to Album</Button>
-        <Button color="inherit">Delete</Button>
-      </Toolbar>
-    </AppBar>
+    <Toolbar sx={{ backgroundColor: "#f5f5f5", display: "flex", justifyContent: "space-between", p: 2 }}>
+      <Typography variant="subtitle1">{selectedPhotos.length} selected</Typography>
+      <Box>
+        <Button variant="contained" color="primary">Assign Keywords</Button>
+        <Button variant="contained" color="secondary" sx={{ ml: 2 }}>Set Review Level</Button>
+        <Button variant="outlined" color="error" sx={{ ml: 2 }} onClick={() => setSelectedPhotos([])}>Deselect All</Button>
+      </Box>
+    </Toolbar>
   );
 };
 
-const mapStateToProps = (state: any) => ({
-  selectedCount: getSelectedMediaItemIds(state).length,
-});
-
-const mapDispatchToProps = {
-  onClearSelection: clearSelectedMediaItems,
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(SelectionToolbar);
+export default SelectionToolbar;

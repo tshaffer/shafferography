@@ -11,7 +11,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import { initializeDiagnostics } from './utilities';
 
 import './index.css'
-import App from './components/App';
+import AppShell from './components/AppShell';
 
 initializeDiagnostics();
 
@@ -27,7 +27,7 @@ root.render(
   <Provider store={store}>
     <BrowserRouter>
       <Routes>
-        <Route path='/' element={<App />} />
+        <Route path='/' element={<AppShell />} />
       </Routes>
     </BrowserRouter>
   </Provider>,

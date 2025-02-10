@@ -9,6 +9,10 @@ import { createSelector } from 'reselect';
 
 const EMPTY_ARRAY: string[] = [];
 
+export const getSelectedMediaItemsCount = (state: TedTaggerState): number => {
+  return state.selectionsState.selectedMediaItemIds.length;
+};
+
 export const getSelectedMediaItems = (state: TedTaggerState): MediaItem[] => {
   const selectedMediaItemIds: string[] = getSelectedMediaItemIds(state);
   const selectedMediaItems: MediaItem[] = [];

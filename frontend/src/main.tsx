@@ -11,7 +11,7 @@ import { composeWithDevTools } from 'redux-devtools-extension';
 import { initializeDiagnostics } from './utilities';
 
 import './index.css'
-import AppShell from './components/AppShell';
+import AppShell from './components/NewCode/AppShell';
 
 initializeDiagnostics();
 

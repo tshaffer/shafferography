@@ -1,9 +1,5 @@
-import * as React from 'react';
-
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
-import path from 'path-browserify';
 
 import { MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
@@ -16,18 +12,6 @@ export interface FullScreenPhotoProps {
 }
 
 function FullScreenPhoto(props: FullScreenPhotoProps) {
-
-  // const containerRef: any = React.useRef();
-
-  // React.useEffect(() => {
-  //   if (!isNil(containerRef) && !isNil(containerRef.current)) {
-  //     const { width, height } = (containerRef.current as any).getBoundingClientRect();
-  //     console.log('width, height', width, height);
-  //     console.log('offsetWidth', containerRef.current.parentElement.offsetWidth);
-  //     console.log('offsetHeight', containerRef.current.parentElement.offsetHeight);
-  //     console.log('clientHeight', containerRef.current.parentElement.clientHeight);
-  //   }
-  // }, []);
 
   const src = getPhotoUrl(props.mediaItem!);
 

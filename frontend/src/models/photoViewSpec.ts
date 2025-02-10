@@ -129,7 +129,7 @@ export const setMediaItemZoomFactor = (mediaItemId: string, zoomFactor: number):
 
 const initialState: PhotoViewSpec = {
   photoLayout: PhotoLayout.Grid,
-  numGridColumns: 3,
+  numGridColumns: 5,
   loupeViewMediaItemId: '',
   displayMetadata: false,
   surveyModeZoomFactor: 1,

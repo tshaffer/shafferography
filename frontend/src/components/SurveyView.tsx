@@ -2,7 +2,7 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import '../../styles/TedTagger.css';
+import '../styles/TedTagger.css';
 import NewSurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Card, CardMedia, Grid } from '@mui/material';
 import { TedTaggerDispatch } from '../models';

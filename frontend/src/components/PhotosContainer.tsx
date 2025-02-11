@@ -2,7 +2,7 @@ import React, { } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import '../../styles/TedTagger.css';
+import '../styles/TedTagger.css';
 import NewPhotoGrid from './PhotoGrid';
 import NewLoupeViewController from './LoupeViewController';
 import NewSurveyView from './SurveyView';

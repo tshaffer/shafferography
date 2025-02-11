@@ -2,7 +2,7 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import '../../styles/TedTagger.css';
+import '../styles/TedTagger.css';
 import { isNil } from 'lodash';
 import { Box, Tooltip } from '@mui/material';
 import { TedTaggerDispatch } from '../models';

@@ -3,13 +3,12 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import '../../styles/TedTagger.css';
-import { TedTaggerDispatch } from '../../models';
-import { getAppInitialized, getMediaItems, getPhotoLayout } from '../../selectors';
-
-import { MediaItem, PhotoLayout } from '../../types';
-import NewPhotoGrid from './NewPhotoGrid';
-import NewLoupeViewController from './NewLoupeViewController';
-import NewSurveyView from './NewSurveyView';
+import NewPhotoGrid from './PhotoGrid';
+import NewLoupeViewController from './LoupeViewController';
+import NewSurveyView from './SurveyView';
+import { TedTaggerDispatch } from '../models';
+import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
+import { PhotoLayout, MediaItem } from '../types';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;

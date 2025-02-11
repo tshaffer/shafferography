@@ -1,23 +1,22 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-
 import { TedTaggerDispatch } from '../models';
+import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
 import { MediaItem } from '../types';
-
 import { getPhotoUrl } from '../utilities';
-import { getMediaItemZoomFactor, getSurveyModeZoomFactor } from '../selectors';
 
-export interface SurveyViewImagePropsFromParent {
+
+export interface NewSurveyViewImagePropsFromParent {
   mediaItem: MediaItem;
 }
 
-export interface SurveyViewImageProps extends SurveyViewImagePropsFromParent {
+export interface NewSurveyViewImageProps extends NewSurveyViewImagePropsFromParent {
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
 }
 
-function SurveyViewImage(props: SurveyViewImageProps) {
+function NewSurveyViewImage(props: NewSurveyViewImageProps) {
 
   const photoUrl = getPhotoUrl(props.mediaItem);
 
@@ -51,4 +50,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SurveyViewImage);
+export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyViewImage);

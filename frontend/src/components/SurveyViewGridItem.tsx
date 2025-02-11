@@ -1,14 +1,11 @@
-import * as React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
 import { Grid, Card, GridSize } from '@mui/material';
-import SurveyViewImageContainer from './SurveyViewImageContainer';
-
+import NewSurveyViewImageContainer from './SurveyViewImageContainer';
 import { TedTaggerDispatch } from '../models';
-import { MediaItem } from '../types';
-
 import { getSurveyModeZoomFactor } from '../selectors';
+import { MediaItem } from '../types';
 
 const cardStyle = {
   display: 'flex',
@@ -20,17 +17,17 @@ const cardStyle = {
   boxShadow: 'none',
 };
 
-export interface SurveyViewGridItemsPropsFromParent {
+export interface NewSurveyViewGridItemsPropsFromParent {
   mediaItem: MediaItem;
   numGridColumns: number;
   numGridRows: number;
 }
 
-export interface SurveyViewGridItemsProps extends SurveyViewGridItemsPropsFromParent {
+export interface NewSurveyViewGridItemsProps extends NewSurveyViewGridItemsPropsFromParent {
   surveyModeZoomFactor: number;
 }
 
-function SurveyViewGridItems(props: SurveyViewGridItemsProps) {
+function NewSurveyViewGridItems(props: NewSurveyViewGridItemsProps) {
 
   const numColumns: number = props.numGridColumns;
   const gridItemSize: GridSize = 12 / numColumns;
@@ -40,12 +37,12 @@ function SurveyViewGridItems(props: SurveyViewGridItemsProps) {
       <Card
         sx={cardStyle}
       >
-        <SurveyViewImageContainer
+        <NewSurveyViewImageContainer
           mediaItem={props.mediaItem}
           numGridColumns={props.numGridColumns}
           numGridRows={props.numGridRows}
         >
-        </SurveyViewImageContainer>
+        </NewSurveyViewImageContainer>
       </Card>
     </Grid>
   );
@@ -63,4 +60,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SurveyViewGridItems);
+export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyViewGridItems);

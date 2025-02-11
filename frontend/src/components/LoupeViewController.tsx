@@ -1,14 +1,14 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
 
-import { MediaItem } from '../types';
-import LoupeView from './LoupeView';
-import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
 import { bindActionCreators } from 'redux';
-import { TedTaggerDispatch, setFullScreenMode, setLoupeViewMediaItemIdRedux } from '../models';
-import { deselectAllPhotos, selectPhoto } from '../controllers';
+import NewLoupeView from './LoupeView';
+import { selectPhoto, deselectAllPhotos } from '../controllers';
+import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setFullScreenMode } from '../models';
+import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
+import { MediaItem } from '../types';
 
-export interface LoupeViewControllerProps {
+export interface NewLoupeViewControllerProps {
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
   mediaItems: MediaItem[];
@@ -19,11 +19,11 @@ export interface LoupeViewControllerProps {
   onSetFullScreenMode: (fullScreenMode: boolean) => any;
 }
 
-const LoupeViewController = (props: LoupeViewControllerProps) => {
+const NewLoupeViewController = (props: NewLoupeViewControllerProps) => {
 
   React.useEffect(() => {
 
-    console.log('LoupeViewController: React.useEffect - invoked');
+    console.log('NewLoupeViewController: React.useEffect - invoked');
 
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -97,14 +97,14 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     // Remove the event listener when the component unmounts
     return () => {
-      console.log('LoupeViewController: React.useEffect - component unmounts');
+      console.log('NewLoupeViewController: React.useEffect - component unmounts');
       document.removeEventListener('keydown', handleKeyPress);
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };
   }, [props.loupeViewMediaItemId]);
 
   return (
-    <LoupeView />
+    <NewLoupeView />
   );
 };
 
@@ -125,4 +125,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetFullScreenMode: setFullScreenMode
   }, dispatch);
 };
-export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);
+export default connect(mapStateToProps, mapDispatchToProps)(NewLoupeViewController);

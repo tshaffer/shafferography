@@ -4,19 +4,19 @@ import { bindActionCreators } from 'redux';
 
 import { CardMedia, IconButton } from '@mui/material';
 
-import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
-import { MediaItem } from '../types';
 
-import { getPhotoUrl } from '../utilities';
-import SurveyViewImage from './SurveyViewImage';
-import { getMediaItemZoomFactor, getSurveyModeZoomFactor } from '../selectors';
+import NewSurveyViewImage from './SurveyViewImage';
 
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { deleteSurveyViewImageContainerItem } from '../controllers';
-import ConfirmationDialog from './ConfirmationDialog';
 import { surveyRowHeights } from '../constants';
+import { deleteSurveyViewImageContainerItem } from '../controllers';
+import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
+import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
+import { MediaItem } from '../types';
+import { getPhotoUrl } from '../utilities';
+import ConfirmationDialog from './ConfirmationDialog';
 
 const cardMediaStyle = {
   objectFit: 'contain',
@@ -24,20 +24,20 @@ const cardMediaStyle = {
   backgroundColor: 'purple',
 };
 
-export interface SurveyViewImageContainerPropsFromParent {
+export interface NewSurveyViewImageContainerPropsFromParent {
   mediaItem: MediaItem;
   numGridColumns: number;
   numGridRows: number;
 }
 
-export interface SurveyViewImageContainerProps extends SurveyViewImageContainerPropsFromParent {
+export interface NewSurveyViewImageContainerProps extends NewSurveyViewImageContainerPropsFromParent {
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
   onDeleteSurveyViewImageContainerItem: (mediaItemId: string) => any;
   onSetMediaItemZoomFactor: (mediaItemId: string, zoomFactor: number) => any;
 }
 
-function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
+function NewSurveyViewImageContainer(props: NewSurveyViewImageContainerProps) {
 
   const [openDialog, setOpenDialog] = React.useState(false);
 
@@ -85,7 +85,7 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
         sx={cardMediaStyle}
       >
         <div>
-          <SurveyViewImage
+          <NewSurveyViewImage
             mediaItem={props.mediaItem}
           />
           <div
@@ -130,4 +130,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SurveyViewImageContainer);
+export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyViewImageContainer);

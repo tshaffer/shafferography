@@ -3,11 +3,11 @@ import { bindActionCreators } from "redux";
 import { connect } from 'react-redux';
 import { Box, Grid, Card, CardMedia } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import NewGridCell from "./NewGridCell";
-import { selectPhoto, deselectAllPhotos, selectAllPhotos } from "../../controllers";
-import { TedTaggerDispatch } from "../../models";
-import { getAppInitialized, getMediaItems } from "../../selectors";
-import { MediaItem } from "../../types";
+import NewGridCell from "./GridCell";
+import { selectPhoto, deselectAllPhotos, selectAllPhotos } from "../controllers";
+import { TedTaggerDispatch } from "../models";
+import { getAppInitialized, getMediaItems } from "../selectors";
+import { MediaItem } from "../types";
 
 export interface NewPhotoGridProps {
   allMediaItems: MediaItem[];

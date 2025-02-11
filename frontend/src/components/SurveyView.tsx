@@ -2,19 +2,20 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import '../styles/TedTagger.css';
-import { MediaItem } from '../types';
+import '../../styles/TedTagger.css';
+import NewSurveyViewGridItem from './SurveyViewGridItem';
+import { Box, Card, CardMedia, Grid } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
-import { getAppInitialized, getMediaItems, getSelectedMediaItems } from '../selectors';
-import SurveyViewGridItem from './SurveyViewGridItem';
-import { Box, Grid } from '@mui/material';
+import { getAppInitialized, getSelectedMediaItems } from '../selectors';
+import { MediaItem } from '../types';
+import { getPhotoUrl } from '../utilities';
 
-export interface SurveyViewProps {
+export interface NewSurveyViewProps {
   appInitialized: boolean;
   selectedMediaItems: MediaItem[],
 }
 
-const SurveyView = (props: SurveyViewProps) => {
+const NewSurveyView = (props: NewSurveyViewProps) => {
 
   if (!props.appInitialized) {
     return null;
@@ -32,7 +33,7 @@ const SurveyView = (props: SurveyViewProps) => {
     numGridColumns: number
   ): JSX.Element => {
     return (
-      <SurveyViewGridItem
+      <NewSurveyViewGridItem
         key={mediaItem.uniqueId}
         mediaItem={mediaItem}
         numGridRows={numGridRows}
@@ -85,13 +86,29 @@ const SurveyView = (props: SurveyViewProps) => {
     return getPhotoComponent(mediaItem, numGridRows, numGridColumns);
   });
 
+  // return (
+  //   <Box className='gridView' sx={{ flexGrow: 1 }}>
+  //     <Grid container spacing={2}>
+  //       {photoComponents}
+  //     </Grid>
+  //   </Box>
+  // );
+
   return (
-    <Box className='gridView' sx={{ flexGrow: 1 }}>
-      <Grid container spacing={2}>
-        {photoComponents}
-      </Grid>
-    </Box>
+    <Grid container spacing={2} sx={{ p: 2, justifyContent: "center" }}>
+      {props.selectedMediaItems.map((selectedMediaItem: MediaItem) => {
+        const mediaItem: MediaItem | undefined = props.selectedMediaItems.find((p) => p.filePath! === selectedMediaItem.filePath);
+        return mediaItem ? (
+          <Grid item key={mediaItem.filePath} lg={6}>
+            <Card sx={{ position: "relative", border: "2px solid blue", cursor: "pointer", '&:hover': { opacity: 0.8 } }}>
+              <CardMedia component="img" image={getPhotoUrl(mediaItem)} />
+            </Card>
+          </Grid>
+        ) : null;
+      })}
+    </Grid>
   );
+
 };
 
 
@@ -107,4 +124,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(SurveyView);
+export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyView);

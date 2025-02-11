@@ -2,21 +2,20 @@ import * as React from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
-import '../styles/TedTagger.css';
+import '../../styles/TedTagger.css';
+import { isNil } from 'lodash';
+import { Box, Tooltip } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
-import { getFullScreenMode, getLoupeViewMediaItemId, getMediaItemById } from '../selectors';
+import { getLoupeViewMediaItemId, getMediaItemById, getFullScreenMode } from '../selectors';
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
-import { isNil } from 'lodash';
-import { bodyMargins, toolbarHeight } from '../constants';
-import { Tooltip } from '@mui/material';
 
-export interface LoupeViewProps {
+export interface NewLoupeViewProps {
   mediaItem: MediaItem | null;
   fullScreenMode: boolean;
 }
 
-const LoupeView = (props: LoupeViewProps) => {
+const NewLoupeView = (props: NewLoupeViewProps) => {
 
   const [windowDimensions, setWindowDimensions] = React.useState(getWindowDimensions());
 
@@ -42,13 +41,8 @@ const LoupeView = (props: LoupeViewProps) => {
 
   const src = getPhotoUrl(props.mediaItem);
 
-  const maxHeightInPixels = windowDimensions.height - (props.fullScreenMode ? 0 : toolbarHeight + bodyMargins);
-  const maxHeightProperty = maxHeightInPixels.toString() + 'px';
-
   return (
-    <div
-      id='loupeViewImage'
-    >
+    <Box id='loupeViewImage' sx={{ display: "flex", alignItems: "center", justifyContent: "center", width: "100%", height: "calc(100vh - 112px)", backgroundColor: "white" }}>
       <Tooltip
         title={props.mediaItem.fileName}
         placement='top'
@@ -65,15 +59,13 @@ const LoupeView = (props: LoupeViewProps) => {
           },
         }}
       >
-        <div>
-          <img
-            style={{ width: '100%', objectFit: 'contain', maxHeight: maxHeightProperty }}
-            src={src}
-          />
-        </div>
+        <img
+          src={src}
+          style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
+        />
       </Tooltip>
-    </div>
-  );
+    </Box>
+  )
 };
 
 function mapStateToProps(state: any) {
@@ -89,4 +81,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(LoupeView);
+export default connect(mapStateToProps, mapDispatchToProps)(NewLoupeView);

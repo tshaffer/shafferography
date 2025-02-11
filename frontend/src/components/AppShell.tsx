@@ -2,10 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems } from "../../controllers";
-import { TedTaggerDispatch, setAppInitialized } from "../../models";
-import { getPhotoLayout } from "../../selectors";
-import { PhotoLayout } from "../../types";
+import { loadMediaItems } from "../controllers";
+import { TedTaggerDispatch, setAppInitialized } from "../models";
+import { getPhotoLayout } from "../selectors";
+import { PhotoLayout } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';
@@ -36,6 +36,12 @@ const photos = [
   { id: 20, src: "/images/J&M-24.jpg" },
   { id: 21, src: "/images/J&M-25.jpg" },
 ];
+
+declare module 'react' {
+  interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
+    webkitdirectory?: string;
+  }
+}
 
 const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
   open?: boolean;

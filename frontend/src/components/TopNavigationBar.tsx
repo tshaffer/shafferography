@@ -15,10 +15,10 @@ import StarIcon from "@mui/icons-material/Star";
 import ClearIcon from "@mui/icons-material/Clear";
 import React from 'react';
 import { bindActionCreators } from 'redux';
-import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setNumGridColumnsRedux, setPhotoLayoutRedux } from '../../models';
-import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItemIds, getMediaItems, getNumGridColumns, getPhotoLayout, getSelectedMediaItemIds, getSelectedMediaItems, getSelectedMediaItemsCount } from '../../selectors';
-import { deselectAllPhotos } from '../../controllers';
-import { MediaItem, PhotoLayout } from '../../types';
+import { deselectAllPhotos } from '../controllers';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout } from '../selectors';
+import { MediaItem, PhotoLayout } from '../types';
 
 const drawerWidth = 240;
 

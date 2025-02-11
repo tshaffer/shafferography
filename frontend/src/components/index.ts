@@ -1,6 +1,5 @@
 export * from './AddKeywordDialog';
-export * from './App';
-export * from './NewCode/AppShell';
+export * from './AppShell';
 export * from './ConfirmationDialog';
 export * from './FullScreenPhoto';
 export * from './ImportFromTakeoutDialog';
@@ -14,7 +13,6 @@ export * from './SurveyView';
 export * from './SurveyViewGridItem';
 export * from './SurveyViewImage';
 export * from './SurveyViewImageContainer';
-export * from './TopToolbar';
 export * from './UploadToGoogleDialog';
 export * from './ZoomGroup';
 

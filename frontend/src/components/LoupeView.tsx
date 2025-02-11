@@ -10,12 +10,12 @@ import { getLoupeViewMediaItemId, getMediaItemById, getFullScreenMode } from '..
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
 
-export interface NewLoupeViewProps {
+export interface LoupeViewProps {
   mediaItem: MediaItem | null;
   fullScreenMode: boolean;
 }
 
-const NewLoupeView = (props: NewLoupeViewProps) => {
+const LoupeView = (props: LoupeViewProps) => {
 
   const [windowDimensions, setWindowDimensions] = React.useState(getWindowDimensions());
 
@@ -81,4 +81,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewLoupeView);
+export default connect(mapStateToProps, mapDispatchToProps)(LoupeView);

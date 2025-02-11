@@ -9,11 +9,11 @@ import { getNumGridColumns, isMediaItemSelected } from "../selectors";
 import { MediaItem, PhotoLayout } from "../types";
 import { getPhotoUrl } from "../utilities";
 
-export interface NewGridCellPropsFromParent {
+export interface GridCellPropsFromParent {
   mediaItem: MediaItem;
 }
 
-export interface NewGridCellProps extends NewGridCellPropsFromParent {
+export interface GridCellProps extends GridCellPropsFromParent {
   numGridColumns: number;
   isSelected: boolean;
   onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
@@ -21,12 +21,12 @@ export interface NewGridCellProps extends NewGridCellPropsFromParent {
   onSetPhotoLayoutRedux: (photoLayout: PhotoLayout) => void;
 }
 
-const NewGridCell = (props: NewGridCellProps) => {
+const GridCell = (props: GridCellProps) => {
 
   const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);
 
   const getColumnsSpanned = (): number => {
-    const numColumnsSpanned = 12/ props.numGridColumns;
+    const numColumnsSpanned = 12 / props.numGridColumns;
     return numColumnsSpanned;
   }
 
@@ -111,4 +111,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewGridCell);
+export default connect(mapStateToProps, mapDispatchToProps)(GridCell);

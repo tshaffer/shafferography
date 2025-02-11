@@ -3,20 +3,20 @@ import { bindActionCreators } from "redux";
 import { connect } from 'react-redux';
 import { Box, Grid, Card, CardMedia } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import NewGridCell from "./GridCell";
+import GridCell from "./GridCell";
 import { selectPhoto, deselectAllPhotos, selectAllPhotos } from "../controllers";
 import { TedTaggerDispatch } from "../models";
 import { getAppInitialized, getMediaItems } from "../selectors";
 import { MediaItem } from "../types";
 
-export interface NewPhotoGridProps {
+export interface PhotoGridProps {
   allMediaItems: MediaItem[];
   onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
   onDeselectAllMediaItems: () => void;
   onSelectAllPhotos: () => void;
 }
 
-const NewPhotoGrid = (props: NewPhotoGridProps) => {
+const PhotoGrid = (props: PhotoGridProps) => {
 
   console.log('NewPhotoGrid: props', props);
 
@@ -61,7 +61,7 @@ const NewPhotoGrid = (props: NewPhotoGridProps) => {
     <Grid container spacing={2} sx={{ p: 2 }}>
       {allMediaItems.map((mediaItem, index: number) => {
         return (
-          <NewGridCell key={mediaItem.baseUrl} mediaItem={mediaItem} />
+          <GridCell key={mediaItem.baseUrl} mediaItem={mediaItem} />
         );
       })}
     </Grid>
@@ -86,4 +86,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   );
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewPhotoGrid);
+export default connect(mapStateToProps, mapDispatchToProps)(PhotoGrid);

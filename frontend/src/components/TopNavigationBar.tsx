@@ -94,7 +94,6 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     //   }
     // }
 
-    // transition to new layout
     if (photoLayout === PhotoLayout.Loupe) {
 
       // set loupeViewMediaItemId and loupeViewMediaItemIds based on current selection state

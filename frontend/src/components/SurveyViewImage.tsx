@@ -7,16 +7,16 @@ import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
 
 
-export interface NewSurveyViewImagePropsFromParent {
+export interface SurveyViewImagePropsFromParent {
   mediaItem: MediaItem;
 }
 
-export interface NewSurveyViewImageProps extends NewSurveyViewImagePropsFromParent {
+export interface SurveyViewImageProps extends SurveyViewImagePropsFromParent {
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
 }
 
-function NewSurveyViewImage(props: NewSurveyViewImageProps) {
+function SurveyViewImage(props: SurveyViewImageProps) {
 
   const photoUrl = getPhotoUrl(props.mediaItem);
 
@@ -50,4 +50,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyViewImage);
+export default connect(mapStateToProps, mapDispatchToProps)(SurveyViewImage);

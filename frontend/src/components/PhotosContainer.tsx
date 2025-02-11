@@ -3,9 +3,9 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
-import NewPhotoGrid from './PhotoGrid';
-import NewLoupeViewController from './LoupeViewController';
-import NewSurveyView from './SurveyView';
+import PhotoGrid from './PhotoGrid';
+import LoupeViewController from './LoupeViewController';
+import SurveyView from './SurveyView';
 import { TedTaggerDispatch } from '../models';
 import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
 import { PhotoLayout, MediaItem } from '../types';
@@ -32,7 +32,7 @@ const PhotosContainer = (props: PhotosContainerProps) => {
       return (
         <React.Fragment>
           <div id='centerColumn'>
-            <NewLoupeViewController />
+            <LoupeViewController />
           </div>
         </React.Fragment>
       );
@@ -40,7 +40,7 @@ const PhotosContainer = (props: PhotosContainerProps) => {
       return (
         <React.Fragment>
           <div id='centerColumn' className='centerColumnStyle'>
-            <NewSurveyView />
+            <SurveyView />
           </div>
         </React.Fragment>
       );
@@ -48,7 +48,7 @@ const PhotosContainer = (props: PhotosContainerProps) => {
       return (
         <React.Fragment>
           <div id='centerColumn'>
-            <NewPhotoGrid />
+            <PhotoGrid />
           </div>
         </React.Fragment>
       );

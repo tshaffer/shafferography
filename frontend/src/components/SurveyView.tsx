@@ -3,19 +3,19 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
-import NewSurveyViewGridItem from './SurveyViewGridItem';
+import SurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Card, CardMedia, Grid } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
 import { getAppInitialized, getSelectedMediaItems } from '../selectors';
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
 
-export interface NewSurveyViewProps {
+export interface SurveyViewProps {
   appInitialized: boolean;
   selectedMediaItems: MediaItem[],
 }
 
-const NewSurveyView = (props: NewSurveyViewProps) => {
+const SurveyView = (props: SurveyViewProps) => {
 
   if (!props.appInitialized) {
     return null;
@@ -33,7 +33,7 @@ const NewSurveyView = (props: NewSurveyViewProps) => {
     numGridColumns: number
   ): JSX.Element => {
     return (
-      <NewSurveyViewGridItem
+      <SurveyViewGridItem
         key={mediaItem.uniqueId}
         mediaItem={mediaItem}
         numGridRows={numGridRows}
@@ -124,4 +124,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(NewSurveyView);
+export default connect(mapStateToProps, mapDispatchToProps)(SurveyView);

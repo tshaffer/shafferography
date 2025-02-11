@@ -2,13 +2,13 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import { bindActionCreators } from 'redux';
-import NewLoupeView from './LoupeView';
+import LoupeView from './LoupeView';
 import { selectPhoto, deselectAllPhotos } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setFullScreenMode } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
 import { MediaItem } from '../types';
 
-export interface NewLoupeViewControllerProps {
+export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
   mediaItems: MediaItem[];
@@ -19,7 +19,7 @@ export interface NewLoupeViewControllerProps {
   onSetFullScreenMode: (fullScreenMode: boolean) => any;
 }
 
-const NewLoupeViewController = (props: NewLoupeViewControllerProps) => {
+const LoupeViewController = (props: LoupeViewControllerProps) => {
 
   React.useEffect(() => {
 
@@ -104,7 +104,7 @@ const NewLoupeViewController = (props: NewLoupeViewControllerProps) => {
   }, [props.loupeViewMediaItemId]);
 
   return (
-    <NewLoupeView />
+    <LoupeView />
   );
 };
 
@@ -125,4 +125,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetFullScreenMode: setFullScreenMode
   }, dispatch);
 };
-export default connect(mapStateToProps, mapDispatchToProps)(NewLoupeViewController);
+export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);

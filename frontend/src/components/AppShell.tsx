@@ -4,11 +4,12 @@ import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
 import { loadMediaItems } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setGoogleUserProfile } from "../models";
-import { getPhotoLayout } from "../selectors";
-import { PhotoLayout } from "../types";
+import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
+import { MediaItem, PhotoLayout } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';
+import RightPanel from './RightPanel';
 
 const drawerWidth = 240;
 
@@ -18,28 +19,20 @@ declare module 'react' {
   }
 }
 
-const Main = styled('main', { shouldForwardProp: (prop) => prop !== 'open' })<{
-  open?: boolean;
-}>(({ theme }) => ({
+const Main = styled('main', {
+  shouldForwardProp: (prop) => prop !== 'sidebarOpen' && prop !== 'rightPanelOpen',
+})<{
+  sidebarOpen?: boolean;
+  rightPanelOpen?: boolean;
+}>(({ theme, sidebarOpen = false, rightPanelOpen = false }) => ({
   flexGrow: 1,
   padding: theme.spacing(3),
-  transition: theme.transitions.create('margin', {
+  transition: theme.transitions.create(['margin'], {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginLeft: `-${drawerWidth}px`,
-  variants: [
-    {
-      props: ({ open }) => open,
-      style: {
-        transition: theme.transitions.create('margin', {
-          easing: theme.transitions.easing.easeOut,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-        marginLeft: 0,
-      },
-    },
-  ],
+  marginLeft: !sidebarOpen && !rightPanelOpen ? `-${drawerWidth}px` : !rightPanelOpen ? `0px` : !sidebarOpen ? `-${drawerWidth}px` : `0px`, // ✅ Fix marginLeft
+  marginRight: `0px`,
 }));
 
 const DrawerHeader = styled('div')(({ theme }) => ({
@@ -53,6 +46,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 export interface AppShellProps {
   photoLayout: PhotoLayout;
+  selectedMediaItems: MediaItem[];
   onLoadMediaItems: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
@@ -62,7 +56,8 @@ const AppShell = (props: AppShellProps) => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
   // Save the access token, expiration, and Google ID in localStorage
   const saveTokens = (token: string, expiresIn: number, googleId: string) => {
@@ -240,28 +235,42 @@ const AppShell = (props: AppShellProps) => {
   }
 
   const handleOpenSidebar = () => {
-    setIsSidebarOpen(true);
+    setSidebarOpen(true);
   };
 
   const handleCloseSidebar = () => {
-    setIsSidebarOpen(false);
+    setSidebarOpen(false);
+  };
+
+  const toggleRightPanel = () => {
+    setRightPanelOpen((prev) => {
+      return !prev;
+    });
   };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <TopNavigationBar
-        sidebarOpen={isSidebarOpen}
+        sidebarOpen={sidebarOpen}
+        rightPanelOpen={rightPanelOpen}
         onOpenSidebar={handleOpenSidebar}
+        toggleRightPanel={toggleRightPanel}
+        selectedItemsCount={props.selectedMediaItems.length}
       />
       <Sidebar
-        open={isSidebarOpen}
+        open={sidebarOpen}
         onClose={handleCloseSidebar}
       />
-      <Main open={isSidebarOpen}>
+      <Main sidebarOpen={sidebarOpen} rightPanelOpen={rightPanelOpen}>
         <DrawerHeader />
         <PhotosContainer />
       </Main>
+      <RightPanel
+        selectedMediaItems={props.selectedMediaItems}
+        open={rightPanelOpen}
+        onClose={toggleRightPanel}
+      />
     </Box>
   );
 };
@@ -269,6 +278,7 @@ const AppShell = (props: AppShellProps) => {
 function mapStateToProps(state: any) {
   return {
     photoLayout: getPhotoLayout(state),
+    selectedMediaItems: getSelectedMediaItems(state),
   };
 }
 

@@ -18,6 +18,8 @@ import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 
 import { deleteMediaItems, deselectAllPhotos, uploadRawMedia, uploadToGoogle } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
@@ -29,34 +31,30 @@ import UploadToGoogleDialog from './UploadToGoogleDialog';
 const drawerWidth = 240;
 
 interface AppBarProps extends MuiAppBarProps {
-  open?: boolean;
+  sidebarOpen?: boolean;
+  rightPanelOpen?: boolean;
 }
 
 const AppBar = styled(MuiAppBar, {
-  shouldForwardProp: (prop) => prop !== 'open',
-})<AppBarProps>(({ theme }) => ({
-  transition: theme.transitions.create(['margin', 'width'], {
-    easing: theme.transitions.easing.sharp,
-    duration: theme.transitions.duration.leavingScreen,
-  }),
-  variants: [
-    {
-      props: ({ open }) => open,
-      style: {
-        width: `calc(100% - ${drawerWidth}px)`,
-        marginLeft: `${drawerWidth}px`,
-        transition: theme.transitions.create(['margin', 'width'], {
-          easing: theme.transitions.easing.easeOut,
-          duration: theme.transitions.duration.enteringScreen,
-        }),
-      },
-    },
-  ],
-}));
+  shouldForwardProp: (prop) => prop !== 'sidebarOpen' && prop !== 'rightPanelOpen',
+})<AppBarProps>(({ theme, sidebarOpen = false, rightPanelOpen = false }) => {
+  return {
+    transition: theme.transitions.create(['margin', 'width'], {
+      easing: theme.transitions.easing.sharp,
+      duration: theme.transitions.duration.leavingScreen,
+    }),
+    width: `calc(100% - ${sidebarOpen ? drawerWidth : 0}px - ${rightPanelOpen ? drawerWidth : 0}px)`, // Adjust width dynamically
+    marginLeft: sidebarOpen ? `${drawerWidth}px` : 0,
+    marginRight: rightPanelOpen ? `${drawerWidth}px` : 0,
+  };
+});
 
 export interface TopNavigationBarPropsFromParent {
   sidebarOpen: boolean;
   onOpenSidebar: () => void;
+  rightPanelOpen: boolean;
+  toggleRightPanel: () => void;
+  selectedItemsCount: number;
 }
 
 export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
@@ -101,7 +99,6 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
   const handleImportFromDrive = async (files: FileList) => {
 
-    console.log('handleImportFromDrive', files);
     if (!files) {
       setError('Please select file(s) first');
       return;
@@ -287,7 +284,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
   return (
     <React.Fragment>
-      <AppBar position="fixed">
+      <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
         <Toolbar>
           <IconButton
             color="inherit"
@@ -322,6 +319,19 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
           {props.selectedMediaItemsCount > 0 && (
             <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
           )}
+
+          <Tooltip title="Toggle Right Panel">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={props.toggleRightPanel}
+                disabled={props.selectedItemsCount === 0}
+              >
+                {props.rightPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              </IconButton>
+            </span>
+          </Tooltip>
+
           <Tooltip title="Assign Keywords">
             <span>
               <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
@@ -391,7 +401,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
             <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><DownloadIcon /></IconButton>
           </Tooltip>
           <Tooltip title="Upload to Google">
-            <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)}><UploadIcon/></IconButton>
+            <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)}><UploadIcon /></IconButton>
           </Tooltip>
           <Tooltip title="Settings">
             <IconButton color="inherit"><SettingsIcon /></IconButton>
@@ -401,7 +411,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
       {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
-      
+
       <Dialog open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
         <DialogTitle>Adjust Column Count</DialogTitle>
         <DialogContent> {/* Increased bottom padding */}

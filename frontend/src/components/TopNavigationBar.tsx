@@ -13,9 +13,10 @@ import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import LabelIcon from "@mui/icons-material/Label";
 import StarIcon from "@mui/icons-material/Star";
 import ClearIcon from "@mui/icons-material/Clear";
+import DeleteIcon from '@mui/icons-material/Delete';
 import React from 'react';
 import { bindActionCreators } from 'redux';
-import { deselectAllPhotos } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout } from '../selectors';
 import { MediaItem, PhotoLayout } from '../types';
@@ -65,6 +66,7 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
+  onDeleteMediaItems: (mediaItemIds: string[]) => any;
 }
 
 const TopNavigationBar = (props: TopNavigationBarProps) => {
@@ -230,12 +232,33 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
               <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><StarIcon /></IconButton>
             </span>
           </Tooltip>
+          <Tooltip title="Delete Selected Photos">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={ () => props.onDeleteMediaItems(props.selectedMediaItemIds)}
+                disabled={props.selectedMediaItemsCount === 0}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
           <Tooltip title="Deselect All">
             <span>
               <IconButton color="inherit" onClick={props.onDeselectAllPhotos} disabled={(props.selectedMediaItemsCount === 0) || (props.photoLayout !== PhotoLayout.Grid)}><ClearIcon /></IconButton>
             </span>
           </Tooltip>
 
+          {/* Selection Count & Actions */}
+          {props.selectedMediaItemsCount > 0 && (
+            <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
+          )}
+
+          <Tooltip title="Assign Keywords">
+            <span>
+              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
+            </span>
+          </Tooltip>
 
           {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
@@ -291,7 +314,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
         </DialogContent>
       </Dialog>
 
-    </React.Fragment>
+    </React.Fragment >
   )
 }
 
@@ -317,6 +340,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetPhotoLayout: setPhotoLayoutRedux,
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
+    onDeleteMediaItems: deleteMediaItems,
   }, dispatch);
 };
 

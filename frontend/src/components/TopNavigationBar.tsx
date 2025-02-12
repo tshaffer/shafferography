@@ -16,10 +16,11 @@ import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from '@mui/icons-material/Delete';
 import React from 'react';
 import { bindActionCreators } from 'redux';
-import { deleteMediaItems, deselectAllPhotos } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, uploadRawMedia } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout } from '../selectors';
 import { MediaItem, PhotoLayout } from '../types';
+import ImportFromDriveDialog from './ImportFromDriveDialog';
 
 const drawerWidth = 240;
 
@@ -71,6 +72,10 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
 
 const TopNavigationBar = (props: TopNavigationBarProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -79,6 +84,46 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
       return 0;
     }
   }
+
+  const handleCloseImportFromDriveDialog = () => {
+    setShowImportFromDriveDialog(false);
+  };
+
+  const handleImportFromDrive = async (files: FileList) => {
+
+    console.log('handleImportFromDrive', files);
+    if (!files) {
+      setError('Please select file(s) first');
+      return;
+    }
+
+    setImporting(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    const formData = new FormData();
+
+    // Append all files in the folder to the FormData object
+    Array.from(files).forEach((file) => {
+      formData.append('files', file, file.name);
+    });
+
+    try {
+      const response = await uploadRawMedia(formData);
+
+      if (response.ok) {
+        setSuccessMessage('Import completed successfully!');
+      } else {
+        const errorMessage = await response.text();
+        setError(`Import failed: ${errorMessage}`);
+      }
+    } catch (err) {
+      setError(`Import failed: ${err}`);
+    } finally {
+      setImporting(false);
+    }
+  };
+
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
 
@@ -185,6 +230,16 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     },
   ];
 
+  const renderImportFromDriveDialog = (): JSX.Element => {
+    return (
+      <ImportFromDriveDialog
+        open={showImportFromDriveDialog}
+        onImportFromDrive={handleImportFromDrive}
+        onClose={handleCloseImportFromDriveDialog}
+      />
+    );
+  }
+
   return (
     <React.Fragment>
       <AppBar position="fixed">
@@ -236,7 +291,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
             <span>
               <IconButton
                 color="inherit"
-                onClick={ () => props.onDeleteMediaItems(props.selectedMediaItemIds)}
+                onClick={() => props.onDeleteMediaItems(props.selectedMediaItemIds)}
                 disabled={props.selectedMediaItemsCount === 0}
               >
                 <DeleteIcon />
@@ -288,13 +343,15 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
           {/* Import/Export & Settings */}
           <Tooltip title="Import/Export">
-            <IconButton color="inherit"><ImportExportIcon /></IconButton>
+            <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><ImportExportIcon /></IconButton>
           </Tooltip>
           <Tooltip title="Settings">
             <IconButton color="inherit"><SettingsIcon /></IconButton>
           </Tooltip>
         </Toolbar>
       </AppBar>
+
+      {renderImportFromDriveDialog()}
 
       <Dialog open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
         <DialogTitle>Adjust Column Count</DialogTitle>

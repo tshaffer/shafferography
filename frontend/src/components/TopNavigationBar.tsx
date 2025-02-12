@@ -1,10 +1,12 @@
+import React from 'react';
+import { bindActionCreators } from 'redux';
 import { useState } from 'react';
 import { connect } from 'react-redux';
+
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
-import ImportExportIcon from "@mui/icons-material/ImportExport";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewComfyIcon from "@mui/icons-material/ViewComfy";
@@ -14,13 +16,15 @@ import LabelIcon from "@mui/icons-material/Label";
 import StarIcon from "@mui/icons-material/Star";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from '@mui/icons-material/Delete';
-import React from 'react';
-import { bindActionCreators } from 'redux';
-import { deleteMediaItems, deselectAllPhotos, uploadRawMedia } from '../controllers';
+import DownloadIcon from '@mui/icons-material/Download';
+import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
+
+import { deleteMediaItems, deselectAllPhotos, uploadRawMedia, uploadToGoogle } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout } from '../selectors';
 import { MediaItem, PhotoLayout } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
+import UploadToGoogleDialog from './UploadToGoogleDialog';
 
 const drawerWidth = 240;
 
@@ -73,9 +77,11 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
 const TopNavigationBar = (props: TopNavigationBarProps) => {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
+  const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -87,6 +93,10 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
+  };
+
+  const handleCloseUploadToGoogleDialogDialog = () => {
+    setShowUploadToGoogleDialog(false);
   };
 
   const handleImportFromDrive = async (files: FileList) => {
@@ -121,6 +131,31 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
       setError(`Import failed: ${err}`);
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleUploadToGoogle = async (albumName: string) => {
+    console.log('handleUploadToGoogle', albumName);
+
+    setUploadingToGoogle(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem) => mediaItem.uniqueId);
+
+    try {
+      const response = await uploadToGoogle(albumName, mediaItemIds);
+
+      if (response.ok) {
+        setSuccessMessage('Upload to google completed successfully!');
+      } else {
+        const errorMessage = await response.text();
+        setError(`Upload to google failed: ${errorMessage}`);
+      }
+    } catch (err) {
+      setError(`Upload to google failed: ${err}`);
+    } finally {
+      setUploadingToGoogle(false);
     }
   };
 
@@ -240,6 +275,16 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     );
   }
 
+  const renderUploadToGoogleDialog = (): JSX.Element => {
+    return (
+      <UploadToGoogleDialog
+        open={showUploadToGoogleDialog}
+        onUploadToGoogle={handleUploadToGoogle}
+        onClose={handleCloseUploadToGoogleDialogDialog}
+      />
+    );
+  }
+
   return (
     <React.Fragment>
       <AppBar position="fixed">
@@ -342,8 +387,11 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* Import/Export & Settings */}
-          <Tooltip title="Import/Export">
-            <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><ImportExportIcon /></IconButton>
+          <Tooltip title="Import from Drive">
+            <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><DownloadIcon /></IconButton>
+          </Tooltip>
+          <Tooltip title="Upload to Google">
+            <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)}><UploadIcon/></IconButton>
           </Tooltip>
           <Tooltip title="Settings">
             <IconButton color="inherit"><SettingsIcon /></IconButton>
@@ -352,7 +400,8 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
       </AppBar>
 
       {renderImportFromDriveDialog()}
-
+      {renderUploadToGoogleDialog()}
+      
       <Dialog open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
         <DialogTitle>Adjust Column Count</DialogTitle>
         <DialogContent> {/* Increased bottom padding */}

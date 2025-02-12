@@ -1,8 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect } from "react";
 import { bindActionCreators } from "redux";
 import { connect } from 'react-redux';
-import { Box, Grid, Card, CardMedia } from "@mui/material";
-import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import { Grid } from "@mui/material";
 import GridCell from "./GridCell";
 import { selectPhoto, deselectAllPhotos, selectAllPhotos } from "../controllers";
 import { TedTaggerDispatch } from "../models";
@@ -22,8 +21,6 @@ const PhotoGrid = (props: PhotoGridProps) => {
 
   const { allMediaItems } = props;
 
-  const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
-
   /** Handles keyboard shortcuts (Ctrl + A for select all, Esc for deselect all) */
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
@@ -33,7 +30,6 @@ const PhotoGrid = (props: PhotoGridProps) => {
       } else if (event.key === 'Escape') {
         event.preventDefault();
         props.onDeselectAllMediaItems();
-        setLastSelectedIndex(null);
       }
     };
 
@@ -61,7 +57,7 @@ const PhotoGrid = (props: PhotoGridProps) => {
     <Grid container spacing={2} sx={{ p: 2 }}>
       {allMediaItems.map((mediaItem, index: number) => {
         return (
-          <GridCell key={mediaItem.baseUrl} mediaItem={mediaItem} />
+          <GridCell key={index} mediaItem={mediaItem} />
         );
       })}
     </Grid>

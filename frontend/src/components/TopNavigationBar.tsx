@@ -317,7 +317,14 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
           {/* Selection Count & Actions */}
           {props.selectedMediaItemsCount > 0 && (
-            <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
+            <React.Fragment>
+              <Tooltip title="Deselect All">
+                <span>
+                  <IconButton color="inherit" onClick={props.onDeselectAllPhotos} disabled={(props.selectedMediaItemsCount === 0) || (props.photoLayout !== PhotoLayout.Grid)}><ClearIcon /></IconButton>
+                </span>
+              </Tooltip>
+              <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
+            </React.Fragment>
           )}
 
           <Tooltip title="Toggle Right Panel">
@@ -351,22 +358,6 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
               >
                 <DeleteIcon />
               </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Deselect All">
-            <span>
-              <IconButton color="inherit" onClick={props.onDeselectAllPhotos} disabled={(props.selectedMediaItemsCount === 0) || (props.photoLayout !== PhotoLayout.Grid)}><ClearIcon /></IconButton>
-            </span>
-          </Tooltip>
-
-          {/* Selection Count & Actions */}
-          {props.selectedMediaItemsCount > 0 && (
-            <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
-          )}
-
-          <Tooltip title="Assign Keywords">
-            <span>
-              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
             </span>
           </Tooltip>
 

@@ -325,7 +325,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
               <IconButton
                 color="inherit"
                 onClick={props.toggleRightPanel}
-                disabled={props.selectedItemsCount === 0}
+                disabled={props.selectedItemsCount !== 1}
               >
                 {props.rightPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
               </IconButton>

@@ -28,7 +28,7 @@ const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
 
   const { open, onClose } = props;
 
-  if (props.selectedMediaItems.length === 0) return null;
+  if (props.selectedMediaItems.length !== 1) return null;
 
   const firstPhoto = props.selectedMediaItems[0];
 

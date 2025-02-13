@@ -1,6 +1,6 @@
 import React from "react";
 import { connect } from 'react-redux';
-import { Grid, Card, CardMedia } from "@mui/material";
+import { Grid, Card, CardMedia, Tooltip } from "@mui/material";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import { bindActionCreators } from "redux";
 import { selectPhoto } from "../controllers";
@@ -65,30 +65,47 @@ const GridCell = (props: GridCellProps) => {
       lg={getColumnsSpanned()}
       onClick={handleClicks}
     >
-      <Card
-        sx={{
-          position: "relative",
-          border: props.isSelected ? "2px solid blue" : "none",
-          cursor: "pointer",
-          '&:hover': {
-            opacity: 0.8,
-          }
+      <Tooltip
+        title={props.mediaItem.fileName}
+        placement='top'
+        slotProps={{
+          popper: {
+            modifiers: [
+              {
+                name: 'offset',
+                options: {
+                  offset: [0, -32],
+                },
+              },
+            ],
+          },
         }}
       >
-        <CardMedia component="img" image={photoUrl} />
-        {props.isSelected && (
-          <CheckCircleIcon
-            sx={{
-              position: "absolute",
-              top: 8,
-              right: 8,
-              color: "white",
-              backgroundColor: "rgba(0, 0, 0, 0.5)",
-              borderRadius: "50%",
-            }}
-          />
-        )}
-      </Card>
+        <Card
+          sx={{
+            position: "relative",
+            border: props.isSelected ? "2px solid blue" : "none",
+            cursor: "pointer",
+            '&:hover': {
+              opacity: 0.8,
+            }
+          }}
+        >
+          <CardMedia component="img" image={photoUrl} />
+          {props.isSelected && (
+            <CheckCircleIcon
+              sx={{
+                position: "absolute",
+                top: 8,
+                right: 8,
+                color: "white",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                borderRadius: "50%",
+              }}
+            />
+          )}
+        </Card>
+      </Tooltip>
     </Grid>
   );
 };

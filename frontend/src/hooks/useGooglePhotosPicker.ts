@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 
 export function useGooglePhotosPicker() {
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
+  const [authToken, setAuthToken] = useState<string | null>(null);
 
   useEffect(() => {
     console.log("useGooglePhotosPicker invoked");
@@ -28,36 +29,51 @@ export function useGooglePhotosPicker() {
       loadScript("https://apis.google.com/js/api.js", () => {
         console.log("Google API script loaded");
 
-        // Load Google API Client Library
-        window.gapi?.load("client", async () => {
-          console.log("gapi.client loaded, initializing APIs...");
+        window.gapi?.load("client:auth2", async () => {
+          console.log("gapi.client and auth2 loaded, initializing APIs...");
 
+          const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+          const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+      
           try {
-            await window.gapi.client.load("photoslibrary", "v1"); // Load Google Photos API
-            console.log("Google Photos API loaded!");
+            await window.gapi.client.init({
+              apiKey,
+              clientId,
+              discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest"],
+              scope: "https://www.googleapis.com/auth/photoslibrary.readonly",
+            });
 
-            // **Load Picker API**
+            console.log("Google Photos API initialized!");
+
+            const authInstance = window.gapi.auth2.getAuthInstance();
+            if (!authInstance.isSignedIn.get()) {
+              await authInstance.signIn();
+            }
+            const token = authInstance.currentUser.get().getAuthResponse().access_token;
+            setAuthToken(token);
+            console.log("User authenticated, access token received!");
+
+            // Load Picker API
             window.gapi.load("picker", () => {
               console.log("Google Picker API loaded!");
 
-              // Now wait for google.photos.picker to be available
               const checkPickerLoaded = setInterval(() => {
-                if (window.google?.photos?.picker) {
+                if (window.gapi?.picker) {
                   clearInterval(checkPickerLoaded);
                   setIsGoogleLoaded(true);
-                  console.log("Google Photos Picker API is now available");
+                  console.log("Google Picker API is now available in gapi.picker");
                 } else {
-                  console.log("Waiting for google.photos.picker...");
+                  console.log("Waiting for gapi.picker...");
                 }
               }, 100);
             });
           } catch (error) {
-            console.error("Error loading Google APIs:", error);
+            console.error("Error initializing Google APIs:", error);
           }
         });
       });
     });
   }, []);
 
-  return isGoogleLoaded;
+  return { isGoogleLoaded, authToken };
 }

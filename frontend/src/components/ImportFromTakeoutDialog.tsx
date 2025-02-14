@@ -64,7 +64,7 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
 
   function launchPhotosPicker() {
-    
+
     if (!isGoogleLoaded) {
       console.warn("Google API not loaded yet.");
       return;
@@ -78,22 +78,38 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
     console.log("Launching Google Photos Picker...");
 
-    const picker = new window.google.picker.PickerBuilder()
-      .setOAuthToken(authToken)
-      .addView(window.google.picker.ViewId.PHOTOS) // User's Google Photos
-      .addView(window.google.picker.ViewId.PHOTO_ALBUMS) // User's Albums
-      .setCallback((data: any) => {
+
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+    const picker = new google.picker.PickerBuilder().
+      addView(window.google.picker.ViewId.PHOTOS).
+      setAppId(clientId).
+      setOAuthToken(authToken).
+      setCallback((data: any) => {
         if (data.action === window.google.picker.Action.PICKED) {
           console.log("User selected:", data.docs);
           handleSelectedPhotos(data.docs);
         }
-      })
-      .build();
+      }).
+      build();
+
+
+    // const picker = new window.google.picker.PickerBuilder()
+    //   .setOAuthToken(authToken)
+    //   .addView(window.google.picker.ViewId.PHOTOS) // User's Google Photos
+    //   .addView(window.google.picker.ViewId.PHOTO_ALBUMS) // User's Albums
+    //   .setCallback((data: any) => {
+    //     if (data.action === window.google.picker.Action.PICKED) {
+    //       console.log("User selected:", data.docs);
+    //       handleSelectedPhotos(data.docs);
+    //     }
+    //   })
+    //   .build();
 
     picker.setVisible(true);
-  
+
   }
-  
+
   const renderTakeout = (takeout: Takeout): JSX.Element => {
     return (
       <MenuItem key={takeout.id} value={takeout.id}>{takeout.label}</MenuItem>

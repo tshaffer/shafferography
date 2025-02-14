@@ -44,7 +44,8 @@ export function useGooglePhotosPicker() {
             // Initialize OAuth Token Client
             const tokenClientInstance = window.google.accounts.oauth2.initTokenClient({
               client_id,
-              scope: "https://www.googleapis.com/auth/photoslibrary.readonly",
+              scope: "https://www.googleapis.com/auth/photoslibrary.readonly " +
+                "https://www.googleapis.com/auth/drive.file",
               callback: (response) => {
                 if (response.error) {
                   console.error("OAuth Token Error:", response.error);

@@ -15,6 +15,7 @@ declare global {
       picker: {
         PickerBuilder: new () => {
           setOAuthToken: (token: string) => any;
+          setAppId: (clientId: string) => any;
           addView: (view: any) => any;
           setCallback: (callback: (data: any) => void) => any;
           build: () => { setVisible: (visible: boolean) => void };
@@ -49,6 +50,7 @@ declare global {
     namespace picker {
       class PickerBuilder {
         setOAuthToken(token: string): this;
+        setAppId: (clientId: string) => any;
         addView(view: any): this;
         setCallback(callback: (data: any) => void): this;
         build(): { setVisible: (visible: boolean) => void };
@@ -56,7 +58,7 @@ declare global {
 
       const ViewId: {
         PHOTOS: string;
-        ALBUMS: string;
+        PHOTO_ALBUMS: string;
       };
 
       const Action: {

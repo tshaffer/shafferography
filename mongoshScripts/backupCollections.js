@@ -5,7 +5,7 @@ const collections = [
   "deletedmediaitems"
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-03-0-2025";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-14-0-2025";
 
 const fs = require("fs");
 

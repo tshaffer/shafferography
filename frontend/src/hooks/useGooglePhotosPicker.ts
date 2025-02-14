@@ -3,12 +3,13 @@ import { useEffect, useState } from "react";
 export function useGooglePhotosPicker() {
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
+  const [tokenClient, setTokenClient] = useState<google.accounts.oauth2.TokenClient | null>(null);
 
   useEffect(() => {
     console.log("useGooglePhotosPicker invoked");
 
     const loadScript = (src: string, callback: () => void) => {
-      if (document.querySelector(`script[src="${src}"]`)) {
+      if (document.querySelector(`script[src='${src}']`)) {
         callback(); // Script already loaded
         return;
       }
@@ -23,35 +24,38 @@ export function useGooglePhotosPicker() {
 
     console.log("invoke loadScript");
 
-    // Load Google Identity Services
+    // Load Google Identity Services API
     loadScript("https://accounts.google.com/gsi/client", () => {
+      console.log("Google Identity Services API loaded");
+
       // Load Google API Client Library
       loadScript("https://apis.google.com/js/api.js", () => {
         console.log("Google API script loaded");
 
-        window.gapi?.load("client:auth2", async () => {
-          console.log("gapi.client and auth2 loaded, initializing APIs...");
+        window.gapi?.load("client", async () => {
+          console.log("gapi.client loaded, initializing APIs...");
 
-          const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-          const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-      
           try {
-            await window.gapi.client.init({
-              apiKey,
-              clientId,
-              discoveryDocs: ["https://www.googleapis.com/discovery/v1/apis/photoslibrary/v1/rest"],
+            await window.gapi.client.load("photoslibrary", "v1"); // Load Google Photos API
+            console.log("Google Photos API loaded!");
+
+            // Initialize OAuth Token Client
+            const client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+            const tokenClientInstance = window.google.accounts.oauth2.initTokenClient({
+              client_id,
               scope: "https://www.googleapis.com/auth/photoslibrary.readonly",
+              callback: (response) => {
+                if (response.error) {
+                  console.error("OAuth Token Error:", response.error);
+                  return;
+                }
+                console.log("OAuth Token received!");
+                setAuthToken(response.access_token);
+              },
             });
 
-            console.log("Google Photos API initialized!");
-
-            const authInstance = window.gapi.auth2.getAuthInstance();
-            if (!authInstance.isSignedIn.get()) {
-              await authInstance.signIn();
-            }
-            const token = authInstance.currentUser.get().getAuthResponse().access_token;
-            setAuthToken(token);
-            console.log("User authenticated, access token received!");
+            setTokenClient(tokenClientInstance);
+            console.log("Google Identity Services initialized!");
 
             // Load Picker API
             window.gapi.load("picker", () => {
@@ -75,5 +79,14 @@ export function useGooglePhotosPicker() {
     });
   }, []);
 
-  return { isGoogleLoaded, authToken };
+  function requestAccessToken() {
+    if (!tokenClient) {
+      console.error("Token client not initialized.");
+      return;
+    }
+
+    tokenClient.requestAccessToken();
+  }
+
+  return { isGoogleLoaded, authToken, requestAccessToken };
 }

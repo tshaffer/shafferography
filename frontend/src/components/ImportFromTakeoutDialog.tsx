@@ -39,9 +39,11 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
   const [takeoutId, setTakeoutId] = React.useState(props.takeouts[0].id);
 
-  const isGoogleLoaded = useGooglePhotosPicker();
+  // const isGoogleLoaded = useGooglePhotosPicker();
+  const { isGoogleLoaded, authToken, requestAccessToken } = useGooglePhotosPicker();
   console.log("isGoogleLoaded", isGoogleLoaded);
-  
+  console.log("authToken", authToken);
+
   const handleChange = (event: SelectChangeEvent<typeof takeoutId>) => {
     setTakeoutId(event.target.value || '');
   };
@@ -62,8 +64,15 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
 
   function launchPhotosPicker() {
+    
     if (!isGoogleLoaded) {
       console.warn("Google API not loaded yet.");
+      return;
+    }
+
+    if (!authToken) {
+      console.log("Requesting OAuth token...");
+      requestAccessToken();
       return;
     }
 
@@ -76,22 +85,22 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
     console.log("appId", appId);
     console.log("clientId", clientId);
     
-    google.photos.picker.configure({
+    window.gapi.picker.configure({
       apiKey,
       clientId,
       appId,
       scopes: ["https://www.googleapis.com/auth/photoslibrary.readonly"],
     });
-
-    google.photos.picker.selectMedia({
+    window.gapi.picker.selectMedia({
       mediaType: "photos",
       multiSelect: true,
-      onSelect: (photos) => {
+      onSelect: (photos: any[]) => {
         console.log("Selected Photos:", photos);
         handleSelectedPhotos(photos);
       },
-    });
+    });  
   }
+  
   const renderTakeout = (takeout: Takeout): JSX.Element => {
     return (
       <MenuItem key={takeout.id} value={takeout.id}>{takeout.label}</MenuItem>

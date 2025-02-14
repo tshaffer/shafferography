@@ -28,25 +28,31 @@ export function useGooglePhotosPicker() {
       loadScript("https://apis.google.com/js/api.js", () => {
         console.log("Google API script loaded");
 
+        // Load Google API Client Library
         window.gapi?.load("client", async () => {
-          console.log("gapi.client loaded, initializing picker API...");
+          console.log("gapi.client loaded, initializing APIs...");
 
           try {
-            await window.gapi.client.load("photoslibrary", "v1"); // Explicitly load Photos API
+            await window.gapi.client.load("photoslibrary", "v1"); // Load Google Photos API
             console.log("Google Photos API loaded!");
 
-            // Wait for google.photos.picker to be available
-            const checkPickerLoaded = setInterval(() => {
-              if (window.google?.photos?.picker) {
-                clearInterval(checkPickerLoaded);
-                setIsGoogleLoaded(true);
-                console.log("Google Photos Picker API is now available");
-              } else {
-                console.log("Waiting for google.photos.picker...");
-              }
-            }, 100);
+            // **Load Picker API**
+            window.gapi.load("picker", () => {
+              console.log("Google Picker API loaded!");
+
+              // Now wait for google.photos.picker to be available
+              const checkPickerLoaded = setInterval(() => {
+                if (window.google?.photos?.picker) {
+                  clearInterval(checkPickerLoaded);
+                  setIsGoogleLoaded(true);
+                  console.log("Google Photos Picker API is now available");
+                } else {
+                  console.log("Waiting for google.photos.picker...");
+                }
+              }, 100);
+            });
           } catch (error) {
-            console.error("Error loading Google Photos API:", error);
+            console.error("Error loading Google APIs:", error);
           }
         });
       });

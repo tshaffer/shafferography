@@ -1,6 +1,7 @@
 declare global {
   interface Window {
     google: typeof google;
+    gapi: any;
   }
 
   namespace google {

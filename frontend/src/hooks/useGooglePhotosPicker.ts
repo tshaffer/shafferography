@@ -28,15 +28,14 @@ export function useGooglePhotosPicker() {
       loadScript("https://apis.google.com/js/api.js", () => {
         console.log("Google API script loaded");
 
-        // Initialize Google API Client Library
         window.gapi?.load("client", async () => {
           console.log("gapi.client loaded, initializing picker API...");
 
           try {
-            await window.gapi.client.load("photoslibrary", "v1"); // Load Google Photos API explicitly
+            await window.gapi.client.load("photoslibrary", "v1"); // Explicitly load Photos API
             console.log("Google Photos API loaded!");
 
-            // Now check if picker is available
+            // Wait for google.photos.picker to be available
             const checkPickerLoaded = setInterval(() => {
               if (window.google?.photos?.picker) {
                 clearInterval(checkPickerLoaded);

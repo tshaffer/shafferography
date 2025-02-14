@@ -4,7 +4,6 @@ export function useGooglePhotosPicker() {
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
 
   useEffect(() => {
-
     console.log("useGooglePhotosPicker invoked");
 
     const loadScript = (src: string, callback: () => void) => {
@@ -23,22 +22,34 @@ export function useGooglePhotosPicker() {
 
     console.log("invoke loadScript");
 
-    // Load Google Auth API first
+    // Load Google Identity Services
     loadScript("https://accounts.google.com/gsi/client", () => {
-      // Load Google API
+      // Load Google API Client Library
       loadScript("https://apis.google.com/js/api.js", () => {
-        console.log("Google API script loaded, checking for google.photos.picker...");
+        console.log("Google API script loaded");
 
-        // Check for google.photos.picker at intervals
-        const checkPickerLoaded = setInterval(() => {
-          if (window.google?.photos?.picker) {
-            clearInterval(checkPickerLoaded);
-            setIsGoogleLoaded(true);
-            console.log("Google Photos Picker API is now available");
-          } else {
-            console.log("Waiting for google.photos.picker...");
+        // Initialize Google API Client Library
+        window.gapi?.load("client", async () => {
+          console.log("gapi.client loaded, initializing picker API...");
+
+          try {
+            await window.gapi.client.load("photoslibrary", "v1"); // Load Google Photos API explicitly
+            console.log("Google Photos API loaded!");
+
+            // Now check if picker is available
+            const checkPickerLoaded = setInterval(() => {
+              if (window.google?.photos?.picker) {
+                clearInterval(checkPickerLoaded);
+                setIsGoogleLoaded(true);
+                console.log("Google Photos Picker API is now available");
+              } else {
+                console.log("Waiting for google.photos.picker...");
+              }
+            }, 100);
+          } catch (error) {
+            console.error("Error loading Google Photos API:", error);
           }
-        }, 100); // Check every 100ms
+        });
       });
     });
   }, []);

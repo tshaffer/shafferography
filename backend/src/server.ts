@@ -39,14 +39,20 @@ app.use(bodyParser.urlencoded({ extended: true }));
 createRoutes(app);
 
 // === Express Session Setup ===
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET as string,
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
-  })
-);
+// const sessionMiddleware = session({
+//   resave: true,
+//   saveUninitialized: true,
+//   store: new fileStore({}),
+//   secret: process.env.SESSION_SECRET as string,
+// });
+const sessionMiddleware = session({
+  resave: true,
+  saveUninitialized: true,
+  secret: process.env.SESSION_SECRET as string,
+  cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
+});
+app.use(sessionMiddleware);
+
 
 // === Passport Setup ===
 app.use(passport.initialize());

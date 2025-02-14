@@ -12,6 +12,8 @@ import { Button, DialogActions, DialogContent } from '@mui/material';
 
 import { Takeout } from '../types';
 
+import { useGooglePhotosPicker } from "../hooks/useGooglePhotosPicker";
+
 export interface ImportFromTakeoutDialogPropsFromParent {
   open: boolean;
   onImportFromTakeout: (id: string) => void;
@@ -37,6 +39,8 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
   const [takeoutId, setTakeoutId] = React.useState(props.takeouts[0].id);
 
+  const isGoogleLoaded = useGooglePhotosPicker();
+
   const handleChange = (event: SelectChangeEvent<typeof takeoutId>) => {
     setTakeoutId(event.target.value || '');
   };
@@ -51,6 +55,42 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
     onClose();
   }
 
+  function handleSelectedPhotos(photos: any[]) {
+    console.log("handleSelectedPhotos:", photos);
+  }
+
+
+  function launchPhotosPicker() {
+    if (!isGoogleLoaded) {
+      console.warn("Google API not loaded yet.");
+      return;
+    }
+
+    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
+    const appId = import.meta.env.VITE_GOOGLE_APP_ID;
+    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
+    console.log("launchPhotosPicker");
+    console.log("apiKey", apiKey);
+    console.log("appId", appId);
+    console.log("clientId", clientId);
+    
+    google.photos.picker.configure({
+      apiKey,
+      clientId,
+      appId,
+      scopes: ["https://www.googleapis.com/auth/photoslibrary.readonly"],
+    });
+
+    google.photos.picker.selectMedia({
+      mediaType: "photos",
+      multiSelect: true,
+      onSelect: (photos) => {
+        console.log("Selected Photos:", photos);
+        handleSelectedPhotos(photos);
+      },
+    });
+  }
   const renderTakeout = (takeout: Takeout): JSX.Element => {
     return (
       <MenuItem key={takeout.id} value={takeout.id}>{takeout.label}</MenuItem>
@@ -92,7 +132,7 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleImport} autoFocus>
+        <Button onClick={launchPhotosPicker} disabled={!isGoogleLoaded} autoFocus>
           Import
         </Button>
       </DialogActions>

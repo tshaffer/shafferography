@@ -1,9 +1,11 @@
+const client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+
 import { useEffect, useState } from "react";
 
 export function useGooglePhotosPicker() {
   const [isGoogleLoaded, setIsGoogleLoaded] = useState(false);
   const [authToken, setAuthToken] = useState<string | null>(null);
-  const [tokenClient, setTokenClient] = useState<google.accounts.oauth2.TokenClient | null>(null);
+  const [tokenClient, setTokenClient] = useState<{ requestAccessToken: () => void } | null>(null);
 
   useEffect(() => {
     console.log("useGooglePhotosPicker invoked");
@@ -40,7 +42,6 @@ export function useGooglePhotosPicker() {
             console.log("Google Photos API loaded!");
 
             // Initialize OAuth Token Client
-            const client_id = import.meta.env.VITE_GOOGLE_CLIENT_ID;
             const tokenClientInstance = window.google.accounts.oauth2.initTokenClient({
               client_id,
               scope: "https://www.googleapis.com/auth/photoslibrary.readonly",
@@ -62,12 +63,12 @@ export function useGooglePhotosPicker() {
               console.log("Google Picker API loaded!");
 
               const checkPickerLoaded = setInterval(() => {
-                if (window.gapi?.picker) {
+                if (window.google?.picker) {
                   clearInterval(checkPickerLoaded);
                   setIsGoogleLoaded(true);
-                  console.log("Google Picker API is now available in gapi.picker");
+                  console.log("Google Picker API is now available");
                 } else {
-                  console.log("Waiting for gapi.picker...");
+                  console.log("Waiting for google.picker...");
                 }
               }, 100);
             });

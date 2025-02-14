@@ -12,6 +12,21 @@ declare global {
           };
         };
       };
+      picker: {
+        PickerBuilder: new () => {
+          setOAuthToken: (token: string) => any;
+          addView: (view: any) => any;
+          setCallback: (callback: (data: any) => void) => any;
+          build: () => { setVisible: (visible: boolean) => void };
+        };
+        ViewId: {
+          PHOTOS: string;
+          PHOTO_ALBUMS: string;
+        };
+        Action: {
+          PICKED: string;
+        };
+      };
     };
     gapi: any;
   }
@@ -31,21 +46,22 @@ declare global {
       }
     }
     
-    namespace photos {
-      namespace picker {
-        function configure(config: {
-          apiKey: string;
-          clientId: string;
-          appId: string;
-          scopes: string[];
-        }): void;
-
-        function selectMedia(config: {
-          mediaType: "photos" | "videos";
-          multiSelect?: boolean;
-          onSelect: (photos: any[]) => void;
-        }): void;
+    namespace picker {
+      class PickerBuilder {
+        setOAuthToken(token: string): this;
+        addView(view: any): this;
+        setCallback(callback: (data: any) => void): this;
+        build(): { setVisible: (visible: boolean) => void };
       }
+
+      const ViewId: {
+        PHOTOS: string;
+        ALBUMS: string;
+      };
+
+      const Action: {
+        PICKED: string;
+      };
     }
   }
 }

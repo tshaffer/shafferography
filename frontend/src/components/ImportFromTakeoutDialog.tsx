@@ -76,29 +76,22 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
       return;
     }
 
-    const apiKey = import.meta.env.VITE_GOOGLE_API_KEY;
-    const appId = import.meta.env.VITE_GOOGLE_APP_ID;
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+    console.log("Launching Google Photos Picker...");
 
-    console.log("launchPhotosPicker");
-    console.log("apiKey", apiKey);
-    console.log("appId", appId);
-    console.log("clientId", clientId);
-    
-    window.gapi.picker.configure({
-      apiKey,
-      clientId,
-      appId,
-      scopes: ["https://www.googleapis.com/auth/photoslibrary.readonly"],
-    });
-    window.gapi.picker.selectMedia({
-      mediaType: "photos",
-      multiSelect: true,
-      onSelect: (photos: any[]) => {
-        console.log("Selected Photos:", photos);
-        handleSelectedPhotos(photos);
-      },
-    });  
+    const picker = new window.google.picker.PickerBuilder()
+      .setOAuthToken(authToken)
+      .addView(window.google.picker.ViewId.PHOTOS) // User's Google Photos
+      .addView(window.google.picker.ViewId.PHOTO_ALBUMS) // User's Albums
+      .setCallback((data: any) => {
+        if (data.action === window.google.picker.Action.PICKED) {
+          console.log("User selected:", data.docs);
+          handleSelectedPhotos(data.docs);
+        }
+      })
+      .build();
+
+    picker.setVisible(true);
+  
   }
   
   const renderTakeout = (takeout: Takeout): JSX.Element => {

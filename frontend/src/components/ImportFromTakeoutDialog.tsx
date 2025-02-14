@@ -64,9 +64,8 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
 
 
   function launchPhotosPicker() {
-
     if (!isGoogleLoaded) {
-      console.warn("Google API not loaded yet.");
+      console.warn("Google API is not yet loaded.");
       return;
     }
 
@@ -76,38 +75,26 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
       return;
     }
 
-    console.log("Launching Google Photos Picker...");
+    console.log("Launching Google Photos Picker with token:", authToken);
 
+    try {
+      const picker = new window.google.picker.PickerBuilder()
+        .setOAuthToken(authToken)
+        .addView(window.google.picker.ViewId.PHOTOS)
+        // .addView(window.google.picker.ViewId.ALBUMS)
+        .setCallback((data: any) => {
+          console.log("Picker API Response:", data);
+          if (data.action === window.google.picker.Action.PICKED) {
+            console.log("User selected:", data.docs);
+            handleSelectedPhotos(data.docs);
+          }
+        })
+        .build();
 
-    const clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID;
-
-    const picker = new google.picker.PickerBuilder().
-      addView(window.google.picker.ViewId.PHOTOS).
-      setAppId(clientId).
-      setOAuthToken(authToken).
-      setCallback((data: any) => {
-        if (data.action === window.google.picker.Action.PICKED) {
-          console.log("User selected:", data.docs);
-          handleSelectedPhotos(data.docs);
-        }
-      }).
-      build();
-
-
-    // const picker = new window.google.picker.PickerBuilder()
-    //   .setOAuthToken(authToken)
-    //   .addView(window.google.picker.ViewId.PHOTOS) // User's Google Photos
-    //   .addView(window.google.picker.ViewId.PHOTO_ALBUMS) // User's Albums
-    //   .setCallback((data: any) => {
-    //     if (data.action === window.google.picker.Action.PICKED) {
-    //       console.log("User selected:", data.docs);
-    //       handleSelectedPhotos(data.docs);
-    //     }
-    //   })
-    //   .build();
-
-    picker.setVisible(true);
-
+      picker.setVisible(true);
+    } catch (error) {
+      console.error("Error launching Google Photos Picker:", error);
+    }
   }
 
   const renderTakeout = (takeout: Takeout): JSX.Element => {

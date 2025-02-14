@@ -48,6 +48,11 @@ app.use(
   })
 );
 
+app.use((req, res, next) => {
+  res.setHeader("Cross-Origin-Opener-Policy", "same-origin-allow-popups");
+  next();
+});
+
 // === Passport Setup ===
 app.use(passport.initialize());
 app.use(passport.session());

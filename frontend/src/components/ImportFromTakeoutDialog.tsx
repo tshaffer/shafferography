@@ -40,7 +40,8 @@ const ImportFromTakeoutDialog = (props: ImportFromTakeoutDialogProps) => {
   const [takeoutId, setTakeoutId] = React.useState(props.takeouts[0].id);
 
   const isGoogleLoaded = useGooglePhotosPicker();
-
+  console.log("isGoogleLoaded", isGoogleLoaded);
+  
   const handleChange = (event: SelectChangeEvent<typeof takeoutId>) => {
     setTakeoutId(event.target.value || '');
   };

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems } from "../controllers";
+import { loadMediaItems, loadTakeouts } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setGoogleUserProfile } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
 import { MediaItem, PhotoLayout } from "../types";
@@ -48,6 +48,7 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onLoadMediaItems: () => any;
+  onLoadTakeouts: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
 }
@@ -220,8 +221,10 @@ const AppShell = (props: AppShellProps) => {
   };
 
   React.useEffect(() => {
-    props.onLoadMediaItems()
+    props.onLoadTakeouts()
       .then(function () {
+        return props.onLoadMediaItems()
+      }).then(function () {
         return props.onSetAppInitialized();
       });
   }, []);
@@ -285,6 +288,7 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onLoadMediaItems: loadMediaItems,
+    onLoadTakeouts: loadTakeouts,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
   }, dispatch);

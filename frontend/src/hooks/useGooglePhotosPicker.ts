@@ -43,19 +43,18 @@ export function useGooglePhotosPicker() {
 
             // Initialize OAuth Token Client
             const tokenClientInstance = window.google.accounts.oauth2.initTokenClient({
-              client_id,
-              scope: "https://www.googleapis.com/auth/photoslibrary.readonly " +
-                "https://www.googleapis.com/auth/drive.file",
+              client_id: import.meta.env.VITE_GOOGLE_CLIENT_ID,
+              scope: "https://www.googleapis.com/auth/photoslibrary.readonly https://www.googleapis.com/auth/drive.file",
               callback: (response) => {
                 if (response.error) {
                   console.error("OAuth Token Error:", response.error);
                   return;
                 }
-                console.log("OAuth Token received!");
+                console.log("OAuth Token received!", response.access_token);
                 setAuthToken(response.access_token);
               },
             });
-
+            
             setTokenClient(tokenClientInstance);
             console.log("Google Identity Services initialized!");
 

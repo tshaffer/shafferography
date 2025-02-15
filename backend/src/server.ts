@@ -1,5 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
+import sessionFileStore from 'session-file-store';
+import persist from 'node-persist';
 import passport from 'passport';
 import { Profile, Strategy as GoogleStrategy, VerifyCallback } from 'passport-google-oauth20';
 import cookieParser from 'cookie-parser'; // Parse cookies
@@ -20,6 +22,7 @@ connectDB();
 
 // Initialize Express app
 const app = express();
+const fileStore = sessionFileStore(session);
 const PORT = process.env.PORT || 8080;
 
 app.use(cookieParser());
@@ -45,14 +48,20 @@ createRoutes(app);
 //   store: new fileStore({}),
 //   secret: process.env.SESSION_SECRET as string,
 // });
+const sessionCache = persist.create({
+  dir: 'persist-session/',
+  ttl: 1740000,  // 29 minutes
+});
+sessionCache.init();
+
 const sessionMiddleware = session({
   resave: true,
   saveUninitialized: true,
+  store: new fileStore({}),
   secret: process.env.SESSION_SECRET as string,
   cookie: { secure: false, maxAge: 24 * 60 * 60 * 1000 }, // 1 day
 });
 app.use(sessionMiddleware);
-
 
 // === Passport Setup ===
 app.use(passport.initialize());
@@ -151,6 +160,9 @@ app.get(
       'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
       'https://www.googleapis.com/auth/photoslibrary.readonly.originals',
       'https://www.googleapis.com/auth/photoslibrary.sharing',
+      // 'https://photospicker.googleapis.com/v1/sessions',
+      "https://www.googleapis.com/auth/photospicker.mediaitems.readonly",
+      'https://www.googleapis.com/auth/drive.file',
     ],
     accessType: 'offline',
     prompt: 'select_account consent',
@@ -288,6 +300,44 @@ function ensureAuthenticated(req: Request, res: Response, next: NextFunction) {
   if (req.isAuthenticated()) return next();
   res.redirect('/');
 }
+
+const createNewSession = async (req: any, res: any) => {
+  try {
+    const response = await fetch("https://photospicker.googleapis.com/v1/sessions", {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + 'accessToken'
+      },
+      // json: true
+    });
+    const responseData = await response.json();
+    console.log(responseData);
+    sessionCache.setItem('flibbet', responseData)
+    res.sendStatus(200).send('session: ' + responseData);
+  } catch (error) {
+    console.error(error);
+  }
+}
+
+app.get('/sessionTest', async (req, res) => {
+  if (!req.user || !req.isAuthenticated()) {
+    // Not logged in yet.
+    console.log('Not logged in yet.');
+    res.sendStatus(401);
+  } else {
+    createNewSession(req, res)
+    // let session = await sessionCache.getItem('flibbet')
+    // if (!session) {
+    //   console.log('session not found, creating a new one');
+    //   createNewSession(req, res)
+    //   // res.sendStatus(200).send('session created');      
+    // } else {
+    //   console.log('session found');
+    //   res.sendStatus(200).send('session found');
+    // }
+  }
+});
 
 // Start the server
 const server: Server<any> = app.listen(PORT, () => {

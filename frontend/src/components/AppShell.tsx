@@ -107,6 +107,7 @@ const AppShell = (props: AppShellProps) => {
 
         setAccessToken(accessToken);
         setIsLoggedIn(true);
+        runSessionTest();
       } else {
         console.warn('No valid access token found. Attempting to refresh...');
         refreshAccessToken(); // Try refreshing if fetching fails
@@ -142,6 +143,7 @@ const AppShell = (props: AppShellProps) => {
         setAccessToken(accessToken);
         setIsLoggedIn(true);
         fetchUserProfile();
+        runSessionTest();
       } else {
         console.warn('Failed to refresh access token. Logging out...');
         logout();
@@ -194,6 +196,7 @@ const AppShell = (props: AppShellProps) => {
       console.log('Saving tokens from query params...');
       saveTokens(accessToken, parseInt(expiresIn), googleId);
       setIsLoggedIn(true);
+      runSessionTest();
       window.history.replaceState({}, document.title, '/'); // Clear query params from URL
     }
     // If tokens are not in the query params, attempt to fetch them from cookies
@@ -204,10 +207,23 @@ const AppShell = (props: AppShellProps) => {
       console.log('Tokens are valid. User is logged in.');
       setIsLoggedIn(true);
       fetchUserProfile();
+      runSessionTest();
     }
   }, []);
 
+  const runSessionTest = async () => {
+    console.log('Running session test...');
+    // return;
+    try {
+      const response = await fetch('http://localhost:8080/sessionTest', { credentials: 'include' });
+      if (!response.ok) throw new Error('Failed to run session test');
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
   const fetchUserProfile = async () => {
+    console.log('fetchUserProfile');
     try {
       const response = await fetch('http://localhost:8080/user-profile', { credentials: 'include' });
       if (!response.ok) throw new Error('Failed to fetch user profile');

@@ -28,10 +28,8 @@ import { deselectMediaItems } from './selectMediaItem';
 
 export const loadMediaItems = (): any => {
 
-  console.log('loadMediaItems entry');
   return (dispatch: TedTaggerDispatch) => {
 
-    console.log('loadMediaItems inner');
     const specifyDateRange = false;
     const startDate = (new Date()).toISOString();
     const endDate = (new Date()).toISOString();
@@ -46,12 +44,8 @@ export const loadMediaItems = (): any => {
 
     path += '&specifyTagsInSearch=false&tagSelector=untagged&tagIds=&tagSearchOperator=OR';
 
-    console.log('invoke axios.get on path', path);
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
-
-        console.log('mediaItemsResponse');
-        console.log(mediaItemsResponse);
 
         const mediaItems: MediaItem[] = [];
         const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
@@ -64,8 +58,6 @@ export const loadMediaItems = (): any => {
           mediaItems.push(mediaItem as MediaItem);
 
         }
-        console.log('dispatch addMediaItems');
-
         dispatch(addMediaItems(mediaItems));
       });
   };
@@ -73,8 +65,6 @@ export const loadMediaItems = (): any => {
 
 const replaceMediaItems = (mediaItemsResponse: any): any => {
   return (dispatch: TedTaggerDispatch) => {
-    console.log('mediaItemsResponse');
-    console.log((mediaItemsResponse as any).data);
     const mediaItems: MediaItem[] = [];
     const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
 
@@ -91,10 +81,6 @@ const replaceMediaItems = (mediaItemsResponse: any): any => {
 export const loadMediaItemsByReviewLevels = (reviewLevels: ReviewLevel[]): TedTaggerAnyPromiseThunkAction => {
 
   return (dispatch: TedTaggerDispatch) => {
-
-    console.log('loadMediaItemsByReviewLevels entry');
-    console.log('reviewLevels');
-    console.log(reviewLevels);
 
     let path = serverUrl
       + apiUrlFragment

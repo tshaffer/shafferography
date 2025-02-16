@@ -32,7 +32,7 @@ const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
 
   const firstPhoto = props.selectedMediaItems[0];
 
-  console.log("RightPanel Render - Open:", open);
+  // console.log("RightPanel Render - Open:", open);
 
   return (
 

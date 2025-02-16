@@ -54,7 +54,7 @@ const PhotoGrid = (props: PhotoGridProps) => {
   }
 
   return (
-    <Grid container spacing={2} sx={{ p: 2 }}>
+    <Grid id='PhotoGrid' container spacing={2} sx={{ p: 2 }}>
       {allMediaItems.map((mediaItem, index: number) => {
         return (
           <GridCell key={index} mediaItem={mediaItem} />

@@ -22,6 +22,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import CloudUploadIcon from "@mui/icons-material/CloudUpload";
+import TuneIcon from '@mui/icons-material/Tune';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
@@ -79,7 +80,7 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
 }
 
 const TopNavigationBar = (props: TopNavigationBarProps) => {
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
   const [showImportFromTakeoutDialog, setShowImportFromTakeoutDialog] = React.useState(false);
@@ -334,9 +335,9 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
-          <Tooltip title="Adjust Column Count">
-            <IconButton color="inherit" onClick={() => setIsSettingsOpen(true)}>
-              <SettingsIcon />
+          <Tooltip title="Zoom In / Out">
+            <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>
+              <TuneIcon />
             </IconButton>
           </Tooltip>
 
@@ -455,19 +456,20 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
       {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
 
-      <Dialog open={isSettingsOpen} onClose={() => setIsSettingsOpen(false)}>
-        <DialogTitle>Adjust Column Count</DialogTitle>
+      <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
+        <DialogTitle>Zoom In / Out</DialogTitle>
         <DialogContent> {/* Increased bottom padding */}
           <Slider
+            size='small'
             value={props.numGridColumns}
             onChange={handleSliderChange}
-            valueLabelDisplay="auto"
+            valueLabelDisplay='auto'
             step={1}
-            marks={marks}
+            marks
             min={2}
             max={10}
           />
-          <Button onClick={() => setIsSettingsOpen(false)} fullWidth variant="contained" sx={{ mt: 2 }}>
+          <Button onClick={() => setIsZoomDialogOpen(false)} fullWidth variant="contained" sx={{ mt: 2 }}>
             Close
           </Button>
         </DialogContent>

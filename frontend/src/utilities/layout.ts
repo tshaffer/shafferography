@@ -1,20 +1,17 @@
-import { cloneDeep } from 'lodash';
-import { bordersSize } from '../constants';
 import { GridRowData, MediaItem } from '../types';
 
 export const getGridRowHeight = (
-  rowWidth: number,
+  availableWidth: number,  // Renamed from rowWidth to match dynamic calculations
   targetHeight: number,
   mediaItems: MediaItem[],
   startingMediaItemIndex: number,
-  maxRowIndex: number
+  maxRowIndex: number,
+  margin: number = 8 // Optional, default to 8px (4px left + 4px right)
 ): GridRowData => {
-  const margin = 8; // Total margin (4px left + 4px right)
   let totalWidth = 0;
   let totalImageWidth = 0;
   let itemCount = 0;
   let adjustedHeight = targetHeight;
-  const itemWidths: number[] = [];
   const itemWidthsWithoutMargin: number[] = [];
 
   const roundToPrecision = (value: number, precision: number): number => {
@@ -22,15 +19,17 @@ export const getGridRowHeight = (
     return Math.round(value * factor) / factor;
   };
 
-  // First pass: Determine how many items can fit in the row using the target height
+  /** Pass 1: Determine how many items can fit using target height */
   for (let i = startingMediaItemIndex; i <= maxRowIndex; i++) {
     const item = mediaItems[i];
-    const itemAspectRatio = item.width! / item.height!;
+    if (!item.width || !item.height) continue; // Ensure valid dimensions
+
+    const itemAspectRatio = item.width / item.height;
     const scaledWidth = itemAspectRatio * targetHeight;
     const scaledWidthWithMargin = scaledWidth + margin;
 
-    // Check if adding this item would exceed the row width
-    if (totalWidth + scaledWidthWithMargin > rowWidth) {
+    // Stop adding items if row width is exceeded
+    if (totalWidth + scaledWidthWithMargin > availableWidth) {
       break;
     }
 
@@ -39,12 +38,13 @@ export const getGridRowHeight = (
     itemCount++;
   }
 
-  // Adjust height if the row was not filled using the target height
-  if (totalWidth < rowWidth && itemCount > 0) {
-    adjustedHeight = targetHeight * ((rowWidth - (itemCount * margin)) / totalImageWidth);
+  /** Adjust height if the row wasn't fully filled */
+  if (totalWidth < availableWidth && itemCount > 0) {
+    const availableSpace = availableWidth - itemCount * margin;
+    adjustedHeight = targetHeight * (availableSpace / totalImageWidth);
   }
 
-  // Second pass: Calculate the rendered width of each item in the row using the adjusted height
+  /** Pass 2: Calculate exact rendered widths using adjusted height */
   for (let i = startingMediaItemIndex; i < startingMediaItemIndex + itemCount; i++) {
     const item = mediaItems[i];
     const itemAspectRatio = item.width! / item.height!;

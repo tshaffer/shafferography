@@ -9,6 +9,7 @@ import SurveyView from './SurveyView';
 import { TedTaggerDispatch } from '../models';
 import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
 import { PhotoLayout, MediaItem } from '../types';
+import GridView from './GridView';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
@@ -48,7 +49,7 @@ const PhotosContainer = (props: PhotosContainerProps) => {
       return (
         <React.Fragment>
           <div id='centerColumn'>
-            <PhotoGrid />
+            <GridView />
           </div>
         </React.Fragment>
       );

@@ -14,6 +14,7 @@ export interface GridRowPropsFromParent {
   numMediaItems: number;
   rowHeight: number;
   cellWidths: number[];
+  setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void; // Add setTooltip prop
 }
 
 export interface GridRowProps extends GridRowPropsFromParent {
@@ -25,7 +26,6 @@ export interface GridRowProps extends GridRowPropsFromParent {
 const GridRow = (props: GridRowProps) => {
 
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
-
   const allMediaItems = useSelector(getMediaItems, shallowEqual);
   const displayMetadata = useSelector(getDisplayMetadata);
 
@@ -86,6 +86,7 @@ const GridRow = (props: GridRowProps) => {
         mediaItem={allMediaItems[mediaItemIndex]}
         rowHeight={props.rowHeight}
         cellWidth={cellWidth}
+        setTooltip={props.setTooltip} // Pass tooltip handler to OldGridCell
       />
     );
   };
@@ -102,11 +103,6 @@ const GridRow = (props: GridRowProps) => {
   const gridCells = getGridCells();
   const metadataHeight: number = displayMetadata ? 60 : 0;
   const heightAttribute = `${props.rowHeight + metadataHeight + bordersSize}px`;
-
-  // if (props.mediaItemIndex < 8) {
-  //   console.log('render gridRow, index:', props.mediaItemIndex);
-  //   console.log('height:', heightAttribute);
-  // }
 
   return (
     <div style={{ height: heightAttribute, backgroundColor: 'white' }}>

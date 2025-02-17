@@ -17,6 +17,7 @@ export interface OldGridCellPropsFromParent {
   mediaItem: MediaItem;
   rowHeight: number;
   cellWidth: number;
+  setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void;
 }
 
 export interface OldGridCellProps extends OldGridCellPropsFromParent {
@@ -46,8 +47,18 @@ const OldGridCell = (props: OldGridCellProps) => {
     props.onClickPhoto(props.mediaItem.uniqueId, e.metaKey || e.ctrlKey, e.shiftKey);
   };
 
-  const handleMouseEnter = () => setHovered(true);
-  const handleMouseLeave = () => setHovered(false);
+  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    props.setTooltip({
+      text: mediaItem.fileName,
+      position: { top: rect.top + 30, left: rect.left + rect.width / 2 },
+    });
+    setHovered(true);
+  };
+  const handleMouseLeave = () => {
+    props.setTooltip(null);
+    setHovered(false);
+  }
 
   const handleClicks = (e: React.MouseEvent<HTMLImageElement, MouseEvent>) => {
     if (clickTimeout !== null) {
@@ -64,75 +75,59 @@ const OldGridCell = (props: OldGridCellProps) => {
     }
   };
 
-  const widthAttribute = `${props.cellWidth}px`;
-  const imgHeightAttribute = `${props.rowHeight}px`;
-  const divHeightAttribute = `${props.rowHeight}px`;
-
-  let borderAttr = `${borderSizeStr} solid ${props.isSelected ? 'white' : 'white'}`;
-
-  // console.log("OldGridCell rerendered for:", props.mediaItem.fileName, "isSelected:", props.isSelected);
-  // console.log("OldGridCell rerendered");
-
-  // if (props.mediaItemIndex < 8) {
-  //   console.log('render oldGridCell, index:', props.mediaItemIndex);
-  //   console.log('height:', divHeightAttribute);
-  // }
-
   return (
-    <Tooltip title={props.mediaItem.fileName} placement='top'>
-      <div
-        style={{
-          position: 'relative',
-          display: 'inline-block',
-          width: widthAttribute,
-          height: divHeightAttribute,
-          border: borderAttr,
-          cursor: 'pointer',
-        }}
-        onClick={handleClicks}
-        onMouseEnter={handleMouseEnter}
-        onMouseLeave={handleMouseLeave}
-      >
-        {/* Selection Checkmark */}
-        {(hovered || props.isSelected) && (
-          <div
-            style={{
-              position: 'absolute',
-              top: '8px',
-              left: '8px',
-              width: '24px',
-              height: '24px',
-              backgroundColor: props.isSelected ? 'blue' : 'rgba(255,255,255,0.7)',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              zIndex: 10,
-            }}
-            onClick={handleClicks}
-          >
-            {props.isSelected && <span style={{ color: 'white', fontWeight: 'bold' }}>✔</span>}
-          </div>
-        )}
+    <div
+      style={{
+        position: 'relative',
+        display: 'inline-block',
+        width: `${props.cellWidth}px`,
+        height: `${props.rowHeight}px`,
+        border: `${borderSizeStr} solid ${props.isSelected ? 'white' : 'white'}`,
+        cursor: 'pointer',
+      }}
+      onClick={handleClicks}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      {/* Selection Checkmark */}
+      {(hovered || props.isSelected) && (
+        <div
+          style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            width: '24px',
+            height: '24px',
+            backgroundColor: props.isSelected ? 'blue' : 'rgba(255,255,255,0.7)',
+            borderRadius: '50%',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 10,
+          }}
+          onClick={handleClicks}
+        >
+          {props.isSelected && <span style={{ color: 'white', fontWeight: 'bold' }}>✔</span>}
+        </div>
+      )}
 
-        {/* Blue overlay when selected */}
-        {props.isSelected && (
-          <div
-            style={{
-              position: 'absolute',
-              top: 0,
-              left: 0,
-              width: '100%',
-              height: '100%',
-              backgroundColor: 'rgba(0, 0, 255, 0.3)',
-              zIndex: 5,
-            }}
-          />
-        )}
+      {/* Blue overlay when selected */}
+      {props.isSelected && (
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            width: '100%',
+            height: '100%',
+            backgroundColor: 'rgba(0, 0, 255, 0.3)',
+            zIndex: 5,
+          }}
+        />
+      )}
 
-        <img src={photoUrl} width={widthAttribute} height={imgHeightAttribute} loading='lazy' />
-      </div>
-    </Tooltip>
+      <img src={photoUrl} width={props.cellWidth} height={props.rowHeight} loading='lazy' />
+    </div>
   );
 };
 

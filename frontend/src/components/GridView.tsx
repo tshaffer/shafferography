@@ -5,8 +5,9 @@ import { GridRowData, MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
 import { getAppInitialized, getMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
 import { getGridRowHeight } from '../utilities';
-import { centerColumnWidth, targetHeights } from '../constants';
+import { targetHeights } from '../constants';
 import GridRow from './GridRow';
+import GlobalTooltip from './GlobalTooltip';
 
 export interface GridViewProps {
   appInitialized: boolean;
@@ -16,9 +17,9 @@ export interface GridViewProps {
 }
 
 const GridView = (props: GridViewProps) => {
-
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
+  const [tooltip, setTooltip] = React.useState<{ text: string; position: { top: number; left: number } } | null>(null);
 
   React.useEffect(() => {
     const updateGridWidth = () => {
@@ -69,6 +70,7 @@ const GridView = (props: GridViewProps) => {
         numMediaItems={numMediaItems}
         rowHeight={rowHeight}
         cellWidths={cellWidths}
+        setTooltip={setTooltip} // Pass tooltip handler to GridRow
       />
     );
   };
@@ -78,6 +80,9 @@ const GridView = (props: GridViewProps) => {
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>
       {gridRows.map(renderGridRow)}
+
+      {/* Global Tooltip */}
+      <GlobalTooltip tooltip={tooltip} />
     </div>
   );
 };

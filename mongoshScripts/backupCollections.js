@@ -2,10 +2,19 @@ use pgPhotos;
 
 const collections = [
   "mediaitems",
-  "deletedmediaitems"
+  "deletedmediaitems",
+  "apptagavatars",
+  "keywordnodes",
+  "keywords",
+  "photostodisplayspecs",
+  "tags",
+  "takeouts",
+  "users",
+  "usertagavatars",
+
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-03-0-2025";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-17-0-2025";
 
 const fs = require("fs");
 

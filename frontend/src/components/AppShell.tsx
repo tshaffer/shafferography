@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadTakeouts } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setGoogleUserProfile } from "../models";
+import { loadMediaItems, loadMediaItemsByPhotoSet, loadPhotoSets, loadTakeouts } from "../controllers";
+import { TedTaggerDispatch, setAppInitialized, setGoogleUserProfile, setPhotoSetId } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
 import { MediaItem, PhotoLayout } from "../types";
 import PhotosContainer from './PhotosContainer';
@@ -48,9 +48,12 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onLoadMediaItems: () => any;
+  onLoadMediaItemsByPhotoSet: (photoSetId: string) => any;
   onLoadTakeouts: () => any;
+  onLoadPhotoSets: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
+  onSetPhotoSetId: (photoSetId: string) => any;
 }
 
 const AppShell = (props: AppShellProps) => {
@@ -168,16 +171,16 @@ const AppShell = (props: AppShellProps) => {
     const lastGoogleId = localStorage.getItem('googleId');
     const loggedOut = localStorage.getItem('loggedOut');
 
-    console.log('useEffect triggered.');
-    console.log('accessToken:', accessToken);
-    console.log('expiresIn:', expiresIn);
-    console.log('googleId:', googleId);
-    console.log('lastGoogleId:', lastGoogleId);
-    console.log('loggedOut:', loggedOut);
+    // console.log('useEffect triggered.');
+    // console.log('accessToken:', accessToken);
+    // console.log('expiresIn:', expiresIn);
+    // console.log('googleId:', googleId);
+    // console.log('lastGoogleId:', lastGoogleId);
+    // console.log('loggedOut:', loggedOut);
 
     // Handle the loggedOut flag and exit if needed
     if (loggedOut === 'true') {
-      console.log('User already logged out.');
+      // console.log('User already logged out.');
       localStorage.removeItem('loggedOut');
       setIsLoggedIn(false);
       return; // Prevent further execution
@@ -185,13 +188,13 @@ const AppShell = (props: AppShellProps) => {
 
     // Detect user switch and clear localStorage if needed
     if (googleId && googleId !== lastGoogleId) {
-      console.log('Detected user switch. Clearing localStorage.');
+      // console.log('Detected user switch. Clearing localStorage.');
       localStorage.clear();
     }
 
     // If query parameters are present, save tokens and clear the URL
     if (accessToken && expiresIn && googleId) {
-      console.log('Saving tokens from query params...');
+      // console.log('Saving tokens from query params...');
       saveTokens(accessToken, parseInt(expiresIn), googleId);
       setIsLoggedIn(true);
       window.history.replaceState({}, document.title, '/'); // Clear query params from URL
@@ -201,7 +204,7 @@ const AppShell = (props: AppShellProps) => {
       console.warn('Token expired or missing. Attempting to fetch from server...');
       fetchAccessToken(); // Invoke fetchAccessToken here
     } else {
-      console.log('Tokens are valid. User is logged in.');
+      // console.log('Tokens are valid. User is logged in.');
       setIsLoggedIn(true);
       fetchUserProfile();
     }
@@ -210,20 +213,38 @@ const AppShell = (props: AppShellProps) => {
   const fetchUserProfile = async () => {
     try {
       const response = await fetch('http://localhost:8080/user-profile', { credentials: 'include' });
-      if (!response.ok) throw new Error('Failed to fetch user profile');
+      // if (!response.ok) throw new Error('Failed to fetch user profile');
       const data = await response.json();
-      console.log('User Profile:', data);
+      // console.log('User Profile:', data);
       props.onSetGoogleUserProfile(data);
       return data;
     } catch (error) {
-      console.error(error);
+      // console.error(error);
     }
   };
 
   React.useEffect(() => {
+
+    const initializePhotoSetId = async (): Promise<string | null> => {
+      const photoSetId: string | null = localStorage.getItem('photoSetId');
+      if (photoSetId) {
+        props.onSetPhotoSetId(photoSetId);
+      }
+      return photoSetId;
+    }
+
     props.onLoadTakeouts()
       .then(function () {
-        return props.onLoadMediaItems()
+        return props.onLoadPhotoSets()
+      }).then(function () {
+        return initializePhotoSetId()
+      }).then(function (photoSetId: string | null) {
+        console.log('photoSetId: ', photoSetId);
+        if (!photoSetId) {
+          return props.onLoadMediaItems()
+        } else {
+          return props.onLoadMediaItemsByPhotoSet(photoSetId)
+        }
       }).then(function () {
         return props.onSetAppInitialized();
       });
@@ -288,9 +309,12 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onLoadMediaItems: loadMediaItems,
+    onLoadMediaItemsByPhotoSet: loadMediaItemsByPhotoSet,
     onLoadTakeouts: loadTakeouts,
+    onLoadPhotoSets: loadPhotoSets,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
+    onSetPhotoSetId: setPhotoSetId,
   }, dispatch);
 };
 

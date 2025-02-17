@@ -54,6 +54,9 @@ export const uploadFiles = async (request: Request, response: Response): Promise
         throw err;
       }
 
+      const photoSetId = request.body.photoSetId;
+      console.log('photoSetId:', photoSetId);
+      
       const albumName = request.body.albumName; // Multer parses this now
       console.log('Album Name:', albumName);
 
@@ -63,7 +66,7 @@ export const uploadFiles = async (request: Request, response: Response): Promise
       const uploadedCameraFiles: Express.Multer.File[] = (request as any).files;
       console.log(uploadedCameraFiles);
 
-      resolve({ albumName, files: uploadedCameraFiles });
+      resolve({ photoSetId, albumName, files: uploadedCameraFiles });
     });
   });
 };
@@ -93,10 +96,10 @@ export const uploadPeopleTakeoutFiles = async (request: Request, response: Respo
 };
 
 
-async function getLocalStorageMediaItems(imageFilePaths: string[]): Promise<MediaItem[]> {
+async function getLocalStorageMediaItems(photoSetId: string, imageFilePaths: string[]): Promise<MediaItem[]> {
 
   const mediaItems: MediaItem[] = await Promise.all(imageFilePaths.map(async (imageFilePath) => {
-    const mediaItem: MediaItem = await getLocalStorageMediaItem(imageFilePath);
+    const mediaItem: MediaItem = await getLocalStorageMediaItem(photoSetId, imageFilePath);
     return mediaItem;
   }));
 
@@ -161,7 +164,7 @@ async function extractGeoData(tags: Tags): Promise<GeoData | null> {
 }
 
 
-async function getLocalStorageMediaItem(fullPath: string): Promise<MediaItem> {
+async function getLocalStorageMediaItem(photoSetId: string, fullPath: string): Promise<MediaItem> {
 
   const exifData: Tags = await retrieveExifData(fullPath);
   const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
@@ -189,6 +192,7 @@ async function getLocalStorageMediaItem(fullPath: string): Promise<MediaItem> {
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
     reviewLevel: ReviewLevel.Unreviewed,
+    photoSetId,
   }
 
   return mediaItem;
@@ -241,12 +245,12 @@ const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaIt
   return [];
 }
 
-export const importFiles = async (imageFilePaths: string[]): Promise<any> => {
+export const importFiles = async (photoSetId: string, imageFilePaths: string[]): Promise<any> => {
 
   // convert HEIC files to JPEG
   const updatedFilePaths: string[] = await convertFilesToJpeg(imageFilePaths);
 
-  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(updatedFilePaths);
+  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(photoSetId, updatedFilePaths);
 
   // skip step that checks for image file existence in db
 

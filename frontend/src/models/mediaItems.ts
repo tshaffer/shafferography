@@ -1,7 +1,7 @@
 import { cloneDeep, isNil } from 'lodash';
 
 import { MediaItem, MediaItemsState, ReviewLevel } from '../types';
-import { TedTaggerModelBaseAction } from './baseAction';
+import { TedTaggerAction, TedTaggerModelBaseAction } from './baseAction';
 
 // ------------------------------------
 // Constants
@@ -9,6 +9,8 @@ import { TedTaggerModelBaseAction } from './baseAction';
 export const REPLACE_MEDIA_ITEMS = 'REPLACE_MEDIA_ITEMS';
 export const ADD_MEDIA_ITEMS = 'ADD_MEDIA_ITEMS';
 export const DELETE_MEDIA_ITEMS = 'DELETE_MEDIA_ITEMS';
+export const CLEAR_MEDIA_ITEMS = 'CLEAR_MEDIA_ITEMS';
+
 export const ADD_KEYWORD_TO_MEDIA_ITEM_IDS = 'ADD_KEYWORD_TO_MEDIA_ITEM_IDS';
 export const REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS = 'REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS';
 export const ADD_KEYWORD_TO_MEDIA_ITEMS = 'ADD_KEYWORD_TO_MEDIA_ITEMS';
@@ -108,6 +110,11 @@ export const deleteMediaItemsRedux = (
     }
   };
 };
+
+export const clearMediaItems = (): TedTaggerAction<any> => ({
+  type: 'CLEAR_MEDIA_ITEMS',
+  payload: {},
+});
 
 export const clearDeletedMediaItemsRedux = (
 ) => {
@@ -237,6 +244,12 @@ export const mediaItemsStateReducer = (
       return {
         ...state,
         mediaItems: state.mediaItems.concat(action.payload.mediaItems)
+      };
+    }
+    case CLEAR_MEDIA_ITEMS: {
+      return {
+        ...state,
+        mediaItems: []
       };
     }
     case SET_DELETED_MEDIA_ITEMS: {

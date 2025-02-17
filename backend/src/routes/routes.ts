@@ -1,10 +1,5 @@
 import express from 'express';
 import {
-  getIndex,
-  getCSS,
-  getBundle,
-  getBundleMap,
-  getImage,
   getMediaItemsToDisplay,
   getVersion,
   getAllKeywordData,
@@ -12,7 +7,6 @@ import {
   addKeywordNode,
   setRootKeywordNode,
   getMediaItemsToDisplayFromSearchSpec,
-  addTakeout,
   getTakeouts,
   importFromTakeoutEndpoint,
   initializeKeywordTree,
@@ -28,28 +22,27 @@ import {
   uploadPeopleTakeoutsEndpoint,
   updateReviewLevelEndpoint,
   getMediaItemsByReviewLevels,
+  getPhotoSets,
+  addPhotoSet,
+  getMediaItemsByPhotoSet,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
-  // app.get('/', getIndex);
-  // app.get('/app', getIndex);
-  // app.get('/index.html', getIndex);
-  // app.get('/css/app.css', getCSS);
-  // app.get('/build/bundle.js', getBundle);
-  // app.get('/build/bundle.js.map', getBundleMap);
-  // app.get('/images/test.jpg', getImage);
-
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
+  app.get('/api/v1/mediaItemsByPhotoSet', getMediaItemsByPhotoSet);
   app.get('/api/v1/mediaItemsByReviewLevels', getMediaItemsByReviewLevels);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
   app.get('/api/v1/takeouts', getTakeouts);
   app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
+  app.get('/api/v1/photoSets', getPhotoSets);
 
   app.post('/api/v1/deleteMediaItems', deleteMediaItems);
   app.post('/api/v1/clearDeletedMediaItems', clearDeletedMediaItems);
   app.post('/api/v1/removeDeletedMediaItem', removeDeletedMediaItem);
+
+  app.post('/api/v1/photoSet', addPhotoSet);
 
   app.post('/api/v1/addKeyword', addKeyword);
   app.post('/api/v1/addKeywordNode', addKeywordNode);

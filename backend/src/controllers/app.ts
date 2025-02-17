@@ -27,7 +27,10 @@ import {
   getKeywordsFromDb,
   updateMediaItemFieldsInDb,
   updateMediaItemsFieldsInDb,
-  getMediaItemsFromDbByReviewLevels
+  getMediaItemsFromDbByReviewLevels,
+  getAllPhotoSetsFromDb,
+  addPhotoSetToDb,
+  getMediaItemsByPhotoSetFromDb
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, UploadMediaFilesResponse, StringToStringLUT } from '../types';
 import {
@@ -39,6 +42,7 @@ import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
 import { importFiles, uploadFiles, uploadPeopleTakeoutFiles } from './uploadImport';
 import { isNil } from 'lodash';
+import { IPhotoSet } from '../models';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {
@@ -46,6 +50,16 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   };
   response.json(data);
 };
+
+export const getMediaItemsByPhotoSet = async (request: Request, response: Response) => {
+  const photoSetId: string | null = request.query.photoSetId ? request.query.photoSetId as string : null;
+  if (!photoSetId) {
+    response.status(400).send('photoSetId is required');
+    return;
+  }
+  const mediaItems: MediaItem[] = await getMediaItemsByPhotoSetFromDb(photoSetId);
+  response.json(mediaItems);
+}
 
 export const getMediaItemsToDisplay = async (request: Request, response: Response) => {
 
@@ -249,10 +263,10 @@ export const getSubdirectoriesFromFs = async (dirPath: string): Promise<string[]
 export const uploadAndImportEndpoint = async (request: Request, response: Response, next: any) => {
   try {
     const uploadedMediaFilesResponse: UploadMediaFilesResponse = await uploadFiles(request, response);
-    const { albumName, files } = uploadedMediaFilesResponse;
+    const { photoSetId, albumName, files } = uploadedMediaFilesResponse;
     const filePaths: string[] = files.map((file: Express.Multer.File) => file.path);
 
-    await importFiles(filePaths);
+    await importFiles(photoSetId, filePaths);
 
     response.sendStatus(200);
   } catch (error) {
@@ -356,3 +370,14 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
     response.status(500).json(error);
   }
 }
+
+export const getPhotoSets = async (request: Request, response: Response, next: any) => {
+  const photoSets: any = await getAllPhotoSetsFromDb();
+  response.json(photoSets);
+};
+
+export const addPhotoSet = async (request: Request, response: Response, next: any) => {
+  const newPhotoSet: IPhotoSet = await addPhotoSetToDb(request.body);
+  response.json(newPhotoSet);
+}
+

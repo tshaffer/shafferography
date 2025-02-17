@@ -107,3 +107,9 @@ export interface GoogleUserProfile {
   email: string;
   name: string;
 }
+
+export interface PhotoSet {
+  photoSetId: string;
+  photoSetName: string;
+}
+

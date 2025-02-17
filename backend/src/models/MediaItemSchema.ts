@@ -32,6 +32,7 @@ const MediaitemSchema = new Schema(
     }],
     keywordNodeIds: [String],
     reviewLevel: { type: String, required: true },                // review level
+    photoSetId: { type: String, required: true },
   }
 );
 

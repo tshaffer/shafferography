@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { connect } from 'react-redux';
 
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider } from "@mui/material";
+import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider, Select, SelectChangeEvent } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -26,10 +26,10 @@ import TuneIcon from '@mui/icons-material/Tune';
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, importFromTakeout, uploadRawMedia, uploadToGoogle } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout } from '../selectors';
-import { MediaItem, PhotoLayout } from '../types';
+import { deleteMediaItems, deselectAllPhotos, importFromTakeout, reloadMediaItemsByPhotoSet, uploadRawMedia, uploadToGoogle } from '../controllers';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout, getPhotoSetId, getPhotoSet, getPhotoSets } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoSet } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import ImportFromTakeoutDialog from './ImportFromTakeoutDialog';
@@ -70,6 +70,10 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   photoLayout: PhotoLayout;
   numGridColumns: number;
   selectedMediaItemsCount: number;
+  photoSetId: string;
+  photoSet: PhotoSet | undefined;
+  photoSets: PhotoSet[];
+
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
@@ -77,9 +81,11 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onDeselectAllPhotos: () => void;
   onDeleteMediaItems: (mediaItemIds: string[]) => any;
   onImportFromTakeout: (id: string) => void;
+  onSetPhotoSetId: (photoSetId: string) => void;
+  onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
 }
 
-const TopNavigationBar = (props: TopNavigationBarProps) => {
+const TopNavigationBar: React.FC<any> = (props) => {
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
@@ -91,6 +97,17 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
+  React.useEffect(() => {
+
+    if (props.photoSets.length === 0) {
+      props.onSetPhotoSetId(null); // Clear Redux state
+    } else if (!props.photoSetId || !props.photoSets.some((set: PhotoSet | undefined) => set && set.photoSetId === props.photoSetId)) {
+      // ✅ Auto-select first available photo set when sets are added or when selection is invalid
+      props.onSetPhotoSetId(props.photoSets[0].photoSetId);
+    }
+  }, [props.photoSets, props.photoSetId, props.onSetPhotoSetId]);
+
+
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
       return '240px';
@@ -98,6 +115,13 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
       return 0;
     }
   }
+
+  const handlePhotoSetChange = (event: SelectChangeEvent<string>) => {
+    const newPhotoSetId = event.target.value as string;
+    props.onSetPhotoSetId(newPhotoSetId);
+    props.onReloadMediaItemsByPhotoSet(newPhotoSetId);
+    localStorage.setItem('photoSetId', newPhotoSetId);
+  };
 
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
@@ -111,7 +135,9 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     setShowImportFromTakeoutDialog(false);
   };
 
-  const handleImportFromDrive = async (files: FileList) => {
+  const handleImportFromDrive = async (files: FileList, photoSetId: string) => {
+
+    console.log('handleImportFromDrive', files, photoSetId);
 
     if (!files) {
       setError('Please select file(s) first');
@@ -128,6 +154,9 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     Array.from(files).forEach((file) => {
       formData.append('files', file, file.name);
     });
+
+    // Append additional photoSetId
+    formData.append('photoSetId', photoSetId);
 
     try {
       const response = await uploadRawMedia(formData);
@@ -152,7 +181,7 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
     setError(null);
     setSuccessMessage(null);
 
-    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem) => mediaItem.uniqueId);
+    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem: any) => mediaItem.uniqueId);
 
     try {
       const response = await uploadToGoogle(albumName, mediaItemIds);
@@ -335,6 +364,25 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
 
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
+          {/* Photo Set Selection Dropdown */}
+          <Select
+            value={props.photoSetId || ""}
+            onChange={handlePhotoSetChange}
+            displayEmpty
+            disabled={props.photoSets.length === 0}
+            sx={{ minWidth: 200, backgroundColor: "white", borderRadius: 1, mr: 2 }}
+          >
+            {props.photoSets.length > 0 ? (
+              (props.photoSets as PhotoSet[]).map((set: PhotoSet) => (
+                <MenuItem key={set.photoSetId as string} value={set.photoSetId as string}>
+                  {set.photoSetName}
+                </MenuItem>
+              ))
+            ) : (
+              <MenuItem value='' disabled>No Photo Sets Available</MenuItem>
+            )}
+          </Select>
+
           <Tooltip title="Zoom In / Out">
             <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>
               <TuneIcon />
@@ -479,31 +527,36 @@ const TopNavigationBar = (props: TopNavigationBarProps) => {
   )
 }
 
-function mapStateToProps(state: any) {
+function mapStateToProps(state: any): any {
+
+  const photoSetId: string = getPhotoSetId(state);
 
   return {
-    numGridColumns: getNumGridColumns(state),
-    selectedMediaItemsCount: getSelectedMediaItemsCount(state),
-    mediaItems: getMediaItems(state),
     mediaItemIds: getMediaItemIds(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
     selectedMediaItems: getSelectedMediaItems(state),
-    loupeViewMediaItemId: getLoupeViewMediaItemId(state),
-    loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
     photoLayout: getPhotoLayout(state),
+    numGridColumns: getNumGridColumns(state),
+    selectedMediaItemsCount: getSelectedMediaItemsCount(state),
+    photoSetId,
+    photoSet: getPhotoSet(state, photoSetId),
+    photoSets: getPhotoSets(state),
+    mediaItems: getMediaItems(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
-    onSetNumGridColumns: setNumGridColumnsRedux,
-    onDeselectAllPhotos: deselectAllPhotos,
     onSetPhotoLayout: setPhotoLayoutRedux,
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
+    onSetNumGridColumns: setNumGridColumnsRedux,
+    onDeselectAllPhotos: deselectAllPhotos,
     onDeleteMediaItems: deleteMediaItems,
     onImportFromTakeout: importFromTakeout,
+    onSetPhotoSetId: setPhotoSetId,
+    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(TopNavigationBar);
+export default connect(mapStateToProps, mapDispatchToProps)(TopNavigationBar) as React.FC<any>;

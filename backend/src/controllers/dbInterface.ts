@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { isArray, isEmpty, isNil } from 'lodash';
+import { isEmpty, isNil } from 'lodash';
 import {
   getDeletedMediaItemModel,
   getKeywordModel,
@@ -19,10 +19,14 @@ import {
   Takeout,
   KeywordData,
   User,
+  PhotoSet,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, ReviewLevel, SearchRuleType } from '../types/enums';
 import { getTakeoutModel } from '../models';
+
+import { PhotoSetModel } from '../models';
+import { IPhotoSet } from '../models';
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
   const mediaItemModel = getMediaitemModel();
@@ -41,6 +45,23 @@ export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
   for (const document of documents) {
     const mediaItem: MediaItem = document.toObject() as MediaItem;
     mediaItem.uniqueId = document.uniqueId.toString();
+    mediaItems.push(mediaItem);
+  }
+  return mediaItems;
+}
+
+export const getMediaItemsByPhotoSetFromDb = async (photoSetId: string): Promise<MediaItem[]> => {
+  const mediaItemModel = getMediaitemModel();
+
+  const querySpec = { photoSetId };
+
+  const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
+
+  const documents: any = await query.exec();
+  const mediaItems: MediaItem[] = [];
+  for (const document of documents) {
+    const mediaItem: MediaItem = document.toObject() as MediaItem;
+    mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
     mediaItems.push(mediaItem);
   }
   return mediaItems;
@@ -367,9 +388,9 @@ export const addAutoPersonKeywordsToDb = async (keywordsSet: Set<string>): Promi
     }
   }
 
-  if (keywordsToAddToDb.length > 0) {
-    const keywordModel = getKeywordModel();
-    try {
+  try {
+    if (keywordsToAddToDb.length > 0) {
+      const keywordModel = getKeywordModel();
       return keywordModel.collection.insertMany(keywordsToAddToDb)
         .then((retVal: any) => {
 
@@ -402,21 +423,12 @@ export const addAutoPersonKeywordsToDb = async (keywordsSet: Set<string>): Promi
               return keywordData;
             });
         })
-        .catch((error: any) => {
-          console.error('db add error: ', error);
-          debugger;
-          return null;
-          // if (error.code === 11000) {
-          //   return;
-          // } else {
-          //   debugger;
-          // }
-        });
-    } catch (error: any) {
-      debugger;
-      return null;
     }
+  } catch (error: any) {
+    debugger;
+    return null;
   }
+
   return null;
 }
 
@@ -573,3 +585,24 @@ export const getMediaItemsInNamedAlbumFromDb = async (albumName: string): Promis
   }
   return mediaItems;
 }
+
+export const getAllPhotoSetsFromDb = async (): Promise<IPhotoSet[]> => {
+  try {
+    const photoSets = await PhotoSetModel.find().exec();
+    return photoSets;
+  } catch (error) {
+    console.error('Error retrieving photo sets:', error);
+    throw error;
+  }
+};
+
+export const addPhotoSetToDb = async (photoSet: Required<PhotoSet>): Promise<IPhotoSet> => {
+  try {
+    const newPhotoSet = new PhotoSetModel(photoSet);
+    await newPhotoSet.save();
+    return newPhotoSet;
+  } catch (error) {
+    console.error('Error adding photo set:', error);
+    throw error;
+  }
+};

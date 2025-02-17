@@ -35,3 +35,7 @@ export const getFullScreenMode = (state: TedTaggerState): boolean => {
 export const getMediaItemZoomFactor = (state: TedTaggerState, mediaItemId: string): number => {
   return state.photoViewSpec.mediaItemZoomFactorById[mediaItemId] || 1;
 };
+
+export const getPhotoSetId = (state: TedTaggerState): string => {
+  return state.photoViewSpec.photoSetId;
+};

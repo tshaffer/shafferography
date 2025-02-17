@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, Takeout } from './entities';
+import { GoogleUserProfile, MediaItem, PhotoSet, Takeout } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -17,6 +17,7 @@ export interface TedTaggerState {
   searchUIState: SearchUIState;
   selectionsState: SelectedMediaItemsState;
   takeoutsState: TakeoutsState;
+  photoSetsState: PhotoSetsState;
 }
 
 export interface AppState {
@@ -72,6 +73,10 @@ export interface LocalStorageState {
   folders: string[];
 }
 
+export interface PhotoSetsState {
+  photoSets: PhotoSet[];
+}
+
 export interface PhotoViewSpec {
   photoLayout: PhotoLayout;
   numGridColumns: number;
@@ -81,4 +86,5 @@ export interface PhotoViewSpec {
   scrollPosition: number;
   fullScreenMode: boolean;
   mediaItemZoomFactorById: StringToNumberLUT;
+  photoSetId: string;
 }

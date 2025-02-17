@@ -28,6 +28,7 @@ export interface MediaItem {
   peopleRetrievedFromGoogle: boolean,
   keywordNodeIds: string[],
   reviewLevel: ReviewLevel,
+  photoSetId: string;
 }
 
 export interface DateRangeSpecification {
@@ -100,6 +101,13 @@ export interface UserWithToken extends User {
 }
 
 export interface UploadMediaFilesResponse {
+  photoSetId: string;
   albumName: string;
   files: Express.Multer.File[];
 }
+
+export interface PhotoSet {
+  photoSetId: string;
+  photoSetName: string;
+}
+

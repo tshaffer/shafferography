@@ -6,4 +6,5 @@ export * from './searchUI';
 export * from './takeouts';
 export * from './searchUI';
 export * from './photoViewSpec';
+export * from './photoSets';
 

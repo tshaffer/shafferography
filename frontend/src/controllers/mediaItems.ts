@@ -12,7 +12,8 @@ import {
   removeDeletedMediaItemRedux,
   clearDeletedMediaItemsRedux,
   setDeletedMediaItems,
-  setReviewLevelRedux
+  setReviewLevelRedux,
+  clearMediaItems
 } from '../models';
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
@@ -25,6 +26,35 @@ import {
   getSearchRules,
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
+
+export const loadMediaItemsByPhotoSet = (photoSetId: string): any => {
+
+  return (dispatch: TedTaggerDispatch) => {
+
+    let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSet';
+    path += '?photoSetId=' + photoSetId;
+
+    return axios.get(path).then((mediaItemsResponse: any) => {
+      console.log('loadMediaItemsByPhotoSet, mediaItemsResponse:', mediaItemsResponse);
+      const mediaItems: MediaItem[] = [];
+      const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
+
+      // derive mediaItems from serverMediaItems
+      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
+        const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
+        mediaItems.push(mediaItem);
+      }
+      dispatch(addMediaItems(mediaItems));
+    });
+  };
+}
+
+export const reloadMediaItemsByPhotoSet = (photoSetId: string): any => {
+  return (dispatch: TedTaggerDispatch) => {
+    dispatch(clearMediaItems());
+    dispatch(loadMediaItemsByPhotoSet(photoSetId));
+  }
+};
 
 export const loadMediaItems = (): any => {
 

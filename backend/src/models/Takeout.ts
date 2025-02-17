@@ -17,5 +17,3 @@ export const getTakeoutModel = () => {
   const takeout = connection.model('takeout', TakeoutSchema);
   return takeout;
 }
-
-export default TakeoutSchema;

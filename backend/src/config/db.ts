@@ -1,19 +1,27 @@
 import mongoose from 'mongoose';
 
-export let connection: mongoose.Connection;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/shafferography';
 
-async function connectDB() {
+let connection: mongoose.Connection;
 
+const connectDB = async () => {
   console.log('mongo uri is:');
   console.log(process.env.MONGO_URI);
-  connection = await mongoose.createConnection(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useCreateIndex: true,
-    useFindAndModify: false,
-  });
-  console.log(`MongoDB db connected`);
+  if (!connection) {
+    const conn = await mongoose.createConnection(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      useFindAndModify: false,
+    });
 
-  mongoose.Promise = global.Promise;
+    console.log('MongoDB Connected');
+
+    mongoose.Promise = global.Promise;
+
+    connection = conn;
+  }
+
+  return connection;
 };
 
-export default connectDB;
+export { connectDB, connection };

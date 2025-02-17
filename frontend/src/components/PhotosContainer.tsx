@@ -1,12 +1,9 @@
 import React, { } from 'react';
-import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
-import PhotoGrid from './PhotoGrid';
 import LoupeViewController from './LoupeViewController';
 import SurveyView from './SurveyView';
-import { TedTaggerDispatch } from '../models';
 import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
 import { PhotoLayout, MediaItem } from '../types';
 import GridView from './GridView';
@@ -72,17 +69,5 @@ function mapStateToProps(state: any) {
     photoLayout: getPhotoLayout(state),
   };
 }
-
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    // onLoadKeywordData: loadKeywordData,
-    // onLoadMediaItems: loadMediaItems,
-    // onLoadDeletedMediaItems: loadDeletedMediaItems,
-    // onSetAppInitialized: setAppInitialized,
-    // onLoadTakeouts: loadTakeouts,
-    // onImportFromTakeout: importFromTakeout,
-    // onSetGoogleUserProfile: setGoogleUserProfile,
-  }, dispatch);
-};
 
 export default connect(mapStateToProps)(PhotosContainer);

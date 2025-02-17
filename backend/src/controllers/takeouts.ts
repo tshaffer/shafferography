@@ -185,6 +185,7 @@ const addAllMediaItemsFromTakeout = async (googleAccessToken: string, takeoutFol
           peopleRetrievedFromGoogle: true,
           keywordNodeIds,
           reviewLevel: ReviewLevel.UploadedToGoogle,
+          photoSetId: '',
         }
 
         addedMediaItems.push(dbMediaItem);
@@ -313,6 +314,7 @@ export const getTakeoutAlbumMediaItems = async (takeoutFolder: string, googleMed
           peopleRetrievedFromGoogle: true,
           keywordNodeIds: [],
           reviewLevel: ReviewLevel.UploadedToGoogle,
+          photoSetId: '',
         }
 
         mediaItems.push(mediaItem);

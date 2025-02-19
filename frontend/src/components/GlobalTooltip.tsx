@@ -1,4 +1,3 @@
-import React from 'react';
 import { Tooltip } from '@mui/material';
 
 export interface GlobalTooltipProps {
@@ -10,11 +9,12 @@ const GlobalTooltip = ({ tooltip }: GlobalTooltipProps) => {
     <Tooltip open={!!tooltip} title={tooltip?.text || ''} placement="top">
       <div
         style={{
-          position: 'absolute',
-          top: tooltip?.position.top ?? -9999, // Hide when not active
+          position: 'fixed', // Use fixed so it stays consistent on scroll
+          top: tooltip?.position.top ?? -9999,
           left: tooltip?.position.left ?? -9999,
           width: 1,
           height: 1,
+          pointerEvents: 'none', // Prevent blocking interactions
         }}
       />
     </Tooltip>

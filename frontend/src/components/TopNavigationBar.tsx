@@ -71,7 +71,6 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   numGridColumns: number;
   selectedMediaItemsCount: number;
   photoSetId: string;
-  photoSet: PhotoSet | undefined;
   photoSets: PhotoSet[];
 
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
@@ -539,7 +538,6 @@ function mapStateToProps(state: any): any {
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
     photoSetId,
-    photoSet: getPhotoSet(state, photoSetId),
     photoSets: getPhotoSets(state),
     mediaItems: getMediaItems(state),
   };

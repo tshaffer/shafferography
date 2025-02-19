@@ -13,7 +13,7 @@ import AddIcon from "@mui/icons-material/Add";
 import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { getAppInitialized, getPhotoSets } from '../selectors';
+import { getAppInitialized, getPhotoSets, getPhotoSetId } from '../selectors';
 import { PhotoSet } from '../types';
 import { setPhotoSetId, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
@@ -21,34 +21,34 @@ import { addPhotoSet } from '../controllers';
 
 export interface ImportFromDriveDialogPropsFromParent {
   open: boolean;
-  photoSets: PhotoSet[];
   onImportFromDrive: (files: FileList, photoSetId: string) => void;
   onClose: () => void;
 }
 
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
+  photoSetId: string;
+  photoSets: PhotoSet[];
   onAddPhotoSet: (photoSet: PhotoSet) => void;
   onSetPhotoSetId: (photoSetId: string) => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
-  const [selectedPhotoSet, setSelectedPhotoSet] = React.useState<string>('');
   const [newPhotoSetName, setNewPhotoSetName] = React.useState<string>('');
   const [lastAddedPhotoSetId, setLastAddedPhotoSetId] = React.useState<string | null>(null);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
 
   // ✅ Ensure the selection is only overridden when no selection exists
-  React.useEffect(() => {
-    if (lastAddedPhotoSetId) {
-      setSelectedPhotoSet(lastAddedPhotoSetId);
-      setLastAddedPhotoSetId(null); // Reset tracking
-    } else if (!selectedPhotoSet && props.photoSets.length > 0) {
-      setSelectedPhotoSet(props.photoSets[0].photoSetId); // Default to first available photoSet
-    }
-  }, [props.photoSets, lastAddedPhotoSetId, selectedPhotoSet]);
+  // React.useEffect(() => {
+  //   if (lastAddedPhotoSetId) {
+  //     props.onSetPhotoSetId(lastAddedPhotoSetId);
+  //     setLastAddedPhotoSetId(null); // Reset tracking
+  //   } else if (!props.photoSetId && props.photoSets.length > 0) {
+  //     props.onSetPhotoSetId(props.photoSets[0].photoSetId); // Default to first available photoSet
+  //   }
+  // }, [props.photoSets, lastAddedPhotoSetId, props.photoSetId]);
 
   if (!props.appInitialized || !props.open) {
     return null;
@@ -77,7 +77,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
 
     setLastAddedPhotoSetId(newPhotoSet.photoSetId); // ✅ Track newly added photoSet
-    setSelectedPhotoSet(newPhotoSet.photoSetId);
+    props.onSetPhotoSetId(newPhotoSet.photoSetId);
     setNewPhotoSetName("");
     setIsAddingNew(false);
 
@@ -86,7 +86,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
   const handleImport = () => {
     if (selectedFiles) {
-      let photoSetId = selectedPhotoSet;
+      let photoSetId = props.photoSetId;
       if (isAddingNew) {
         const newPhotoSet: PhotoSet | undefined = createPhotoSet();
         if (!newPhotoSet) return;
@@ -123,8 +123,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               <TextField
                 select
                 label="Choose a Photo Set"
-                value={selectedPhotoSet}
-                onChange={(e) => setSelectedPhotoSet(e.target.value)}
+                value={props.photoSetId}
+                onChange={(e) => props.onSetPhotoSetId(e.target.value)}
                 fullWidth
               >
                 <MenuItem onClick={() => setIsAddingNew(true)}>
@@ -167,6 +167,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
+    photoSetId: getPhotoSetId(state),
     photoSets: getPhotoSets(state),
   };
 }

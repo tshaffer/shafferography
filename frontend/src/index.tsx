@@ -13,6 +13,9 @@ import AppShell from './components/AppShell';
 import { composeWithDevTools } from 'redux-devtools-extension';
 import { initializeDiagnostics } from './utilities';
 
+const startTime:number = Date.now();
+console.log('App Start Time', startTime);
+
 window.React = React;
 
 initializeDiagnostics();

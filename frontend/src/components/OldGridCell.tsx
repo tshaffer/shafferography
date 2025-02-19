@@ -126,7 +126,13 @@ const OldGridCell = (props: OldGridCellProps) => {
         />
       )}
 
-      <img src={photoUrl} width={props.cellWidth} height={props.rowHeight} loading='lazy' />
+      <img
+        src={photoUrl}
+        width={props.cellWidth}
+        height={props.rowHeight}
+        loading='lazy'
+        onLoad={() => console.log('Image loaded at', Date.now())}
+      />
     </div>
   );
 };

@@ -15,7 +15,7 @@ import CloseIcon from "@mui/icons-material/Close";
 
 import { getAppInitialized, getPhotoSets } from '../selectors';
 import { PhotoSet } from '../types';
-import { TedTaggerDispatch } from '../models';
+import { setPhotoSetId, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
 import { addPhotoSet } from '../controllers';
 
@@ -29,6 +29,7 @@ export interface ImportFromDriveDialogPropsFromParent {
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
   onAddPhotoSet: (photoSet: PhotoSet) => void;
+  onSetPhotoSetId: (photoSetId: string) => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
@@ -79,11 +80,19 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       photoSetName: newPhotoSetName,
     };
 
-    props.onAddPhotoSet(newPhotoSet); // Callback to update parent state
+    const setAsCurrent: boolean = props.photoSets.length === 0;
+
+    props.onAddPhotoSet(newPhotoSet);
+    if (setAsCurrent) {
+      props.onSetPhotoSetId(newPhotoSet.photoSetId);
+      localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
+    }
+
     setLastAddedPhotoSetId(newPhotoSet.photoSetId); // ✅ Track newly added photoSet
     setSelectedPhotoSet(newPhotoSet.photoSetId);
     setNewPhotoSetName("");
     setIsAddingNew(false);
+
   };
 
   return (
@@ -116,7 +125,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                 value={selectedPhotoSet}
                 onChange={(e) => setSelectedPhotoSet(e.target.value)}
                 fullWidth
-                // disabled={props.photoSets.length === 0}
               >
                 <MenuItem onClick={() => setIsAddingNew(true)}>
                   <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
@@ -165,6 +173,7 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onAddPhotoSet: addPhotoSet,
+    onSetPhotoSetId: setPhotoSetId,
   }, dispatch);
 };
 

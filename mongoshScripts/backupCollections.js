@@ -14,7 +14,7 @@ const collections = [
 
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-17-0-2025";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-02-19-0-2025";
 
 const fs = require("fs");
 

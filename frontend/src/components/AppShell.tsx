@@ -232,6 +232,8 @@ const AppShell = (props: AppShellProps) => {
       return photoSetId;
     }
 
+    console.log('AppShell: data loads useEffect begins ', Date.now());
+
     props.onLoadPhotoSets()
       .then(function () {
         return initializePhotoSetId()
@@ -244,6 +246,8 @@ const AppShell = (props: AppShellProps) => {
         }
       }).then(function () {
         return props.onSetAppInitialized();
+      }).then(function () {
+        console.log('AppShell: data loads useEffect ends ', Date.now());
       });
   }, []);
 

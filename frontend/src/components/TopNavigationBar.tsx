@@ -369,7 +369,15 @@ const TopNavigationBar: React.FC<any> = (props) => {
             onChange={handlePhotoSetChange}
             displayEmpty
             disabled={props.photoSets.length === 0}
-            sx={{ minWidth: 200, backgroundColor: "white", borderRadius: 1, mr: 2 }}
+            sx={{
+              minWidth: 200,
+              backgroundColor: "white",
+              borderRadius: 1,
+              mr: 2,
+              "& .MuiSelect-select": {
+                padding: "6px 10px", // Adjust padding (top/bottom, left/right)
+              },
+            }}
           >
             {props.photoSets.length > 0 ? (
               (props.photoSets as PhotoSet[]).map((set: PhotoSet) => (

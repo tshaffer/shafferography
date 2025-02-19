@@ -64,15 +64,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const handleImport = () => {
-    if (selectedFiles) {
-      console.log('import files: ', selectedFiles, selectedPhotoSet);
-      props.onImportFromDrive(selectedFiles, selectedPhotoSet);
-      props.onClose();
-    }
-  };
-
-  const handleCreatePhotoSet = () => {
+  const createPhotoSet = (): PhotoSet | undefined => {
     if (!newPhotoSetName.trim()) return;
 
     const newPhotoSet: PhotoSet = {
@@ -80,19 +72,31 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       photoSetName: newPhotoSetName,
     };
 
-    const setAsCurrent: boolean = props.photoSets.length === 0;
-
     props.onAddPhotoSet(newPhotoSet);
-    if (setAsCurrent) {
-      props.onSetPhotoSetId(newPhotoSet.photoSetId);
-      localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
-    }
+    props.onSetPhotoSetId(newPhotoSet.photoSetId);
+    localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
 
     setLastAddedPhotoSetId(newPhotoSet.photoSetId); // ✅ Track newly added photoSet
     setSelectedPhotoSet(newPhotoSet.photoSetId);
     setNewPhotoSetName("");
     setIsAddingNew(false);
 
+    return newPhotoSet;
+  };
+
+  const handleImport = () => {
+    if (selectedFiles) {
+      let photoSetId = selectedPhotoSet;
+      if (isAddingNew) {
+        const newPhotoSet: PhotoSet | undefined = createPhotoSet();
+        if (!newPhotoSet) return;
+        photoSetId = newPhotoSet.photoSetId;
+      }
+
+      console.log('import files: ', selectedFiles, photoSetId);
+      props.onImportFromDrive(selectedFiles, photoSetId);
+      props.onClose();
+    }
   };
 
   return (
@@ -111,9 +115,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                   fullWidth
                   autoFocus
                 />
-                <IconButton onClick={handleCreatePhotoSet} disabled={!newPhotoSetName.trim()}>
-                  <CheckIcon color={newPhotoSetName.trim() ? "primary" : "disabled"} />
-                </IconButton>
                 <IconButton onClick={() => setIsAddingNew(false)}>
                   <CloseIcon />
                 </IconButton>
@@ -154,7 +155,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0}>
+        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (isAddingNew && !newPhotoSetName.trim())}>
           Import
         </Button>
       </DialogActions>

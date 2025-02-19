@@ -116,7 +116,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                 value={selectedPhotoSet}
                 onChange={(e) => setSelectedPhotoSet(e.target.value)}
                 fullWidth
-                disabled={props.photoSets.length === 0}
+                // disabled={props.photoSets.length === 0}
               >
                 <MenuItem onClick={() => setIsAddingNew(true)}>
                   <AddIcon fontSize="small" sx={{ marginRight: 1 }} />

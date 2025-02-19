@@ -102,9 +102,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   return (
     <Dialog onClose={handleClose} open={props.open}>
       <DialogTitle>Import Photos</DialogTitle>
-      <DialogContent style={{ paddingBottom: '0px' }}>
+      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }}>
         <Box component="form" noValidate autoComplete="off">
-
           <Box>
             {isAddingNew ? (
               <Box display="flex" gap={1} alignItems="center">

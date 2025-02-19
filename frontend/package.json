@@ -2,13 +2,9 @@
   "name": "shafferography",
   "private": true,
   "version": "0.0.0",
-  "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build",
-    "dbuild": "tsc -b ||vite build --mode development",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "build": "webpack",
+    "buildW": "webpack --watch"
   },
   "dependencies": {
     "@emotion/react": "^11.9.3",
@@ -44,7 +40,6 @@
     "@types/react-modal": "^3.13.1",
     "@types/react-select": "^5.0.1",
     "@types/uuidv4": "^5.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
     "case-sensitive-paths-webpack-plugin": "2.3.0",
     "copy-webpack-plugin": "^4.2.3",
     "css-loader": "^6.5.1",
@@ -58,7 +53,6 @@
     "ts-loader": "^8.0.7",
     "typescript": "~5.6.2",
     "typescript-eslint": "^8.18.1",
-    "vite": "^6.0.3",
     "webpack": "5.64.4",
     "webpack-cli": "4.9.1"
   }

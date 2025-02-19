@@ -100,7 +100,7 @@ const SurveyView = (props: SurveyViewProps) => {
         const mediaItem: MediaItem | undefined = props.selectedMediaItems.find((p) => p.filePath! === selectedMediaItem.filePath);
         return mediaItem ? (
           <Grid item key={mediaItem.filePath} lg={6}>
-            <Card sx={{ position: "relative", border: "2px solid blue", cursor: "pointer", '&:hover': { opacity: 0.8 } }}>
+            <Card sx={{ position: "relative", border: "2px solid blue", cursor: "pointer" }}>
               <CardMedia component="img" image={getPhotoUrl(mediaItem)} />
             </Card>
           </Grid>

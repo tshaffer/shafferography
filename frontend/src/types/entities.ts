@@ -90,6 +90,12 @@ export interface GridRowData {
   cellWidths: number[];
 }
 
+export interface GoogleUserProfile {
+  googleId: string;
+  email: string;
+  name: string;
+}
+
 export interface PhotoSet {
   photoSetId: string;
   photoSetName: string;

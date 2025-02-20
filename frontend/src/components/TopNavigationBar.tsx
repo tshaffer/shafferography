@@ -21,13 +21,15 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TuneIcon from '@mui/icons-material/Tune';
+import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia, uploadToGoogle } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
+import UploadToGoogleDialog from './UploadToGoogleDialog';
 
 const drawerWidth = 240;
 
@@ -81,9 +83,11 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
 const TopNavigationBar: React.FC<any> = (props) => {
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
+  const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
+  const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -115,6 +119,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
+  };
+
+  const handleCloseUploadToGoogleDialogDialog = () => {
+    setShowUploadToGoogleDialog(false);
   };
 
   const handleImportFromDrive = async (files: FileList, photoSetId: string) => {
@@ -153,6 +161,31 @@ const TopNavigationBar: React.FC<any> = (props) => {
       setError(`Import failed: ${err}`);
     } finally {
       setImporting(false);
+    }
+  };
+
+  const handleUploadToGoogle = async (albumName: string) => {
+    console.log('handleUploadToGoogle', albumName);
+
+    setUploadingToGoogle(true);
+    setError(null);
+    setSuccessMessage(null);
+
+    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem: any) => mediaItem.uniqueId);
+
+    try {
+      const response = await uploadToGoogle(albumName, mediaItemIds);
+
+      if (response.ok) {
+        setSuccessMessage('Upload to google completed successfully!');
+      } else {
+        const errorMessage = await response.text();
+        setError(`Upload to google failed: ${errorMessage}`);
+      }
+    } catch (err) {
+      setError(`Upload to google failed: ${err}`);
+    } finally {
+      setUploadingToGoogle(false);
     }
   };
 
@@ -275,6 +308,16 @@ const TopNavigationBar: React.FC<any> = (props) => {
         open={showImportFromDriveDialog}
         onImportFromDrive={handleImportFromDrive}
         onClose={handleCloseImportFromDriveDialog}
+      />
+    );
+  }
+
+  const renderUploadToGoogleDialog = (): JSX.Element => {
+    return (
+      <UploadToGoogleDialog
+        open={showUploadToGoogleDialog}
+        onUploadToGoogle={handleUploadToGoogle}
+        onClose={handleCloseUploadToGoogleDialogDialog}
       />
     );
   }
@@ -415,6 +458,11 @@ const TopNavigationBar: React.FC<any> = (props) => {
           <Tooltip title="Import from Drive">
             <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><DownloadIcon /></IconButton>
           </Tooltip>
+          <Tooltip title="Upload to Google">
+            <span>
+              <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)} disabled={props.selectedMediaItemsCount === 0}><UploadIcon /></IconButton>
+            </span>
+          </Tooltip>
 
           {/* More Options Menu */}
           <Tooltip title="More Options">
@@ -430,6 +478,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
       </AppBar>
 
       {renderImportFromDriveDialog()}
+      {renderUploadToGoogleDialog()}
 
       <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
         <DialogTitle>Zoom In / Out</DialogTitle>

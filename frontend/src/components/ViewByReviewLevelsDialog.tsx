@@ -29,7 +29,6 @@ const reviewLevels = [
   { key: 'Unreviewed', value: ReviewLevel.Unreviewed },
   { key: 'Ready For Review', value: ReviewLevel.ReadyForReview },
   { key: 'Ready For Upload', value: ReviewLevel.ReadyForUpload },
-  { key: 'Uploaded To Google', value: ReviewLevel.UploadedToGoogle },
 ];
 
 const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {

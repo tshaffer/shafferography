@@ -5,7 +5,6 @@ export * from './mediaItems';
 export * from './selectedMediaItems';
 export * from './keywords';
 export * from './searchUI';
-export * from './takeouts';
 export * from './photoViewSpec';
 export * from './photoSets';
 

@@ -53,9 +53,6 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
         <ListItem button>
           <ListItemText primary="Ready For Upload" />
         </ListItem>
-        <ListItem button>
-          <ListItemText primary="Uploaded To Google" />
-        </ListItem>
         <Divider sx={{ my: 2 }} />
         <Typography variant="subtitle1">Keywords</Typography>
         <ListItem button>

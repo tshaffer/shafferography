@@ -8,7 +8,6 @@ import { mediaItemsStateReducer } from './mediaItems';
 import { selectedMediaItemsStateReducer } from './selectedMediaItems';
 import { keywordsStateReducer } from './keywords';
 import { searchUIStateReducer } from './searchUI';
-import { takeoutsStateReducer } from './takeouts';
 import { photoViewSpecReducer } from './photoViewSpec';
 import { photoSetsStateReducer } from './photoSets';
 
@@ -21,7 +20,6 @@ export const rootReducer = combineReducers<TedTaggerState>({
   selectionsState: selectedMediaItemsStateReducer,
   keywordsState: keywordsStateReducer,
   searchUIState: searchUIStateReducer,
-  takeoutsState: takeoutsStateReducer,
   photoViewSpec: photoViewSpecReducer,
   photoSetsState: photoSetsStateReducer,
 });

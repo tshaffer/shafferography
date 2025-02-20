@@ -42,5 +42,4 @@ export enum ReviewLevel {
   Unreviewed = 'unreviewed',
   ReadyForReview = 'readyForReview',
   ReadyForUpload = 'readyForUpload',
-  UploadedToGoogle = 'uploadedToGoogle',
 }

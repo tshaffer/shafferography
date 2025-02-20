@@ -83,29 +83,11 @@ export interface KeywordData {
   keywordRootNodeId: string;
 }
 
-export interface Takeout {
-  id: string;
-  label: string;
-  albumName: string;
-  path: string;
-}
-
-export interface AddedTakeoutData {
-  addedKeywordData: KeywordData | null;
-  addedMediaItems: MediaItem[];
-}
-
 export interface GridRowData {
   mediaItemIndex: number;
   numMediaItems: number;
   rowHeight: number;
   cellWidths: number[];
-}
-
-export interface GoogleUserProfile {
-  googleId: string;
-  email: string;
-  name: string;
 }
 
 export interface PhotoSet {

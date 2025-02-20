@@ -72,7 +72,6 @@ const SetReviewLevelsDialog = (props: SetReviewLevelsDialogProps) => {
       { value: "unreviewed", label: "Unreviewed" },
       { value: "readyForReview", label: "Ready for Review" },
       { value: "readyForUpload", label: "Ready for Upload" },
-      { value: "uploadedToGoogle", label: "Uploaded to Google" },
     ];
     return (
       <Select
@@ -93,7 +92,7 @@ const SetReviewLevelsDialog = (props: SetReviewLevelsDialogProps) => {
 
   return (
     <Dialog onClose={handleClose} open={open}>
-      <DialogTitle>Import from Takeout</DialogTitle>
+      <DialogTitle>Set Review Levels</DialogTitle>
       <DialogContent style={{ paddingBottom: '0px' }}>
         <Box
           component="form"

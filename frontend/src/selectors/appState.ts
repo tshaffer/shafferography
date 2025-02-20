@@ -11,7 +11,3 @@ export const getMainDisplayMode = (state: TedTaggerState): MainDisplayMode => {
 export const getFullScreenMediaItemId = (state: TedTaggerState): string => {
   return state.appState.fullScreenMediaItemId;
 };
-
-export const getGoogleUserProfile = (state: TedTaggerState): any => {
-  return state.appState.googleUserProfile;
-};

@@ -87,17 +87,11 @@ const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
             <MenuItem value="Unreviewed">Unreviewed</MenuItem>
             <MenuItem value="Ready For Review">Ready For Review</MenuItem>
             <MenuItem value="Ready For Upload">Ready For Upload</MenuItem>
-            <MenuItem value="Uploaded To Google">Uploaded To Google</MenuItem>
           </Select>
         </FormControl>
         <Divider sx={{ my: 2 }} />
         <Typography variant="h6">Quick Actions</Typography>
         <Box sx={{ display: "flex", gap: 1, my: 1 }}>
-          <Tooltip title="Upload to Google Photos">
-            <IconButton color="success">
-              <CloudUploadIcon />
-            </IconButton>
-          </Tooltip>
           <Tooltip title="Delete">
             <IconButton color="error">
               <DeleteIcon />

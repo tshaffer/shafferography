@@ -293,32 +293,6 @@ export const removeDeletedMediaItem = (mediaItemId: string): any => {
   };
 };
 
-export const redownloadMediaItem = (mediaItemId: string): any => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
-    const googleAccessToken: string = localStorage.getItem('googleAccessToken') as string;
-    if (isNil(googleAccessToken) || !isString(googleAccessToken) || isEmpty(googleAccessToken)) {
-      throw new Error('googleAccessToken is invalid');
-    }
-
-    const path = serverUrl + apiUrlFragment + 'redownloadMediaItem';
-
-    const redownloadMediaItemBody = { id: mediaItemId, googleAccessToken };
-
-    return axios.post(
-      path,
-      redownloadMediaItemBody
-    ).then((response) => {
-      return Promise.resolve();
-    }).catch((error) => {
-      console.log('error');
-      console.log(error);
-      return Promise.reject();
-    });
-  };
-};
-
 export const setReviewLevel = (mediaItemIds: string[], reviewLevel: ReviewLevel): any => {
 
   return (dispatch: TedTaggerDispatch) => {

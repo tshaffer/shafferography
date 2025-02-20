@@ -17,22 +17,17 @@ import StarIcon from "@mui/icons-material/Star";
 import ClearIcon from "@mui/icons-material/Clear";
 import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
-import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import TuneIcon from '@mui/icons-material/Tune';
-import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, importFromTakeout, reloadMediaItemsByPhotoSet, uploadRawMedia, uploadToGoogle } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getPhotoLayout, getPhotoSetId, getPhotoSet, getPhotoSets } from '../selectors';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
-import UploadToGoogleDialog from './UploadToGoogleDialog';
-import ImportFromTakeoutDialog from './ImportFromTakeoutDialog';
 
 const drawerWidth = 240;
 
@@ -79,7 +74,6 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
   onDeleteMediaItems: (mediaItemIds: string[]) => any;
-  onImportFromTakeout: (id: string) => void;
   onSetPhotoSetId: (photoSetId: string) => void;
   onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
 }
@@ -87,12 +81,9 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
 const TopNavigationBar: React.FC<any> = (props) => {
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
-  const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
-  const [showImportFromTakeoutDialog, setShowImportFromTakeoutDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
-  const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
 
@@ -124,14 +115,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
-  };
-
-  const handleCloseUploadToGoogleDialogDialog = () => {
-    setShowUploadToGoogleDialog(false);
-  };
-
-  const handleCloseImportFromTakeoutDialog = () => {
-    setShowImportFromTakeoutDialog(false);
   };
 
   const handleImportFromDrive = async (files: FileList, photoSetId: string) => {
@@ -170,31 +153,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
       setError(`Import failed: ${err}`);
     } finally {
       setImporting(false);
-    }
-  };
-
-  const handleUploadToGoogle = async (albumName: string) => {
-    console.log('handleUploadToGoogle', albumName);
-
-    setUploadingToGoogle(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem: any) => mediaItem.uniqueId);
-
-    try {
-      const response = await uploadToGoogle(albumName, mediaItemIds);
-
-      if (response.ok) {
-        setSuccessMessage('Upload to google completed successfully!');
-      } else {
-        const errorMessage = await response.text();
-        setError(`Upload to google failed: ${errorMessage}`);
-      }
-    } catch (err) {
-      setError(`Upload to google failed: ${err}`);
-    } finally {
-      setUploadingToGoogle(false);
     }
   };
 
@@ -250,17 +208,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handleMenuClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleImportFromTakeoutClicked = () => {
-    setAnchorEl(null);
-    console.log("Import Google Takeout triggered");
-    // Call the import function here
-    setShowImportFromTakeoutDialog(true);
-  };
-
-  const handleImportFromTakeout = (takeoutId: string) => {
-    props.onImportFromTakeout(takeoutId);
   };
 
   function handleSliderChange(event: Event, value: number | number[]): void {
@@ -328,16 +275,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
         open={showImportFromDriveDialog}
         onImportFromDrive={handleImportFromDrive}
         onClose={handleCloseImportFromDriveDialog}
-      />
-    );
-  }
-
-  const renderUploadToGoogleDialog = (): JSX.Element => {
-    return (
-      <UploadToGoogleDialog
-        open={showUploadToGoogleDialog}
-        onUploadToGoogle={handleUploadToGoogle}
-        onClose={handleCloseUploadToGoogleDialogDialog}
       />
     );
   }
@@ -478,9 +415,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
           <Tooltip title="Import from Drive">
             <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><DownloadIcon /></IconButton>
           </Tooltip>
-          <Tooltip title="Upload to Google">
-            <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)}><UploadIcon /></IconButton>
-          </Tooltip>
 
           {/* More Options Menu */}
           <Tooltip title="More Options">
@@ -489,19 +423,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
             </IconButton>
           </Tooltip>
 
-          {/* Settings */}
-          <Menu anchorEl={anchorEl} open={open} onClose={handleMenuClose}>
-            <MenuItem onClick={handleImportFromTakeoutClicked}>
-              <CloudUploadIcon sx={{ mr: 1 }} />
-              Import from Takeout
-            </MenuItem>
-          </Menu>
-          <ImportFromTakeoutDialog
-            open={showImportFromTakeoutDialog}
-            onImportFromTakeout={handleImportFromTakeout}
-            onClose={handleCloseImportFromTakeoutDialog}
-          />
-
           <Tooltip title="Settings">
             <IconButton color="inherit"><SettingsIcon /></IconButton>
           </Tooltip>
@@ -509,7 +430,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
       </AppBar>
 
       {renderImportFromDriveDialog()}
-      {renderUploadToGoogleDialog()}
 
       <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
         <DialogTitle>Zoom In / Out</DialogTitle>
@@ -559,7 +479,6 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
     onDeleteMediaItems: deleteMediaItems,
-    onImportFromTakeout: importFromTakeout,
     onSetPhotoSetId: setPhotoSetId,
     onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
   }, dispatch);

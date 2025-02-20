@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
+
 import { loadMediaItems, loadMediaItemsByPhotoSet, loadPhotoSets } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setPhotoSetId } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
@@ -59,6 +61,8 @@ const AppShell = (props: AppShellProps) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
+  const { isLoggedIn, logout, loginUrl } = useGoogleAuth();
+
   React.useEffect(() => {
 
     const initializePhotoSetId = async (): Promise<string | null> => {
@@ -97,6 +101,10 @@ const AppShell = (props: AppShellProps) => {
       return !prev;
     });
   };
+
+  if (!isLoggedIn) {
+    return <a href={loginUrl}>Login with Google</a>;
+  }
 
   return (
     <Box sx={{ display: "flex" }}>

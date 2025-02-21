@@ -43,7 +43,6 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
 
   const handleMergePeople = async (peopleTakeoutFiles: FileList) => {
     console.log('handleMergePeople', peopleTakeoutFiles);
-    return;
     
     setMergingPeople(true);
     setError(null);

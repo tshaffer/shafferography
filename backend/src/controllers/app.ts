@@ -3,6 +3,8 @@ import { Request, Response } from 'express';
 import * as fs from 'fs';
 import { promisify } from 'util';
 
+import he from 'he';
+
 import { version } from '../version';
 import {
   getMediaItemsToDisplayFromDb,
@@ -305,8 +307,10 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
     const personKeywordNames: Set<string> = new Set<string>();
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
-      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.json');
-      const takeoutMetadata: any = await getJsonFromFile(takeoutMetaDataFilePath);
+      // NOTE the current (as of 2/21/2025 file naming convention)
+      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.supplemental-metadata.json');
+      const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
+      const takeoutMetadata: any = await getJsonFromFile(encodedFilePath);
       if (!isNil(takeoutMetadata.people)) {
         takeoutMetadata.people.forEach((person: any) => {
           personKeywordNames.add(person.name);
@@ -342,8 +346,9 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
     })
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
-      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.json');
-      const takeoutMetadata: any = await getJsonFromFile(takeoutMetaDataFilePath);
+      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.supplemental-metadata.json');
+      const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
+      const takeoutMetadata: any = await getJsonFromFile(encodedFilePath);
 
       const keywordNodeIds: string[] = [];
 

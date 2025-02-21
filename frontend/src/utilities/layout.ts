@@ -22,7 +22,7 @@ export const getGridRowHeight = (
   /** Pass 1: Determine how many items can fit using target height */
   for (let i = startingMediaItemIndex; i <= maxRowIndex; i++) {
     const item = mediaItems[i];
-    if (!item.width || !item.height) continue; // Ensure valid dimensions
+    if (!item || !item.width || !item.height) continue; // Ensure valid dimensions
 
     const itemAspectRatio = item.width / item.height;
     const scaledWidth = itemAspectRatio * targetHeight;

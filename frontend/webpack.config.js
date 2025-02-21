@@ -55,5 +55,12 @@ module.exports = {
       { from: '/Users/tedshaffer/Documents/Projects/shafferography/frontend/build/bundle.js', to: '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/build' },
       { from: '/Users/tedshaffer/Documents/Projects/shafferography/frontend/build/bundle.js.map', to: '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/build' },
     ]),
+
+    // Custom plugin to log rebuild completion time
+    new webpack.ProgressPlugin((percentage, message) => {
+      if (percentage === 1) {
+        console.log(`\x1b[32m[Webpack Build Complete]\x1b[0m ${new Date().toLocaleString()}`);
+      }
+    }),
   ]
 };

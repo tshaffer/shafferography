@@ -6,3 +6,4 @@ export * from './authenticate';
 export * from './rawMediaUploader';
 export * from './photoSets';
 export * from './googleUploader';
+export * from './peopleTakeoutsUploader';

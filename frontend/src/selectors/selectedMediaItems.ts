@@ -7,25 +7,28 @@ import { createSelector } from 'reselect';
 import { getMediaItems } from './mediaItems';
 
 const EMPTY_ARRAY: string[] = [];
+const EMPTY_MEDIA_ITEMS: MediaItem[] = [];
 
 export const getSelectedMediaItemIds = createSelector(
-  (state: TedTaggerState) => state.selectionsState?.selectedMediaItemIds || EMPTY_ARRAY,
+  (state: TedTaggerState) => state.selectionsState?.selectedMediaItemIds || [],
   (selectedMediaItemIds) => selectedMediaItemIds
 );
 
 export const getSelectedMediaItems = createSelector(
   [getSelectedMediaItemIds, getMediaItems],
   (selectedMediaItemIds, mediaItems) => {
-    if (selectedMediaItemIds.length === 0) return EMPTY_ARRAY; // Return same reference for empty state
+    if (selectedMediaItemIds.length === 0) return EMPTY_MEDIA_ITEMS;
 
     const selectedSet = new Set(selectedMediaItemIds);
     const filteredMediaItems = mediaItems.filter(item => selectedSet.has(item.uniqueId));
 
-    // Memoize result deeply to prevent unnecessary recalculations
-    return filteredMediaItems.length === mediaItems.length &&
-      filteredMediaItems.every((item, index) => item === mediaItems[index])
-      ? mediaItems
-      : filteredMediaItems;
+    // If the computed array is identical to mediaItems, return the original array.
+    if (filteredMediaItems.length === mediaItems.length &&
+        filteredMediaItems.every((item, index) => item === mediaItems[index])) {
+      return mediaItems;
+    }
+
+    return filteredMediaItems;
   }
 );
 

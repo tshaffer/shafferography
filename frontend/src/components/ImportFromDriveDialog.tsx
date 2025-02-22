@@ -44,9 +44,10 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   React.useEffect(() => {
     if (props.open) {
       setProgress(0);
+      setIsAddingNew(false);
     }
   }, [props.open]);
-  
+
   // ✅ Ensure the selection is only overridden when no selection exists
   // React.useEffect(() => {
   //   if (lastAddedPhotoSetId) {
@@ -85,7 +86,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
 
     setLastAddedPhotoSetId(newPhotoSet.photoSetId);
-    props.onSetPhotoSetId(newPhotoSet.photoSetId);
     setNewPhotoSetName("");
     setIsAddingNew(false);
 
@@ -105,6 +105,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           "Content-Type": "multipart/form-data",
         },
         onUploadProgress: (progressEvent) => {
+          console.log('progressEvent', progressEvent);
           const percentCompleted = Math.round(
             (progressEvent.loaded * 100) / (progressEvent.total ?? 1)
           );
@@ -158,6 +159,15 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
+  console.log('ImportFromDriveDialog render');
+  console.log('props.photoSetId', props.photoSetId);
+  console.log('props.photoSets', props.photoSets);
+  // {
+  //   props.photoSets.map((set) => (
+  //     console.log('MenuItem value: ', set.photoSetId)
+  //   ));
+  // };
+
   return (
     <Dialog onClose={handleClose} open={props.open}>
       <DialogTitle>Import Photos</DialogTitle>
@@ -185,7 +195,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                 onChange={(e) => props.onSetPhotoSetId(e.target.value)}
                 fullWidth
               >
-                <MenuItem onClick={() => setIsAddingNew(true)}>
+                <MenuItem onClick={() => setIsAddingNew(true)} key={'newPhotoSet'} value={''}>
                   <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
                   Add New Photo Set
                 </MenuItem>
@@ -223,6 +233,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 };
 
 function mapStateToProps(state: any) {
+  console.log('mapStateToProps photoSetId: ', getPhotoSetId(state));
+  console.log('mapStateToProps photoSets: ', getPhotoSets(state));
   return {
     appInitialized: getAppInitialized(state),
     photoSetId: getPhotoSetId(state),

@@ -2,7 +2,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { TedTaggerDispatch } from '../models';
 import { getDisplayMetadata, getMediaItems } from '../selectors';
-import OldGridCell from './OldGridCell';
+import GridCell from './GridCell';
 import { bordersSize } from '../constants';
 import { deselectAllPhotos, selectPhoto, selectAllPhotos } from '../controllers';
 import { useEffect, useState } from 'react';
@@ -80,13 +80,13 @@ const GridRow = (props: GridRowProps) => {
 
   const getGridCell = (mediaItemIndex: number, cellWidth: number): JSX.Element => {
     return (
-      <OldGridCell
+      <GridCell
         key={mediaItemIndex}
         mediaItemIndex={mediaItemIndex}
         mediaItem={allMediaItems[mediaItemIndex]}
         rowHeight={props.rowHeight}
         cellWidth={cellWidth}
-        setTooltip={props.setTooltip} // Pass tooltip handler to OldGridCell
+        setTooltip={props.setTooltip} // Pass tooltip handler to GridCell
       />
     );
   };

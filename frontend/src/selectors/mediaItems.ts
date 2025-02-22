@@ -1,11 +1,16 @@
+import { createSelector } from 'reselect';
 import {
   MediaItem,
   TedTaggerState
 } from '../types';
 
-export const getMediaItems = (state: TedTaggerState): MediaItem[] => {
-  return state.mediaItemsState.mediaItems;
-};
+// export const getMediaItems = (state: TedTaggerState): MediaItem[] => {
+//   return state.mediaItemsState.mediaItems;
+// };
+export const getMediaItems = createSelector(
+  (state: TedTaggerState) => state.mediaItemsState.mediaItems,
+  (mediaItems) => mediaItems as MediaItem[] // Identity function, but now properly memoized
+);
 
 export const getMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.mediaItems.map((mediaItem: MediaItem) => mediaItem.uniqueId);

@@ -16,8 +16,16 @@ export const getSelectedMediaItemIds = createSelector(
 export const getSelectedMediaItems = createSelector(
   [getSelectedMediaItemIds, getMediaItems],
   (selectedMediaItemIds, mediaItems) => {
-    const selectedSet = new Set(selectedMediaItemIds); // Efficient lookup
-    return mediaItems.filter(item => selectedSet.has(item.uniqueId));
+    if (selectedMediaItemIds.length === 0) return EMPTY_ARRAY; // Return same reference for empty state
+
+    const selectedSet = new Set(selectedMediaItemIds);
+    const filteredMediaItems = mediaItems.filter(item => selectedSet.has(item.uniqueId));
+
+    // Memoize result deeply to prevent unnecessary recalculations
+    return filteredMediaItems.length === mediaItems.length &&
+      filteredMediaItems.every((item, index) => item === mediaItems[index])
+      ? mediaItems
+      : filteredMediaItems;
   }
 );
 

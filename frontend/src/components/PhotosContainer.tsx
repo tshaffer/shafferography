@@ -7,6 +7,7 @@ import SurveyView from './SurveyView';
 import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
 import { PhotoLayout, MediaItem } from '../types';
 import GridView from './GridView';
+import GridViewContainer from './GridViewContainer';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
@@ -46,7 +47,7 @@ const PhotosContainer = (props: PhotosContainerProps) => {
       return (
         <React.Fragment>
           <div id='centerColumn'>
-            <GridView />
+            <GridViewContainer />
           </div>
         </React.Fragment>
       );

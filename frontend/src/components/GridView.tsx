@@ -1,25 +1,29 @@
 import * as React from 'react';
+import { VariableSizeList as List } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { GridRowData, MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
-import { getAppInitialized, getMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
+import { getAppInitialized, getMediaItems, getNumGridColumns } from '../selectors';
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
-import GlobalTooltip from './GlobalTooltip';
 
 export interface GridViewProps {
   appInitialized: boolean;
   allMediaItems: MediaItem[],
   numGridColumns: number;
-  scrollPosition: number;
 }
 
-const GridView = (props: GridViewProps) => {
+const GridView = ({ setTooltip, ...props }: GridViewProps & {
+  setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
+}) => {
+
+  console.log('GridView rerender');
+
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
-  const [tooltip, setTooltip] = React.useState<{ text: string; position: { top: number; left: number } } | null>(null);
+  const listRef = React.useRef<List>(null);
 
   React.useEffect(() => {
     const updateGridWidth = () => {
@@ -36,16 +40,14 @@ const GridView = (props: GridViewProps) => {
   const getGridRowData = (): GridRowData[] => {
     if (gridWidth === 0) return [];
 
-    // console.log('props.numGridColumns: ', props.numGridColumns);
     const targetHeight = targetHeights[props.numGridColumns - 2];
-    // console.log('targetHeight: ', targetHeight);
-    
+
     const gridRows: GridRowData[] = [];
     let mediaItemIndex = 0;
 
     while (mediaItemIndex < props.allMediaItems.length - 1) {
       const gridRowData: GridRowData = getGridRowHeight(
-        gridWidth, // Use computed width instead of centerColumnWidth
+        gridWidth,
         targetHeight,
         props.allMediaItems,
         mediaItemIndex,
@@ -61,28 +63,43 @@ const GridView = (props: GridViewProps) => {
     return null;
   }
 
-  const renderGridRow = (gridRowData: GridRowData): JSX.Element => {
-    const { mediaItemIndex, numMediaItems, rowHeight, cellWidths } = gridRowData;
+  const gridRows = React.useMemo(() => getGridRowData(), [
+    gridWidth,
+    props.numGridColumns,
+    props.allMediaItems,
+  ]);
+
+  const rowHeights = React.useMemo(() => gridRows.map(row => row.rowHeight), [gridRows]);
+
+  const renderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
+    const rowData = gridRows[index];
     return (
-      <GridRow
-        key={mediaItemIndex}
-        mediaItemIndex={mediaItemIndex}
-        numMediaItems={numMediaItems}
-        rowHeight={rowHeight}
-        cellWidths={cellWidths}
-        setTooltip={setTooltip} // Pass tooltip handler to GridRow
-      />
+      <div style={{ ...style, height: rowData.rowHeight }}>
+        <GridRow
+          key={rowData.mediaItemIndex}
+          mediaItemIndex={rowData.mediaItemIndex}
+          numMediaItems={rowData.numMediaItems}
+          rowHeight={rowData.rowHeight}
+          cellWidths={rowData.cellWidths}
+          setTooltip={setTooltip} // Pass setTooltip down to GridRow
+        />
+      </div>
     );
   };
-  
-  const gridRows: GridRowData[] = getGridRowData();
+
+  const getItemSize = (index: number) => rowHeights[index];
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>
-      {gridRows.map(renderGridRow)}
-
-      {/* Global Tooltip */}
-      <GlobalTooltip tooltip={tooltip} />
+      <List
+        itemSize={getItemSize}
+        ref={listRef}
+        height={window.innerHeight}
+        itemCount={gridRows.length}
+        width="100%"
+      >
+        {renderRow}
+      </List>
     </div>
   );
 };
@@ -92,7 +109,6 @@ function mapStateToProps(state: any, ownProps: any) {
     appInitialized: getAppInitialized(state),
     allMediaItems: getMediaItems(state),
     numGridColumns: getNumGridColumns(state),
-    scrollPosition: getScrollPosition(state),
   };
 }
 

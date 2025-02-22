@@ -10,9 +10,11 @@ import { createRoutes } from './routes';
 import { getUserFromDb, updateUserInDb } from './controllers';
 import path from 'path';
 import { Server } from 'http';
-import { connectDB } from './config/db';  // ✅ Import first
 import cors from 'cors';
 const bodyParser = require('body-parser');
+
+import { connectDB } from './config/db';  // ✅ Import first
+import { BASE_MEDIA_PATH } from './config';
 
 console.log('start backend code');
 
@@ -114,6 +116,16 @@ const startServer = async () => {
   });
 
   // === Routes ===
+
+  // serve static image files from
+  //    /Users/tedshaffer/Pictures/ShafferographyMedia
+  app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH));
+  // example image path:
+  //    /Users/tedshaffer/Pictures/ShafferographyMedia/Boys on horseback at Bryce/img483.jpg
+  // associated url
+  //    http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg
+
+
 
   // Serve static files from the /public directory
   app.use(express.static(path.join(__dirname, '../public')));

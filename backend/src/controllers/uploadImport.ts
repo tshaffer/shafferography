@@ -5,12 +5,13 @@ import * as fs from 'fs';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { GeoData, MediaItem, ReviewLevel, UploadMediaFilesResponse } from '../types';
+import { FileToImport, GeoData, MediaItem, ReviewLevel, UploadMediaFilesResponse } from '../types';
 import { ExifDateTime, Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertHEICFileToJPEGWithEXIF, fsCopyFile, getShardedDirectory, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
 import { DateTime } from 'luxon';
 import { addMediaItemToMediaItemsDBTable } from './dbInterface';
+import { BASE_MEDIA_PATH } from '../config';
 
 const upload = multer({
   storage: multer.diskStorage({
@@ -42,34 +43,34 @@ const uploadPeopleTakeoutFile = multer({
   }),
 });
 
-export const uploadFiles = async (request: Request, response: Response): Promise<UploadMediaFilesResponse> => {
+// export const uploadFiles = async (request: Request, response: Response): Promise<UploadMediaFilesResponse> => {
 
-  return new Promise((resolve, reject) => {
-    upload.array('files')(request, response, (err) => {
-      if (err instanceof multer.MulterError) {
-        console.error('Multer error:', err);
-        throw err;
-      } else if (err) {
-        console.error('Unknown error:', err);
-        throw err;
-      }
+//   return new Promise((resolve, reject) => {
+//     upload.array('files')(request, response, (err) => {
+//       if (err instanceof multer.MulterError) {
+//         console.error('Multer error:', err);
+//         throw err;
+//       } else if (err) {
+//         console.error('Unknown error:', err);
+//         throw err;
+//       }
 
-      const photoSetId = request.body.photoSetId;
-      console.log('photoSetId:', photoSetId);
-      
-      const albumName = request.body.albumName; // Multer parses this now
-      console.log('Album Name:', albumName);
+//       const photoSetId = request.body.photoSetId;
+//       console.log('photoSetId:', photoSetId);
 
-      console.log('no error on upload');
-      console.log(request.files.length);
+//       const albumName = request.body.albumName; // Multer parses this now
+//       console.log('Album Name:', albumName);
 
-      const uploadedCameraFiles: Express.Multer.File[] = (request as any).files;
-      console.log(uploadedCameraFiles);
+//       console.log('no error on upload');
+//       console.log(request.files.length);
 
-      resolve({ photoSetId, albumName, files: uploadedCameraFiles });
-    });
-  });
-};
+//       const uploadedCameraFiles: Express.Multer.File[] = (request as any).files;
+//       console.log(uploadedCameraFiles);
+
+//       resolve({ photoSetId, albumName, files: uploadedCameraFiles });
+//     });
+//   });
+// };
 
 export const uploadPeopleTakeoutFiles = async (request: Request, response: Response): Promise<Express.Multer.File[]> => {
 
@@ -96,10 +97,10 @@ export const uploadPeopleTakeoutFiles = async (request: Request, response: Respo
 };
 
 
-async function getLocalStorageMediaItems(photoSetId: string, imageFilePaths: string[]): Promise<MediaItem[]> {
+async function getLocalStorageMediaItems(baseDirectory: string, photoSetId: string, files: FileToImport[]): Promise<MediaItem[]> {
 
-  const mediaItems: MediaItem[] = await Promise.all(imageFilePaths.map(async (imageFilePath) => {
-    const mediaItem: MediaItem = await getLocalStorageMediaItem(photoSetId, imageFilePath);
+  const mediaItems: MediaItem[] = await Promise.all(files.map(async (file) => {
+    const mediaItem: MediaItem = await getLocalStorageMediaItem(baseDirectory, photoSetId, file);
     return mediaItem;
   }));
 
@@ -164,20 +165,25 @@ async function extractGeoData(tags: Tags): Promise<GeoData | null> {
 }
 
 
-async function getLocalStorageMediaItem(photoSetId: string, fullPath: string): Promise<MediaItem> {
+async function getLocalStorageMediaItem(baseDirectory: string, photoSetId: string, file: FileToImport): Promise<MediaItem> {
 
-  const exifData: Tags = await retrieveExifData(fullPath);
+  const filePath = path.join(baseDirectory, file.name);
+  console.log('filePath:', filePath);
+  const exifData: Tags = await retrieveExifData(filePath);
+  console.log('exifData:', exifData);
   const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
   const geoData: GeoData | null = await extractGeoData(exifData);
+
+  const relativePath = filePath.replace(BASE_MEDIA_PATH, "");
 
   const mediaItem: MediaItem = {
     uniqueId: uuidv4(),
     googleMediaItemId: '',
-    fileName: path.basename(fullPath),
+    fileName: file.name,
     albumId: '',
     albumName: '',
-    filePath: fullPath,
-    productUrl: null,
+    filePath,
+    productUrl: `http://localhost:8080/shafferographyMedia/${relativePath}`,
     baseUrl: null,
     mimeType: valueOrNull(exifData.MIMEType),
     creationTime: isoCreateDate,
@@ -198,46 +204,22 @@ async function getLocalStorageMediaItem(photoSetId: string, fullPath: string): P
   return mediaItem;
 }
 
-const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaItems: MediaItem[], imageFilePaths: string[]): Promise<any> => {
-
-  // TEDTODO - should not be hard coded
-  const mediaItemsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/images';
-  const uploadsDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/uploads';
+const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<any> => {
 
   for (let index = 0; index < mediaItems.length; index++) {
     const mediaItem = mediaItems[index];
     const mediaItemFileName = mediaItem.fileName;
     if (isImageFile(mediaItemFileName)) {
-      const fileSuffix = path.extname(mediaItemFileName);
-      const shardedFileName = mediaItem.uniqueId + fileSuffix;
-
-      const baseDir: string = await getShardedDirectory(mediaItemsDir, mediaItem.uniqueId);
-
-      const where = path.join(baseDir, shardedFileName);
-
-      console.log('mediaItemFileName', mediaItemFileName);
-      console.log('shardedFileName:', shardedFileName);
-      console.log('baseDir:', baseDir);
-      console.log('where:', where);
-
-      mediaItem.filePath = where;
-
       await addMediaItemToMediaItemsDBTable(mediaItem);
-
-      const sourcePath: string = path.join(uploadsDir, mediaItemFileName);
-      console.log('copy file from: ', sourcePath, ' to: ', where);
-      await fsCopyFile(sourcePath, where);
-
-      const filePath = imageFilePaths[index];
-      const fileExtension = path.extname(filePath);
+      const fileExtension = path.extname(mediaItem.filePath);
       if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
-        const shardedFileName = mediaItem.uniqueId + fileExtension;
-        const where = path.join(baseDir, shardedFileName);
-        // const dirname = path.dirname(filePath); // Extracts the directory path
-        const heicFileName = path.basename(filePath); // Replaces .heic with .jpg
-        const sourcePath: string = path.join(uploadsDir, heicFileName);
-        console.log('copy heic file from: ', sourcePath, ' to: ', where);
-        await fsCopyFile(sourcePath, where);
+        // const shardedFileName = mediaItem.uniqueId + fileExtension;
+        // const where = path.join(baseDir, shardedFileName);
+        // // const dirname = path.dirname(filePath); // Extracts the directory path
+        // const heicFileName = path.basename(filePath); // Replaces .heic with .jpg
+        // const sourcePath: string = path.join(uploadsDir, heicFileName);
+        // console.log('copy heic file from: ', sourcePath, ' to: ', where);
+        // await fsCopyFile(sourcePath, where);
       }
     }
   }
@@ -245,17 +227,17 @@ const addMediaItemsFromLocalStorage = async (localStorageFolder: string, mediaIt
   return [];
 }
 
-export const importFiles = async (photoSetId: string, imageFilePaths: string[]): Promise<any> => {
+export const importFiles = async (baseDirectory: string, photoSetId: string, files: FileToImport[]): Promise<any> => {
 
   // convert HEIC files to JPEG
-  const updatedFilePaths: string[] = await convertFilesToJpeg(imageFilePaths);
+  // const updatedFilePaths: string[] = await convertFilesToJpeg(imageFilePaths);
 
-  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(photoSetId, updatedFilePaths);
+  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(baseDirectory, photoSetId, files);
 
   // skip step that checks for image file existence in db
 
   // add the mediaItems to the db
-  await addMediaItemsFromLocalStorage('', localStorageMediaItems, imageFilePaths);
+  await addMediaItemsFromLocalStorage(localStorageMediaItems);
 
   console.log('localStorageMediaItems:', localStorageMediaItems.length);
 

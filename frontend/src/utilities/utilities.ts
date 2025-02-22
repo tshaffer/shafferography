@@ -20,17 +20,7 @@ export const formatISOString = (ISOString: string): string => {
 };
 
 export const getPhotoUrl = (mediaItem: MediaItem): string => {
-  const basename: string = path.basename(mediaItem.filePath!);
-  const extension: string = path.extname(basename);
-  const extensionLength: number = extension.length;
-  const numChars = basename.length;
-  const photoUrl = path.join(
-    '/images',
-    basename.charAt(numChars - (extensionLength + 2)),
-    basename.charAt(numChars - (extensionLength + 1)),
-    basename,
-  );
-
+  const photoUrl = mediaItem.productUrl!;
   return photoUrl;
 };
 

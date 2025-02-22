@@ -7,17 +7,17 @@ import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import { Button, DialogActions, DialogContent, IconButton } from '@mui/material';
+import { Button, DialogActions, DialogContent, IconButton, Stack, Typography } from '@mui/material';
 
 import AddIcon from "@mui/icons-material/Add";
-import CheckIcon from "@mui/icons-material/Check";
 import CloseIcon from "@mui/icons-material/Close";
 
 import { getAppInitialized, getPhotoSets, getPhotoSetId } from '../selectors';
-import { PhotoSet } from '../types';
+import { apiUrlFragment, FileToImport, PhotoSet, serverUrl } from '../types';
 import { setPhotoSetId, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
 import { addPhotoSet } from '../controllers';
+import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
   open: boolean;
@@ -34,11 +34,20 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
+  const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [newPhotoSetName, setNewPhotoSetName] = React.useState<string>('');
   const [lastAddedPhotoSetId, setLastAddedPhotoSetId] = React.useState<string | null>(null);
+  const [progress, setProgress] = React.useState(0);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
+
+  React.useEffect(() => {
+    if (props.open) {
+      setProgress(0);
+      setIsAddingNew(false);
+    }
+  }, [props.open]);
 
   // ✅ Ensure the selection is only overridden when no selection exists
   // React.useEffect(() => {
@@ -65,6 +74,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   };
 
   const createPhotoSet = (): PhotoSet | undefined => {
+
     if (!newPhotoSetName.trim()) return;
 
     const newPhotoSet: PhotoSet = {
@@ -76,16 +86,55 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     props.onSetPhotoSetId(newPhotoSet.photoSetId);
     localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
 
-    setLastAddedPhotoSetId(newPhotoSet.photoSetId); // ✅ Track newly added photoSet
-    props.onSetPhotoSetId(newPhotoSet.photoSetId);
+    setLastAddedPhotoSetId(newPhotoSet.photoSetId);
     setNewPhotoSetName("");
     setIsAddingNew(false);
 
     return newPhotoSet;
   };
 
-  const handleImport = () => {
-    if (selectedFiles) {
+  const handleImportFromDrive = async (baseDirectory: string, photoSetId: string, selectedFiles: FileList) => {
+
+    console.log('handleImportFromDrive', selectedFiles, photoSetId);
+
+    const uploadUrl = serverUrl + apiUrlFragment + 'uploadAndImport';
+
+    const files: FileToImport[] = [];
+    for (const key in selectedFiles) {
+      if (Object.prototype.hasOwnProperty.call(selectedFiles, key)) {
+        const selectedFile: File = selectedFiles[key];
+        const file: FileToImport = {
+          name: selectedFile.name,
+          size: selectedFile.size,
+          type: selectedFile.type,
+          lastModified: selectedFile.lastModified,
+          lastModifiedDate: (selectedFile as any).lastModifiedDate,
+        }
+        files.push(file);
+      }
+    }
+
+    const uploadBody = {
+      baseDirectory,
+      photoSetId,
+      files,
+    };
+
+    return axios.post(
+      uploadUrl,
+      uploadBody
+    ).then((response) => {
+      return Promise.resolve(response);
+    }).catch((error) => {
+      console.log('error');
+      console.log(error);
+      return '';
+    });
+
+  };
+
+  const handleImport = async () => {
+    if (selectedFiles && (baseDirectory !== '')) {
       let photoSetId = props.photoSetId;
       if (isAddingNew) {
         const newPhotoSet: PhotoSet | undefined = createPhotoSet();
@@ -93,8 +142,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
         photoSetId = newPhotoSet.photoSetId;
       }
 
-      console.log('import files: ', selectedFiles, photoSetId);
-      props.onImportFromDrive(selectedFiles, photoSetId);
+      console.log('import files: ', baseDirectory, photoSetId, selectedFiles);
+      await handleImportFromDrive(baseDirectory, photoSetId, selectedFiles);
       props.onClose();
     }
   };
@@ -126,7 +175,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                 onChange={(e) => props.onSetPhotoSetId(e.target.value)}
                 fullWidth
               >
-                <MenuItem onClick={() => setIsAddingNew(true)}>
+                <MenuItem onClick={() => setIsAddingNew(true)} key={'newPhotoSet'} value={''}>
                   <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
                   Add New Photo Set
                 </MenuItem>
@@ -140,15 +189,24 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           </Box>
 
           {/* File Upload Section */}
-          <input
-            type="file"
-            accept=".jpg,.heic,image/jpeg,image/heic"
-            onChange={handleImportFilesSelect}
-            id="importFilesInput"
-            name="file"
-            multiple
-            style={{ marginTop: '1rem' }}
-          />
+          <Stack sx={{marginTop: '16px'}}>  {/* Adjust spacing as needed */}
+            <TextField
+              label="Base Directory"
+              value={baseDirectory}
+              onChange={(e) => setBaseDirectory(e.target.value)}
+              fullWidth
+              style={{ paddingBottom: '8px' }}
+            />
+            <input
+              type="file"
+              accept=".jpg,.heic,image/jpeg,image/heic"
+              onChange={handleImportFilesSelect}
+              id="importFilesInput"
+              name="file"
+              multiple
+              style={{ marginTop: '1rem' }}
+            />
+          </Stack>
         </Box>
       </DialogContent>
 
@@ -162,8 +220,9 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   );
 };
 
-// Map Redux state to component props
 function mapStateToProps(state: any) {
+  console.log('mapStateToProps photoSetId: ', getPhotoSetId(state));
+  console.log('mapStateToProps photoSets: ', getPhotoSets(state));
   return {
     appInitialized: getAppInitialized(state),
     photoSetId: getPhotoSetId(state),

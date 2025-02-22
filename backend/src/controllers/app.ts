@@ -32,7 +32,7 @@ import {
   addPhotoSetToDb,
   getMediaItemsByPhotoSetFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, UploadMediaFilesResponse, StringToStringLUT } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, UploadMediaFilesResponse, StringToStringLUT, FileToImport } from '../types';
 import {
   fsDeleteFiles,
   getJsonFromFile
@@ -40,7 +40,7 @@ import {
 import { MatchRule, ReviewLevel } from 'enums';
 import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
-import { importFiles, uploadFiles, uploadPeopleTakeoutFiles } from './uploadImport';
+import { importFiles, uploadPeopleTakeoutFiles } from './uploadImport';
 import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
 
@@ -262,13 +262,27 @@ export const getSubdirectoriesFromFs = async (dirPath: string): Promise<string[]
 
 export const uploadAndImportEndpoint = async (request: Request, response: Response, next: any) => {
   try {
-    const uploadedMediaFilesResponse: UploadMediaFilesResponse = await uploadFiles(request, response);
-    const { photoSetId, albumName, files } = uploadedMediaFilesResponse;
-    const filePaths: string[] = files.map((file: Express.Multer.File) => file.path);
+    console.log(request.body);
 
-    await importFiles(photoSetId, filePaths);
+    const baseDirectory: string = request.body.baseDirectory;
+    const photoSetId: string = request.body.photoSetId;
+    const files: FileToImport[] = request.body.files;
+
+    console.log('baseDirectory:', baseDirectory);
+    console.log('photoSetId:', photoSetId);
+    console.log('files:', files);
+
+    await importFiles(baseDirectory, photoSetId, files);
 
     response.sendStatus(200);
+
+    // const uploadedMediaFilesResponse: UploadMediaFilesResponse = await uploadFiles(request, response);
+    // const { photoSetId, albumName, files } = uploadedMediaFilesResponse;
+    // const filePaths: string[] = files.map((file: Express.Multer.File) => file.path);
+
+    // await importFiles(photoSetId, filePaths);
+
+    // response.sendStatus(200);
   } catch (error) {
     console.error('Error in uploadAndImportEndpoint:', error);
     response.status(500).json(error);

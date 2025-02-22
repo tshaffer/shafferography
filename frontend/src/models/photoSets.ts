@@ -20,6 +20,7 @@ interface AddPhotoSetPayload {
 export const addPhotoSetRedux = (
   photoSet: PhotoSet,
 ): any => {
+  console.log('photoSets.ts: addPhotoSetRedux', photoSet);
   return {
     type: ADD_PHOTOSET,
     payload: {

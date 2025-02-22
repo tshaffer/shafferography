@@ -3,8 +3,6 @@ import { Request, Response } from 'express';
 import * as fs from 'fs';
 import { promisify } from 'util';
 
-import he from 'he';
-
 import { version } from '../version';
 import {
   getMediaItemsToDisplayFromDb,

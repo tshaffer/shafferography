@@ -74,6 +74,8 @@ const GridCell = (props: GridCellProps) => {
     }
   };
 
+  console.log('GridCell: ', photoUrl);
+  
   return (
     <div
       style={{

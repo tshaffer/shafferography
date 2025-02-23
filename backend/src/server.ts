@@ -115,6 +115,21 @@ const startServer = async () => {
 
   // === Routes ===
 
+  // app.use('/pictures', express.static('/Users/tedshaffer/Pictures/ShafferographyMedia'));
+  // app.use('/monitor-upload', express.static('/Users/tedshaffer/Pictures/MonitorUploadTestData'));
+  // http://localhost:8080/monitor-upload/test_1/IMG_9306.HEIC
+  
+  // app.use('/pictures', express.static('/Users/tedshaffer/Pictures'));
+  // http://localhost:5000/pictures/<subdirectory>/<imagefile>
+  // http://localhost:8080/pictures/From Nikon/DSC_1362.jpeg
+
+  // /Users/tedshaffer/Pictures/ShafferographyMedia
+  app.use('/shafferographyMedia', express.static('/Users/tedshaffer/Pictures/ShafferographyMedia'));
+  // /Users/tedshaffer/Pictures/ShafferographyMedia/Boys on horseback at Bryce/img483.jpg
+  // http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg
+
+
+
   // Serve static files from the /public directory
   app.use(express.static(path.join(__dirname, '../public')));
 

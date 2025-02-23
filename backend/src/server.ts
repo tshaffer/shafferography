@@ -1,3 +1,4 @@
+const fs = require('fs');
 import express, { Request, Response, NextFunction } from 'express';
 import session from 'express-session';
 import passport from 'passport';
@@ -124,10 +125,21 @@ const startServer = async () => {
   // http://localhost:8080/pictures/From Nikon/DSC_1362.jpeg
 
   // /Users/tedshaffer/Pictures/ShafferographyMedia
-  app.use('/shafferographyMedia', express.static('/Users/tedshaffer/Pictures/ShafferographyMedia'));
+  // app.use('/shafferographyMedia', express.static('/Users/tedshaffer/Pictures/ShafferographyMedia'));
   // /Users/tedshaffer/Pictures/ShafferographyMedia/Boys on horseback at Bryce/img483.jpg
   // http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg
 
+  app.use('/shafferographyMedia', express.static('/Volumes/SHAFFEROTO/ShafferographyMedia'));
+
+  
+  const dirPath = '/Volumes/SHAFFEROTO/ShafferographyMedia';
+  fs.readdir(dirPath, (err: any, files: any) => {
+    if (err) {
+      console.error('Cannot read directory:', err);
+    } else {
+      console.log('Files:', files);
+    }
+  });
 
 
   // Serve static files from the /public directory

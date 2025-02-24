@@ -97,10 +97,10 @@ export const uploadPeopleTakeoutFiles = async (request: Request, response: Respo
 };
 
 
-async function getLocalStorageMediaItems(baseDirectory: string, photoSetId: string, files: FileToImport[]): Promise<MediaItem[]> {
+async function getLocalStorageMediaItems(baseDirectory: string, photoSetId: string, fileNames: string[]): Promise<MediaItem[]> {
 
-  const mediaItems: MediaItem[] = await Promise.all(files.map(async (file) => {
-    const mediaItem: MediaItem = await getLocalStorageMediaItem(baseDirectory, photoSetId, file);
+  const mediaItems: MediaItem[] = await Promise.all(fileNames.map(async (fileName) => {
+    const mediaItem: MediaItem = await getLocalStorageMediaItem(baseDirectory, photoSetId, fileName);
     return mediaItem;
   }));
 
@@ -165,9 +165,9 @@ async function extractGeoData(tags: Tags): Promise<GeoData | null> {
 }
 
 
-async function getLocalStorageMediaItem(baseDirectory: string, photoSetId: string, file: FileToImport): Promise<MediaItem> {
+async function getLocalStorageMediaItem(baseDirectory: string, photoSetId: string, fileName: string): Promise<MediaItem> {
 
-  const filePath = path.join(baseDirectory, file.name);
+  const filePath = path.join(baseDirectory, fileName);
   console.log('filePath:', filePath);
   const exifData: Tags = await retrieveExifData(filePath);
   console.log('exifData:', exifData);
@@ -179,7 +179,7 @@ async function getLocalStorageMediaItem(baseDirectory: string, photoSetId: strin
   const mediaItem: MediaItem = {
     uniqueId: uuidv4(),
     googleMediaItemId: '',
-    fileName: file.name,
+    fileName,
     albumId: '',
     albumName: '',
     filePath,
@@ -229,10 +229,12 @@ const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<a
 
 export const importFiles = async (baseDirectory: string, photoSetId: string, files: FileToImport[]): Promise<any> => {
 
-  // convert HEIC files to JPEG
-  // const updatedFilePaths: string[] = await convertFilesToJpeg(imageFilePaths);
+  const fileNames: string[] = files.map((file) => file.name);
 
-  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(baseDirectory, photoSetId, files);
+  // convert HEIC files to JPEG
+  const updatedFileNames: string[] = await convertFilesToJpeg(baseDirectory, fileNames);
+
+  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(baseDirectory, photoSetId, updatedFileNames);
 
   // skip step that checks for image file existence in db
 
@@ -244,11 +246,12 @@ export const importFiles = async (baseDirectory: string, photoSetId: string, fil
   return Promise.resolve();
 }
 
-const convertFilesToJpeg = async (filePaths: string[]): Promise<string[]> => {
+const convertFilesToJpeg = async (baseDirectory: string, fileNames: string[]): Promise<string[]> => {
 
-  const updatedFilePaths: string[] = [];
+  const updatedFileNames: string[] = [];
 
-  for (const filePath of filePaths) {
+  for (const fileName of fileNames) {
+    const filePath = path.join(baseDirectory, fileName);
     const fileExtension = path.extname(filePath);
     if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
       const inputFilePath = filePath;
@@ -257,10 +260,11 @@ const convertFilesToJpeg = async (filePaths: string[]): Promise<string[]> => {
       const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
       console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
       await convertHEICFileToJPEGWithEXIF(inputFilePath, outputFilePath);
-      updatedFilePaths.push(outputFilePath);
+      updatedFileNames.push(newFilename);
     } else {
-      updatedFilePaths.push(filePath);
+      updatedFileNames.push(fileName);
     }
   }
-  return Promise.resolve(updatedFilePaths);
+  
+  return Promise.resolve(updatedFileNames);
 }

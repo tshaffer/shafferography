@@ -45,7 +45,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   React.useEffect(() => {
     if (props.open) {
       setProgress(0);
-      setIsAddingNew(false);
+      setIsAddingNew(props.photoSets.length === 0);
     }
   }, [props.open]);
 
@@ -149,9 +149,14 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   };
 
   return (
-    <Dialog onClose={handleClose} open={props.open}>
+    <Dialog
+      onClose={handleClose}
+      open={props.open}
+      maxWidth="md"  // Makes dialog wider (options: 'xs', 'sm', 'md', 'lg', 'xl')
+      fullWidth  // Ensures it takes the full available width
+    >
       <DialogTitle>Import Photos</DialogTitle>
-      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }}>
+      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px'}} sx={{ width: '100%', minWidth: '500px' }}>
         <Box component="form" noValidate autoComplete="off">
           <Box>
             {isAddingNew ? (
@@ -163,7 +168,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                   fullWidth
                   autoFocus
                 />
-                <IconButton onClick={() => setIsAddingNew(false)}>
+                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.photoSets.length === 0 && newPhotoSetName.trim() === ''}> 
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -189,13 +194,13 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           </Box>
 
           {/* File Upload Section */}
-          <Stack sx={{marginTop: '16px'}}>  {/* Adjust spacing as needed */}
+          <Stack sx={{ marginTop: '16px', width: '100%', minWidth: '500px' }}>
             <TextField
               label="Base Directory"
               value={baseDirectory}
               onChange={(e) => setBaseDirectory(e.target.value)}
               fullWidth
-              style={{ paddingBottom: '8px' }}
+              sx={{ paddingBottom: '8px' }}
             />
             <input
               type="file"
@@ -212,7 +217,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (isAddingNew && !newPhotoSetName.trim())}>
+        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newPhotoSetName.trim())}>
           Import
         </Button>
       </DialogActions>

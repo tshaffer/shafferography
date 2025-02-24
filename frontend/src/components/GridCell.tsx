@@ -81,7 +81,7 @@ const GridCell = (props: GridCellProps) => {
   // } else{
   //   debugger
   // }
-  console.log('GridCell: ', photoUrl);
+  // console.log('GridCell: ', photoUrl);
 
   return (
     <div

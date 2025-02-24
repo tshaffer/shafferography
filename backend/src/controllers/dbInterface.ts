@@ -551,6 +551,7 @@ export const getAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> 
     // Query the collection to find distinct album names
     const albumNames = await mediaItemModel.distinct('albumName', {
       peopleRetrievedFromGoogle: false,
+      albumName: { $ne: '' }, // Exclude empty strings at the query level
     });
 
     return albumNames; // Returns an array of album names

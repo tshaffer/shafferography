@@ -19,12 +19,12 @@ import {
   uploadAndImportEndpoint,
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
-  uploadPeopleTakeoutsEndpoint,
   updateReviewLevelEndpoint,
   getMediaItemsByReviewLevels,
   getPhotoSets,
   addPhotoSet,
   getMediaItemsByPhotoSet,
+  mergePeopleTakeoutEndpoint,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
@@ -55,7 +55,7 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/albumNamesWherePeopleNotRetrieved', getAlbumNamesWherePeopleNotRetrievedEndpoint);
   app.post('/api/v1/uploadAndImport', uploadAndImportEndpoint);
   app.post('/api/v1/uploadToGoogle', uploadToGoogleEndpoint);
-  app.post('/api/v1/uploadPeopleTakeouts', uploadPeopleTakeoutsEndpoint);
+  app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 
   app.post('/api/v1/redownloadMediaItem', redownloadMediaItemEndpoint);
 

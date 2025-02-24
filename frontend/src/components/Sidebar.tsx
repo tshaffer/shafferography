@@ -3,8 +3,8 @@ import { List, ListItem, ListItemText, Divider, Typography, Box, Drawer, IconBut
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import MergePeopleDialog from './MergePeopleDialog';
-import { getAlbumNamesWherePeopleNotRetrieved } from "../controllers";
-import { uploadPeopleTakeouts } from '../controllers';
+import RetrievePeopleDialog from "./RetrievePeopleDialog";
+import { getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout } from "../controllers";
 
 const drawerWidth = 240;
 
@@ -27,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
   const { open, onClose } = props;
 
   const [showMergePeopleDialog, setShowMergePeopleDialog] = React.useState(false);
+  const [showRetrievePeopleDialog, setShowRetrievePeopleDialog] = React.useState(false);
   const [mergingPeople, setMergingPeople] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
@@ -41,41 +42,18 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
     setShowMergePeopleDialog(false);
   };
 
-  const handleMergePeople = async (peopleTakeoutFiles: FileList) => {
-    console.log('handleMergePeople', peopleTakeoutFiles);
-    
-    setMergingPeople(true);
-    setError(null);
-    setSuccessMessage(null);
+  const handleMergePeople = async (albumName: string) => {
+    console.log('handleMergePeople',
+      albumName);
 
-    const formData = new FormData();
-    const allowedExtensions = ['.json']; // Allowed file extensions
-
-    // Append only files with allowed extensions
-    Array.from(peopleTakeoutFiles).forEach((file) => {
-      const fileExtension = file.name.split('.').pop()?.toLowerCase();
-      if (fileExtension && allowedExtensions.includes(`.${fileExtension}`)) {
-        formData.append('files', file, file.webkitRelativePath);
-      }
+    mergePeopleTakeout(albumName).then((response) => {
+      console.log('mergePeopleTakeout response', response);
     });
+  }
 
-    try {
-      const response = await uploadPeopleTakeouts(formData);
-
-      if (response.ok) {
-        setSuccessMessage('Folder uploaded successfully!');
-      } else {
-        const errorMessage = await response.text();
-        setError(`Upload failed: ${errorMessage}`);
-      }
-    } catch (err) {
-      setError(`Upload failed: ${err}`);
-    } finally {
-      setMergingPeople(false);
-    }
-
+  const handleCloseRetrievePeopleDialog = () => {
+    setShowRetrievePeopleDialog(false);
   };
-
 
   return (
     <React.Fragment>
@@ -100,8 +78,8 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
         <Divider />
         <List>
 
-          <ListItemButton onClick={() => { handleRetrievePeople(); }}>
-            <ListItemText primary="Retrieve People" />
+        <ListItemButton onClick={() => setShowRetrievePeopleDialog(true)}>
+            <ListItemText primary="Retrieve Albums without People" />
           </ListItemButton>
 
           <ListItemButton onClick={() => setShowMergePeopleDialog(true)}>
@@ -128,6 +106,10 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
         open={showMergePeopleDialog}
         onMergePeople={handleMergePeople}
         onClose={handleCloseMergePeopleDialog}
+      />
+      <RetrievePeopleDialog
+        open={showRetrievePeopleDialog}
+        onClose={handleCloseRetrievePeopleDialog}
       />
     </React.Fragment>
   );

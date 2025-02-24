@@ -3,14 +3,14 @@ import { connect } from 'react-redux';
 
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
-import Box from '@mui/material/Box';
 
 import { getAppInitialized } from '../selectors';
-import { Button, DialogActions, DialogContent } from '@mui/material';
+import { Button, DialogActions, DialogContent, MenuItem, OutlinedInput, Select, SelectChangeEvent } from '@mui/material';
+import { getAlbumNamesWherePeopleNotRetrieved } from '../controllers/googleUploader';
 
 export interface MergePeopleDialogPropsFromParent {
   open: boolean;
-  onMergePeople: (takeoutFiles: FileList) => void;
+  onMergePeople: (albumName: string) => void;
   onClose: () => void;
 }
 
@@ -22,8 +22,23 @@ const MergePeopleDialog = (props: MergePeopleDialogProps) => {
 
   const { open, onClose } = props;
 
-  const folderInputRef = React.useRef<HTMLInputElement | null>(null);
-  const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
+  const [albumNames, setAlbumNames] = React.useState<string[]>([]);
+  const [selectedAlbum, setSelectedAlbum] = React.useState<string>('');
+
+  React.useEffect(() => {
+
+    if (!props.open) {
+      return;
+    }
+
+    console.log('getAlbumNamesWherePeopleNotRetrieved');
+    getAlbumNamesWherePeopleNotRetrieved().then((albumNames) => {
+      console.log('retrievedAlbumNames', albumNames);
+      setAlbumNames(albumNames);
+      setSelectedAlbum(albumNames[0]);
+    });
+  }, [props.open]);
+
 
   if (!props.appInitialized) {
     return null;
@@ -37,45 +52,62 @@ const MergePeopleDialog = (props: MergePeopleDialogProps) => {
     onClose();
   };
 
-  const handleFolderSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files) {
-      console.log('event.target.files', event.target.files);
-      setSelectedFiles(event.target.files);
-    }
+  function handleMerge(): void {
+    props.onMergePeople(selectedAlbum);
+  }
+
+  const handleAlbumChange = (event: SelectChangeEvent<string>) => {
+    const selectedAlbum = event.target.value as string;
+    console.log('handleAlbumChange', selectedAlbum);
+    setSelectedAlbum(selectedAlbum);
   };
 
-  function handleMerge(): void {
-    console.log('Merging People');
-    props.onMergePeople(selectedFiles!);
-    onClose();
+  const renderAlbumNameMenuItem = (albumName: string): JSX.Element => {
+    return (
+      <MenuItem
+        key={albumName}
+        value={albumName}
+      >
+        {albumName}
+      </MenuItem>
+    );
+  };
+
+  const renderAlbumNameMenuItems = (): JSX.Element[] => {
+    const albumNameMenuItems: JSX.Element[] = albumNames.map((albumName) => {
+      return renderAlbumNameMenuItem(albumName);
+    }
+    );
+    return albumNameMenuItems;
+  }
+
+  const renderAlbumNamesSelect = (): JSX.Element => {
+    const albumNameMenuItems = renderAlbumNameMenuItems();
+    function handleChangeAlbumName(event: SelectChangeEvent<any>): void {
+      throw new Error('Function not implemented.');
+    }
+
+    return (
+      <Select
+        value={selectedAlbum}
+        onChange={handleAlbumChange}
+        input={<OutlinedInput label="Album" />}
+      >
+        {albumNameMenuItems}
+      </Select>
+    );
+
   }
 
   return (
     <Dialog onClose={handleClose} open={open}>
       <DialogTitle>Merge People</DialogTitle>
-      <DialogContent style={{ paddingBottom: '0px' }}>
-        <div>
-          <Box
-            component="form"
-            noValidate
-            autoComplete="off"
-          >
-            <input
-              type="file"
-              webkitdirectory=""
-              id="folderInput"
-              name="file"
-              multiple
-              onChange={handleFolderSelect}
-              ref={folderInputRef}
-              style={{ marginBottom: '1rem' }}
-            />
-          </Box>
-        </div>
+      <DialogContent>
+        {renderAlbumNamesSelect()}
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleMerge} autoFocus disabled={!selectedFiles || selectedFiles.length === 0}>
+        <Button onClick={handleMerge} disabled={(albumNames.length === 0) || (selectedAlbum === '')}>
           Merge
         </Button>
       </DialogActions>

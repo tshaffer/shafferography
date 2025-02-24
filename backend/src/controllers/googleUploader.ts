@@ -169,11 +169,6 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
 
   try {
 
-    // Create Album
-    const googleAlbumResponse: CreateGoogleAlbumResponse = await createGoogleAlbum(googleAccessToken, albumName);
-    console.log('googleAlbumResponse: ', googleAlbumResponse);
-    const albumId = googleAlbumResponse.id;
-
     // Upload Media Items
     const createdMediaItemIds: string[] = [];
     const createdMediaItems: BatchCreateGoogleMediaItem[] = [];
@@ -192,8 +187,8 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
       const fileExtension = path.extname(mediaItem.filePath);
       if (fileExtension.toLowerCase() === '.jpg') {
         const dirname = path.dirname(mediaItem.filePath); // Extracts the directory path
-        const shardedFileName = path.basename(mediaItem.filePath, fileExtension) + ".heic";
-        const heicFilePath = path.join(dirname, shardedFileName);
+        const fileName = path.basename(mediaItem.filePath, fileExtension) + ".heic";
+        const heicFilePath = path.join(dirname, fileName);
         if (fse.existsSync(heicFilePath)) {
           mediaItemFilePath = heicFilePath;
           mediaItemFileName = path.parse(mediaItem.fileName).name + ".heic";
@@ -215,6 +210,11 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
     };
 
     console.log('completed uploading mediaItems');
+
+    // Create Album
+    const googleAlbumResponse: CreateGoogleAlbumResponse = await createGoogleAlbum(googleAccessToken, albumName);
+    console.log('googleAlbumResponse: ', googleAlbumResponse);
+    const albumId = googleAlbumResponse.id;
 
     // Add Media Items to Album
     await addMediaItemsToAlbum(googleAccessToken, albumId, createdMediaItemIds);

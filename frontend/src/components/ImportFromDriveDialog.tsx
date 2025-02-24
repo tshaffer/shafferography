@@ -29,8 +29,8 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   appInitialized: boolean;
   photoSetId: string;
   photoSets: PhotoSet[];
-  onAddPhotoSet: (photoSet: PhotoSet) => void;
-  onSetPhotoSetId: (photoSetId: string) => void;
+  onAddPhotoSet: (photoSet: PhotoSet) => any;
+  onSetPhotoSetId: (photoSetId: string) => any;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
@@ -73,29 +73,31 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const createPhotoSet = (): PhotoSet | undefined => {
+  const createPhotoSet = async (): Promise<PhotoSet | undefined> => {
 
-    if (!newPhotoSetName.trim()) return;
+    if (!newPhotoSetName.trim()) return Promise.resolve(undefined);
 
     const newPhotoSet: PhotoSet = {
       photoSetId: uuidv4(),
       photoSetName: newPhotoSetName,
     };
 
-    props.onAddPhotoSet(newPhotoSet);
-    props.onSetPhotoSetId(newPhotoSet.photoSetId);
-    localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
+    return props.onAddPhotoSet(newPhotoSet).then(() => {
+      console.log('Photo Set added: ', newPhotoSet);
+      props.onSetPhotoSetId(newPhotoSet.photoSetId);
+      localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
 
-    setLastAddedPhotoSetId(newPhotoSet.photoSetId);
-    setNewPhotoSetName("");
-    setIsAddingNew(false);
+      setLastAddedPhotoSetId(newPhotoSet.photoSetId);
+      setNewPhotoSetName("");
+      setIsAddingNew(false);
 
-    return newPhotoSet;
+      return Promise.resolve(newPhotoSet);
+    });
   };
 
   const handleImportFromDrive = async (baseDirectory: string, photoSetId: string, selectedFiles: FileList) => {
 
-    console.log('handleImportFromDrive', selectedFiles, photoSetId);
+    // console.log('handleImportFromDrive', selectedFiles, photoSetId);
 
     const uploadUrl = serverUrl + apiUrlFragment + 'uploadAndImport';
 
@@ -137,7 +139,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     if (selectedFiles && (baseDirectory !== '')) {
       let photoSetId = props.photoSetId;
       if (isAddingNew) {
-        const newPhotoSet: PhotoSet | undefined = createPhotoSet();
+        const newPhotoSet: PhotoSet | undefined = await createPhotoSet();
         if (!newPhotoSet) return;
         photoSetId = newPhotoSet.photoSetId;
       }
@@ -156,7 +158,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       fullWidth  // Ensures it takes the full available width
     >
       <DialogTitle>Import Photos</DialogTitle>
-      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px'}} sx={{ width: '100%', minWidth: '500px' }}>
+      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }} sx={{ width: '100%', minWidth: '500px' }}>
         <Box component="form" noValidate autoComplete="off">
           <Box>
             {isAddingNew ? (
@@ -168,7 +170,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                   fullWidth
                   autoFocus
                 />
-                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.photoSets.length === 0 && newPhotoSetName.trim() === ''}> 
+                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.photoSets.length === 0 && newPhotoSetName.trim() === ''}>
                   <CloseIcon />
                 </IconButton>
               </Box>
@@ -226,8 +228,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 };
 
 function mapStateToProps(state: any) {
-  console.log('mapStateToProps photoSetId: ', getPhotoSetId(state));
-  console.log('mapStateToProps photoSets: ', getPhotoSets(state));
+  // console.log('mapStateToProps photoSetId: ', getPhotoSetId(state));
+  // console.log('mapStateToProps photoSets: ', getPhotoSets(state));
   return {
     appInitialized: getAppInitialized(state),
     photoSetId: getPhotoSetId(state),

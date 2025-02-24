@@ -129,7 +129,7 @@ interface SetPhotoSetIdPayload {
 }
 
 export const setPhotoSetId = (photoSetId: string): any => {
-  console.log('photoViewSpec.ts: setPhotoSetId', photoSetId);
+  // console.log('photoViewSpec.ts: setPhotoSetId', photoSetId);
   return {
     type: SET_PHOTOSET_ID,
     payload: {

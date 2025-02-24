@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 
 import * as fs from 'fs';
+import * as fse from 'fs-extra';
 import { promisify } from 'util';
 
 import { version } from '../version';
@@ -32,15 +33,16 @@ import {
   addPhotoSetToDb,
   getMediaItemsByPhotoSetFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, UploadMediaFilesResponse, StringToStringLUT, FileToImport } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, StringToStringLUT, FileToImport } from '../types';
 import {
+  deleteDirectory,
   fsDeleteFiles,
   getJsonFromFile
 } from '../utilities';
 import { MatchRule, ReviewLevel } from 'enums';
 import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
-import { importFiles, uploadPeopleTakeoutFiles } from './uploadImport';
+import { importFiles } from './uploadImport';
 import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
 
@@ -276,51 +278,59 @@ export const uploadAndImportEndpoint = async (request: Request, response: Respon
 
     response.sendStatus(200);
 
-    // const uploadedMediaFilesResponse: UploadMediaFilesResponse = await uploadFiles(request, response);
-    // const { photoSetId, albumName, files } = uploadedMediaFilesResponse;
-    // const filePaths: string[] = files.map((file: Express.Multer.File) => file.path);
-
-    // await importFiles(photoSetId, filePaths);
-
-    // response.sendStatus(200);
   } catch (error) {
     console.error('Error in uploadAndImportEndpoint:', error);
     response.status(500).json(error);
   }
 }
 
-export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: Response, next: any) => {
+const getTakeoutMetaDataFilePath = (albumName: string, fileName: string): string => {
 
-  // TEDTODO - should not be hard coded
-  const peopleTakeoutFilesDir = '/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles';
+  const peopleTakeoutFilesDir: string = path.join('/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles', albumName);
+
+  let takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, fileName + '.supplemental-metadata.json');
+
+  const mediaFilePath: string = path.join(peopleTakeoutFilesDir, fileName);
+
+  // if the media item is a converted file, substitute the original file
+  const fileExtension = path.extname(mediaFilePath);
+  if (fileExtension.toLowerCase() === '.jpg') {
+    const dirname = path.dirname(mediaFilePath); // Extracts the directory path
+    const fileName = path.basename(mediaFilePath, fileExtension) + ".heic.supplemental-metadata.json";
+    const heicFilePath = path.join(dirname, fileName);
+    if (fse.existsSync(heicFilePath)) {
+      takeoutMetaDataFilePath = heicFilePath;
+    }
+  }
+
+  return takeoutMetaDataFilePath;
+}
+
+export const mergePeopleTakeoutEndpoint = async (request: Request, response: Response, next: any) => {
+  
+  console.log('mergePeopleTakeoutEndpoint', request.body.albumName);
+
+  const albumName: string = request.body.albumName;
+
+  const peopleTakeoutFilesDir = path.join('/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles', albumName);
+  const metadataFilePath: string = path.join(peopleTakeoutFilesDir, 'metadata.json');
+  const metadataFileContents: string = fs.readFileSync(metadataFilePath, 'utf8');
+  const metadata = JSON.parse(metadataFileContents);
+  // metadata.title should be the same as request.body.albumName
+  // verify this and throw error if not true
+
+  console.log('mergePeopleTakeoutEndpoint', metadata);
 
   try {
-    const uploadedPeopleTakeoutFiles: Express.Multer.File[] = await uploadPeopleTakeoutFiles(request, response);
-
-    let albumName: string = '';
-
-    for (const uploadedPeopleTakeoutFile of uploadedPeopleTakeoutFiles) {
-      if (uploadedPeopleTakeoutFile.filename === 'metadata.json') {
-        const metadataFilePath: string = uploadedPeopleTakeoutFile.path;
-        const metadataFileContents: string = fs.readFileSync(metadataFilePath, 'utf8');
-        const metadata = JSON.parse(metadataFileContents);
-        albumName = metadata.title;
-      }
-    }
-
-    if (albumName === '') {
-      console.error('Album name not found in metadata.json');
-      response.status(500).json('Album name not found in metadata.json');
-      return;
-    }
-
     const mediaItemsInAlbum: MediaItem[] = await getMediaItemsInNamedAlbumFromDb(albumName);
 
     const personKeywordNames: Set<string> = new Set<string>();
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
+
+      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(albumName, mediaItemInAlbum.fileName);
+
       // NOTE the current (as of 2/21/2025 file naming convention)
-      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.supplemental-metadata.json');
       const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
       const takeoutMetadata: any = await getJsonFromFile(encodedFilePath);
       if (!isNil(takeoutMetadata.people)) {
@@ -358,7 +368,7 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
     })
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
-      const takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, mediaItemInAlbum.fileName + '.supplemental-metadata.json');
+      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(albumName, mediaItemInAlbum.fileName);
       const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
       const takeoutMetadata: any = await getJsonFromFile(encodedFilePath);
 
@@ -376,12 +386,15 @@ export const uploadPeopleTakeoutsEndpoint = async (request: Request, response: R
       const updates: Partial<MediaItem> = {
         people,
         keywordNodeIds,
+        peopleRetrievedFromGoogle: true,
       };
       await updateMediaItemFieldsInDb(mediaItemInAlbum.uniqueId, updates);
-
     }
 
+    await deleteDirectory(peopleTakeoutFilesDir);
+
     response.sendStatus(200);
+    
   } catch (error) {
     console.error('Error in uploadPeopleTakeoutsEndpoint:', error);
     response.status(500).json(error);

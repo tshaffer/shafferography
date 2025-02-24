@@ -100,12 +100,6 @@ export interface UserWithToken extends User {
   accessToken: string;
 }
 
-export interface UploadMediaFilesResponse {
-  photoSetId: string;
-  albumName: string;
-  files: Express.Multer.File[];
-}
-
 export interface PhotoSet {
   photoSetId: string;
   photoSetName: string;

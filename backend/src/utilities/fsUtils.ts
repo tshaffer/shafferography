@@ -191,3 +191,25 @@ export const checkAndCreateDirectory = async (path: string) => {
     }
   }
 }
+
+export const deleteDirectory = async (dirPath: string): Promise<void> => {
+  try {
+    // Read the contents of the directory
+    const files = await fs.readdir(dirPath);
+
+    // Delete each file in the directory
+    await Promise.all(
+      files.map(async (file) => {
+        const filePath = path.join(dirPath, file);
+        await fs.unlink(filePath);
+      })
+    );
+
+    // Remove the directory itself
+    await fs.rmdir(dirPath);
+
+    console.log(`Successfully deleted directory: ${dirPath}`);
+  } catch (error) {
+    console.error(`Error deleting directory ${dirPath}:`, error);
+  }
+};

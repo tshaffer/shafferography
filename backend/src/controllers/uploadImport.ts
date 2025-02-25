@@ -1,4 +1,4 @@
-
+import { Request, Response } from 'express';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
@@ -71,44 +71,82 @@ const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<a
   return [];
 }
 
-export const importFiles = async (baseDirectory: string, photoSetId: string, files: FileToImport[]): Promise<any> => {
-
-  const fileNames: string[] = files.map((file) => file.name);
-
-  // convert HEIC files to JPEG
-  const updatedFileNames: string[] = await convertFilesToJpeg(baseDirectory, fileNames);
-
-  const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(baseDirectory, photoSetId, updatedFileNames);
-
-  // skip step that checks for image file existence in db
-
-  // add the mediaItems to the db
-  await addMediaItemsFromLocalStorage(localStorageMediaItems);
-
-  console.log('localStorageMediaItems:', localStorageMediaItems.length);
-
-  return Promise.resolve();
+interface FileStatus {
+  status: "uploading" | "processing" | "completed";
+  filename: string;
 }
 
-const convertFilesToJpeg = async (baseDirectory: string, fileNames: string[]): Promise<string[]> => {
+interface UploadStatus {
+  [uploadId: string]: {
+    files: FileStatus[];
+  };
+}
 
-  const updatedFileNames: string[] = [];
+const processingStatuses: UploadStatus = {};
 
-  for (const fileName of fileNames) {
-    const filePath = path.join(baseDirectory, fileName);
-    const fileExtension = path.extname(filePath);
-    if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
-      const inputFilePath = filePath;
-      const dirname = path.dirname(inputFilePath); // Extracts the directory path
-      const newFilename = path.basename(inputFilePath, fileExtension) + ".jpg"; // Replaces .heic with .jpg
-      const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
-      console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
-      await convertHEICFileToJPEGWithEXIF(inputFilePath, outputFilePath);
-      updatedFileNames.push(newFilename);
-    } else {
-      updatedFileNames.push(fileName);
+export const uploadAndImportEndpoint = async (request: Request, response: Response, next: any) => {
+
+  try {
+    console.log(request.body);
+
+    const uploadId = uuidv4();
+
+    const baseDirectory: string = request.body.baseDirectory;
+    const photoSetId: string = request.body.photoSetId;
+    const files: FileToImport[] = request.body.files;
+    const fileNames: string[] = files.map((file) => file.name);
+
+    console.log('baseDirectory:', baseDirectory);
+    console.log('photoSetId:', photoSetId);
+    console.log('files:', files);
+
+    processingStatuses[uploadId] = {
+      files: files.map((file) => ({
+        filename: file.name,
+        status: file.type === "image/heic" ? "processing" : "completed",
+      })),
+    };
+
+    response.json({ uploadId });
+
+    const updatedFileNames: string[] = [];
+
+    for (const fileName of fileNames) {
+      const filePath = path.join(baseDirectory, fileName);
+      const fileExtension = path.extname(filePath);
+      if (fileExtension.toLowerCase() === '.heic' || fileExtension.toLowerCase() === '.heif') {
+        const inputFilePath = filePath;
+        const dirname = path.dirname(inputFilePath); // Extracts the directory path
+        const newFilename = path.basename(inputFilePath, fileExtension) + ".jpg"; // Replaces .heic with .jpg
+        const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
+        console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
+        await convertHEICFileToJPEGWithEXIF(inputFilePath, outputFilePath);
+        updatedFileNames.push(newFilename);
+
+        const fileEntry = processingStatuses[uploadId].files.find((f) => f.filename === fileName);
+        if (fileEntry) fileEntry.status = "completed";
+
+      } else {
+        updatedFileNames.push(fileName);
+      }
     }
+
+    const localStorageMediaItems: MediaItem[] = await getLocalStorageMediaItems(baseDirectory, photoSetId, updatedFileNames);
+
+    // skip step that checks for image file existence in db
+
+    // add the mediaItems to the db
+    await addMediaItemsFromLocalStorage(localStorageMediaItems);
+
+    console.log('localStorageMediaItems:', localStorageMediaItems.length);
+
+  } catch (error) {
+    console.error('Error in uploadAndImportEndpoint:', error);
+    response.status(500).json(error);
   }
-  
-  return Promise.resolve(updatedFileNames);
+}
+
+export const getPerFileUploadStatus = async (req: Request, res: Response, next: any) => {
+  const { uploadId } = req.params;
+  res.json(processingStatuses[uploadId] || { files: [] });
 }

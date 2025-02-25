@@ -24,7 +24,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia, uploadToGoogle } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet } from '../types';
@@ -164,31 +164,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   };
 
-  const handleUploadToGoogle = async (albumName: string) => {
-    console.log('handleUploadToGoogle', albumName);
-
-    setUploadingToGoogle(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const mediaItemIds: string[] = props.selectedMediaItems.map((mediaItem: any) => mediaItem.uniqueId);
-
-    try {
-      const response = await uploadToGoogle(albumName, mediaItemIds);
-
-      if (response.ok) {
-        setSuccessMessage('Upload to google completed successfully!');
-      } else {
-        const errorMessage = await response.text();
-        setError(`Upload to google failed: ${errorMessage}`);
-      }
-    } catch (err) {
-      setError(`Upload to google failed: ${err}`);
-    } finally {
-      setUploadingToGoogle(false);
-    }
-  };
-
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
 
     // return if the photo layout is already set to the requested layout.
@@ -315,8 +290,9 @@ const TopNavigationBar: React.FC<any> = (props) => {
   const renderUploadToGoogleDialog = (): JSX.Element => {
     return (
       <UploadToGoogleDialog
+        mediaItemIds={props.selectedMediaItemIds}
+        mediaItems={props.selectedMediaItems}
         open={showUploadToGoogleDialog}
-        onUploadToGoogle={handleUploadToGoogle}
         onClose={handleCloseUploadToGoogleDialogDialog}
       />
     );

@@ -1,11 +1,14 @@
 import axios from 'axios';
 import * as fse from 'fs-extra';
+import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 
 import { GooglePhotoAPIs } from "./googlePhotos";
 import { BatchCreateGoogleMediaItem, CreateGoogleAlbumResponse, CreateMediaItemsResponse, MediaItem, NewMediaItemResult, UploadToGoogleResults } from '../types';
 import { isNil } from 'lodash';
-import { getMediaItemFromDb } from './dbInterface';
+import { getMediaItemFromDb, updateMediaItemFieldsInDb } from './dbInterface';
 import path from 'path';
+import { TypedResponse } from '../types';
 
 // A function to upload a media file
 export const uploadMediaItem = async (googleAccessToken: string, filePath: string, fileName: string): Promise<string> => {
@@ -155,12 +158,33 @@ export const addMediaItemsToAlbum = async (
   }
 };
 
+interface FileStatus {
+  status: "uploading" | "processing" | "completed";
+  filename: string;
+}
+
+interface UploadStatus {
+  [uploadId: string]: {
+    files: FileStatus[];
+  };
+}
+
+const processingStatuses: UploadStatus = {};
+
 // steps
 // 1. create album
 // 2. upload media items
 // 3. add media items to album
 // 4. update records in db
-export const uploadToGoogle = async (googleAccessToken: string, albumName: string, mediaItemIds: string[]): Promise<UploadToGoogleResults> => {
+export const uploadToGoogleEndpoint = async (request: Request, response: TypedResponse<CreateMediaItemsResponse>, next: any) => {
+
+  const googleAccessToken = request.body.googleAccessToken;
+  const albumName = request.body.albumName;
+  const mediaItemIds: string[] = request.body.mediaItemIds;
+  console.log('uploadToGoogleEndpoint: ');
+  console.log('googleAccessToken: ', googleAccessToken);
+  console.log('albumName: ', albumName);
+  console.log('mediaItemIds: ', request.body.mediaItemIds);
 
   console.log('uploadToGoogle: ');
   console.log('googleAccessToken: ', googleAccessToken);
@@ -169,12 +193,26 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
 
   try {
 
+    const uploadId = uuidv4();
+
+    const mediaItems: MediaItem[] = await Promise.all(
+      mediaItemIds.map(async (mediaItemId: string) => getMediaItemFromDb(mediaItemId))
+    );
+    
+    processingStatuses[uploadId] = {
+      files: mediaItems.map((mediaItem) => ({
+        filename: mediaItem.fileName,
+        status: "processing",
+      })),
+    };
+
+    response.json({ uploadId });
+
     // Upload Media Items
     const createdMediaItemIds: string[] = [];
     const createdMediaItems: BatchCreateGoogleMediaItem[] = [];
-    for (const mediaItemId of mediaItemIds) {
+    for (const mediaItem of mediaItems) {
 
-      const mediaItem: MediaItem = await getMediaItemFromDb(mediaItemId);
       if (isNil(mediaItem)) {
         console.error('Media item not found in db');
         throw new Error('Media item not found in db');
@@ -182,6 +220,7 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
 
       let mediaItemFilePath = mediaItem.filePath;
       let mediaItemFileName = mediaItem.fileName;
+      const preConvertedFileName = mediaItem.fileName;
 
       // if the media item is a converted file, substitute the original file
       const fileExtension = path.extname(mediaItem.filePath);
@@ -207,6 +246,10 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
       const createdMediaItemId = createdMediaItem.id;
       createdMediaItemIds.push(createdMediaItemId);
       createdMediaItems.push(createdMediaItem);
+
+      const fileEntry = processingStatuses[uploadId].files.find((f) => f.filename === preConvertedFileName);
+      if (fileEntry) fileEntry.status = "completed";
+
     };
 
     console.log('completed uploading mediaItems');
@@ -220,7 +263,23 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
     await addMediaItemsToAlbum(googleAccessToken, albumId, createdMediaItemIds);
     console.log('successful uploadToGoogle: ');
 
-    return { albumId, mediaItemIds, createdMediaItems };
+    if (mediaItemIds.length !== createdMediaItems.length) {
+      throw new Error('mediaItemIds and createdMediaItems are not the same length');
+    }
+
+    for (let i = 0; i < mediaItemIds.length; i++) {
+      const mediaItemId = mediaItemIds[i];
+      const createdMediaItem = createdMediaItems[i];
+      const updates: Partial<MediaItem> = {
+        albumId,
+        albumName,
+        googleMediaItemId: createdMediaItem.id,
+        baseUrl: createdMediaItem.baseUrl,
+      };
+      await updateMediaItemFieldsInDb(mediaItemId, updates);
+    }
+
+    console.log('uploadToGoogle complete');
 
   } catch (error) {
     throw new Error('Failed to upload media to Google');
@@ -228,5 +287,7 @@ export const uploadToGoogle = async (googleAccessToken: string, albumName: strin
 
 }
 
-
-
+export const getPerFileUploadToGoogleStatus = async (req: Request, res: Response, next: any) => {
+  const { uploadId } = req.params;
+  res.json(processingStatuses[uploadId] || { files: [] });
+}

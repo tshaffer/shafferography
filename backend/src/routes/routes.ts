@@ -16,7 +16,6 @@ import {
   clearDeletedMediaItems,
   removeDeletedMediaItem,
   redownloadMediaItemEndpoint,
-  uploadAndImportEndpoint,
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   updateReviewLevelEndpoint,
@@ -25,6 +24,9 @@ import {
   addPhotoSet,
   getMediaItemsByPhotoSet,
   mergePeopleTakeoutEndpoint,
+  uploadAndImportEndpoint,
+  getPerFileUploadStatus,
+  getPerFileUploadToGoogleStatus,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
@@ -37,6 +39,9 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/takeouts', getTakeouts);
   app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
   app.get('/api/v1/photoSets', getPhotoSets);
+
+  app.get('/api/v1/upload-status/:uploadId', getPerFileUploadStatus);
+  app.get('/api/v1/upload-to-google-status/:uploadId', getPerFileUploadToGoogleStatus);
 
   app.post('/api/v1/deleteMediaItems', deleteMediaItems);
   app.post('/api/v1/clearDeletedMediaItems', clearDeletedMediaItems);

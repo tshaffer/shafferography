@@ -7,7 +7,7 @@ import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
-import { Button, DialogActions, DialogContent, IconButton, Stack, Typography } from '@mui/material';
+import { Button, DialogActions, DialogContent, IconButton, Stack, Typography, Alert } from '@mui/material';
 
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
@@ -16,7 +16,7 @@ import { getAppInitialized, getPhotoSets, getPhotoSetId } from '../selectors';
 import { apiUrlFragment, FileToImport, PhotoSet, serverUrl } from '../types';
 import { setPhotoSetId, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
-import { addPhotoSet } from '../controllers';
+import { addPhotoSet, reloadMediaItemsByPhotoSet } from '../controllers';
 import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
@@ -31,21 +31,34 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   photoSets: PhotoSet[];
   onAddPhotoSet: (photoSet: PhotoSet) => any;
   onSetPhotoSetId: (photoSetId: string) => any;
+  onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
+  const [localPhotoSetId, setLocalPhotoSetId] = React.useState<string>(props.photoSetId);
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [newPhotoSetName, setNewPhotoSetName] = React.useState<string>('');
   const [lastAddedPhotoSetId, setLastAddedPhotoSetId] = React.useState<string | null>(null);
   const [progress, setProgress] = React.useState(0);
 
+  const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
+  const [fileStatuses, setFileStatuses] = React.useState<Record<string, "uploading" | "processing" | "completed">>({});
+  const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
+
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
 
   React.useEffect(() => {
     if (props.open) {
+      setLocalPhotoSetId(props.photoSetId);
       setProgress(0);
       setIsAddingNew(props.photoSets.length === 0);
+      setFileProgress({});
+      setFileStatuses({});
+      setProcessingComplete(false);
+      // setBaseDirectory('');
+      setSelectedFiles(null);
+      setNewPhotoSetName('');
     }
   }, [props.open]);
 
@@ -84,9 +97,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
     return props.onAddPhotoSet(newPhotoSet).then(() => {
       console.log('Photo Set added: ', newPhotoSet);
-      props.onSetPhotoSetId(newPhotoSet.photoSetId);
-      localStorage.setItem('photoSetId', newPhotoSet.photoSetId);
-
+      setLocalPhotoSetId(newPhotoSet.photoSetId);
       setLastAddedPhotoSetId(newPhotoSet.photoSetId);
       setNewPhotoSetName("");
       setIsAddingNew(false);
@@ -95,9 +106,43 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     });
   };
 
+  const checkProcessingComplete = async (uploadId: string): Promise<void> => {
+    return new Promise((resolve) => {
+      const interval = setInterval(async () => {
+        try {
+          const response = await axios.get(`/api/v1/upload-status/${uploadId}`);
+
+          if (!response.data || response.data.files.length === 0) return;
+
+          const updatedStatuses: Record<string, "uploading" | "processing" | "completed"> = {};
+
+          response.data.files.forEach((file: { filename: string; status: string }) => {
+            updatedStatuses[file.filename] = file.status as "uploading" | "processing" | "completed";
+          });
+
+          setFileStatuses(updatedStatuses);
+
+          if (Object.values(updatedStatuses).every((status) => status === "completed")) {
+            clearInterval(interval);
+            console.log("All files processed!");
+            props.onSetPhotoSetId(localPhotoSetId);
+            localStorage.setItem('photoSetId', localPhotoSetId);
+            props.onReloadMediaItemsByPhotoSet(localPhotoSetId);
+            setProcessingComplete(true);
+            resolve();
+          }
+        } catch (error) {
+          console.error("Error checking status", error);
+        }
+      }, 500);
+    });
+  };
+
   const handleImportFromDrive = async (baseDirectory: string, photoSetId: string, selectedFiles: FileList) => {
 
-    // console.log('handleImportFromDrive', selectedFiles, photoSetId);
+    setFileProgress({});
+    setFileStatuses({});
+    setProcessingComplete(false);
 
     const uploadUrl = serverUrl + apiUrlFragment + 'uploadAndImport';
 
@@ -111,7 +156,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           type: selectedFile.type,
           lastModified: selectedFile.lastModified,
           lastModifiedDate: (selectedFile as any).lastModifiedDate,
-        }
+        };
         files.push(file);
       }
     }
@@ -122,22 +167,35 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       files,
     };
 
-    return axios.post(
-      uploadUrl,
-      uploadBody
-    ).then((response) => {
-      return Promise.resolve(response);
-    }).catch((error) => {
-      console.log('error');
-      console.log(error);
-      return '';
-    });
+    try {
+      const response = await axios.post(uploadUrl, uploadBody, {
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round(
+            (progressEvent.loaded * 100) / (progressEvent.total ?? 1)
+          );
 
+          // ✅ Update each file's progress separately
+          const updatedProgress = { ...fileProgress };
+          files.forEach((file) => (updatedProgress[file.name] = percentCompleted));
+          setFileProgress(updatedProgress);
+        },
+      });
+
+      console.log("Upload started:", response.data);
+      files.forEach((file) => setFileStatuses((prev) => ({ ...prev, [file.name]: "processing" })));
+
+      await checkProcessingComplete(response.data.uploadId);
+
+      console.log("Processing is fully complete!");
+
+    } catch (error) {
+      console.error("Upload failed", error);
+    }
   };
 
   const handleImport = async () => {
     if (selectedFiles && (baseDirectory !== '')) {
-      let photoSetId = props.photoSetId;
+      let photoSetId = localPhotoSetId;
       if (isAddingNew) {
         const newPhotoSet: PhotoSet | undefined = await createPhotoSet();
         if (!newPhotoSet) return;
@@ -146,19 +204,18 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
       console.log('import files: ', baseDirectory, photoSetId, selectedFiles);
       await handleImportFromDrive(baseDirectory, photoSetId, selectedFiles);
-      props.onClose();
     }
   };
 
   return (
-    <Dialog
-      onClose={handleClose}
-      open={props.open}
-      maxWidth="md"  // Makes dialog wider (options: 'xs', 'sm', 'md', 'lg', 'xl')
-      fullWidth  // Ensures it takes the full available width
-    >
+    <Dialog onClose={handleClose} open={props.open} maxWidth="md" fullWidth>
       <DialogTitle>Import Photos</DialogTitle>
       <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }} sx={{ width: '100%', minWidth: '500px' }}>
+        {processingComplete && (
+          <Alert severity="success" sx={{ mb: 2, fontSize: '1.2rem', textAlign: 'center' }}>
+            Processing Complete!
+          </Alert>
+        )}
         <Box component="form" noValidate autoComplete="off">
           <Box>
             {isAddingNew ? (
@@ -178,8 +235,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               <TextField
                 select
                 label="Choose a Photo Set"
-                value={props.photoSetId}
-                onChange={(e) => props.onSetPhotoSetId(e.target.value)}
+                value={localPhotoSetId}
+                onChange={(e) => setLocalPhotoSetId(e.target.value)}
                 fullWidth
               >
                 <MenuItem onClick={() => setIsAddingNew(true)} key={'newPhotoSet'} value={''}>
@@ -213,12 +270,18 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               multiple
               style={{ marginTop: '1rem' }}
             />
+            {Object.keys(fileProgress).map((fileName) => (
+              <Stack key={fileName} direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem', padding: '4px 0' }}>
+                <Typography>{fileName}</Typography>
+                <Typography>{fileStatuses[fileName] === "processing" ? "Processing..." : "✅ Done"}</Typography>
+              </Stack>
+            ))}
           </Stack>
         </Box>
       </DialogContent>
 
       <DialogActions>
-        <Button onClick={handleClose}>Cancel</Button>
+        <Button onClick={handleClose}>Close</Button>
         <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newPhotoSetName.trim())}>
           Import
         </Button>
@@ -228,8 +291,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 };
 
 function mapStateToProps(state: any) {
-  // console.log('mapStateToProps photoSetId: ', getPhotoSetId(state));
-  // console.log('mapStateToProps photoSets: ', getPhotoSets(state));
   return {
     appInitialized: getAppInitialized(state),
     photoSetId: getPhotoSetId(state),
@@ -241,6 +302,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onAddPhotoSet: addPhotoSet,
     onSetPhotoSetId: setPhotoSetId,
+    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
   }, dispatch);
 };
 

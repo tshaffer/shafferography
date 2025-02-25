@@ -42,7 +42,6 @@ import {
 import { MatchRule, ReviewLevel } from 'enums';
 import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
-import { importFiles } from './uploadImport';
 import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
 
@@ -262,28 +261,6 @@ export const getSubdirectoriesFromFs = async (dirPath: string): Promise<string[]
   }
 }
 
-export const uploadAndImportEndpoint = async (request: Request, response: Response, next: any) => {
-  try {
-    console.log(request.body);
-
-    const baseDirectory: string = request.body.baseDirectory;
-    const photoSetId: string = request.body.photoSetId;
-    const files: FileToImport[] = request.body.files;
-
-    console.log('baseDirectory:', baseDirectory);
-    console.log('photoSetId:', photoSetId);
-    console.log('files:', files);
-
-    await importFiles(baseDirectory, photoSetId, files);
-
-    response.sendStatus(200);
-
-  } catch (error) {
-    console.error('Error in uploadAndImportEndpoint:', error);
-    response.status(500).json(error);
-  }
-}
-
 const getTakeoutMetaDataFilePath = (albumName: string, fileName: string): string => {
 
   const peopleTakeoutFilesDir: string = path.join('/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles', albumName);
@@ -307,7 +284,7 @@ const getTakeoutMetaDataFilePath = (albumName: string, fileName: string): string
 }
 
 export const mergePeopleTakeoutEndpoint = async (request: Request, response: Response, next: any) => {
-  
+
   console.log('mergePeopleTakeoutEndpoint', request.body.albumName);
 
   const albumName: string = request.body.albumName;
@@ -394,7 +371,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
     await deleteDirectory(peopleTakeoutFilesDir);
 
     response.sendStatus(200);
-    
+
   } catch (error) {
     console.error('Error in uploadPeopleTakeoutsEndpoint:', error);
     response.status(500).json(error);

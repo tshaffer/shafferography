@@ -1,5 +1,6 @@
 import { MediaItem } from "entities";
 import { Tags } from "exiftool-vendored";
+import { Response } from 'express';
 
 // export type TypedResponse<T> = Response & {
 //   json: (body: T) => Response;
@@ -16,4 +17,8 @@ export interface FilePathToExifTags {
 export type StringToMediaItem = {
   [key: string]: MediaItem;
 }
+
+export type TypedResponse<T> = Response & {
+  json: (body: T) => Response;
+};
 

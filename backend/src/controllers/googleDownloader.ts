@@ -30,15 +30,10 @@ export const downloadMediaItems = async (googleAccessToken: string, mediaItemGro
   console.log('Number of files downloaded: ', filesDownloaded);
 };
 
-export const redownloadMediaItem = async (googleAccessToken: string, mediaItem: MediaItem): Promise<any> => {
-  return downloadMediaItem(googleAccessToken, mediaItem, true);
-}
-
 const downloadMediaItem = async (googleAccessToken: string, mediaItem: MediaItem, overwrite: boolean): Promise<any> => {
 
   const where = mediaItem.filePath;
 
-  // if file exists at 'where', don't redownload
   if (fse.existsSync(where) && !overwrite) {
     const ret: any = { valid: true, where, mediaItem };
     return Promise.resolve(ret);

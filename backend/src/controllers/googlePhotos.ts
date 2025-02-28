@@ -68,17 +68,10 @@ export const getAlbumMediaItemsFromGoogle = async (googleAccessToken: string, al
   return googleMediaItems;
 }
 
-export const getGoogleAlbumDataByName = async (googleAccessToken: string, albumName: string): Promise<GoogleAlbum | null> => {
-
+export const getGoogleAlbumsByName = async (googleAccessToken: string, albumName: string): Promise<GoogleAlbum[]> => {
   const googleAlbums: GoogleAlbum[] = await getAllGoogleAlbums(googleAccessToken);
-
-  for (const googleAlbum of googleAlbums) {
-    if (googleAlbum.title === albumName) {
-      return googleAlbum;
-    }
-  }
-
-  return null;
+  const matchingGoogleAlbums: GoogleAlbum[] = googleAlbums.filter((googleAlbum) => googleAlbum.title === albumName);
+  return matchingGoogleAlbums;
 }
 
 export const getAllGoogleAlbums = async (googleAccessToken: string, nextPageToken: any = null): Promise<GoogleAlbum[]> => {

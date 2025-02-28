@@ -21,8 +21,8 @@ import {
   addPhotoSet,
   getMediaItemsByPhotoSet,
   mergePeopleTakeoutEndpoint,
-  uploadAndImportEndpoint,
-  getPerFileUploadStatus,
+  importPhotosEndpoint,
+  getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
 } from '../controllers';
 
@@ -36,7 +36,7 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
   app.get('/api/v1/photoSets', getPhotoSets);
 
-  app.get('/api/v1/upload-status/:uploadId', getPerFileUploadStatus);
+  app.get('/api/v1/import-photos-status/:importId', getPerFileImportPhotosStatus);
   app.get('/api/v1/upload-to-google-status/:uploadId', getPerFileUploadToGoogleStatus);
 
   app.post('/api/v1/deleteMediaItems', deleteMediaItems);
@@ -52,7 +52,7 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/initializeKeywordTree', initializeKeywordTree);
 
   app.get('/api/v1/albumNamesWherePeopleNotRetrieved', getAlbumNamesWherePeopleNotRetrievedEndpoint);
-  app.post('/api/v1/uploadAndImport', uploadAndImportEndpoint);
+  app.post('/api/v1/importPhotos', importPhotosEndpoint);
   app.post('/api/v1/uploadToGoogle', uploadToGoogleEndpoint);
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 

@@ -24,7 +24,7 @@ import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, uploadRawMedia } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet } from '../types';
@@ -123,45 +123,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handleCloseUploadToGoogleDialogDialog = () => {
     setShowUploadToGoogleDialog(false);
-  };
-
-  const handleImportFromDrive = async (files: FileList, photoSetId: string) => {
-
-    console.log('handleImportFromDrive', files, photoSetId);
-
-    if (!files) {
-      setError('Please select file(s) first');
-      return;
-    }
-
-    setImporting(true);
-    setError(null);
-    setSuccessMessage(null);
-
-    const formData = new FormData();
-
-    // Append all files in the folder to the FormData object
-    Array.from(files).forEach((file) => {
-      formData.append('files', file, file.name);
-    });
-
-    // Append additional photoSetId
-    formData.append('photoSetId', photoSetId);
-
-    try {
-      const response = await uploadRawMedia(formData);
-
-      if (response.ok) {
-        setSuccessMessage('Import completed successfully!');
-      } else {
-        const errorMessage = await response.text();
-        setError(`Import failed: ${errorMessage}`);
-      }
-    } catch (err) {
-      setError(`Import failed: ${err}`);
-    } finally {
-      setImporting(false);
-    }
   };
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
@@ -281,7 +242,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
     return (
       <ImportFromDriveDialog
         open={showImportFromDriveDialog}
-        onImportFromDrive={handleImportFromDrive}
         onClose={handleCloseImportFromDriveDialog}
       />
     );

@@ -16,16 +16,10 @@ const bodyParser = require('body-parser');
 import { connectDB } from './config/db';  // ✅ Import first
 import { BASE_MEDIA_PATH } from './config';
 
-console.log('start backend code');
-
-dotenv.config(); // Load environment variables
-
-console.log('retrieved env variables:');
+dotenv.config();
 
 const startServer = async () => {
   await connectDB();  // ✅ Ensure DB is connected before anything else
-
-  console.log('Database connected. Now starting Express.');
 
   // Initialize Express app
   const app = express();
@@ -159,6 +153,7 @@ const startServer = async () => {
         'email',
         'https://www.googleapis.com/auth/photoslibrary.appendonly',
         'https://www.googleapis.com/auth/photoslibrary.edit.appcreateddata',
+        'https://www.googleapis.com/auth/photoslibrary.readonly.appcreateddata',
       ],
       accessType: 'offline',
       prompt: 'select_account consent',

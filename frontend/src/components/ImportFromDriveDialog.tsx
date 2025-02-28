@@ -21,7 +21,6 @@ import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
   open: boolean;
-  onImportFromDrive: (files: FileList, photoSetId: string) => void;
   onClose: () => void;
 }
 
@@ -106,11 +105,11 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     });
   };
 
-  const checkProcessingComplete = async (uploadId: string): Promise<void> => {
+  const checkProcessingComplete = async (importId: string): Promise<void> => {
     return new Promise((resolve) => {
       const interval = setInterval(async () => {
         try {
-          const response = await axios.get(`/api/v1/upload-status/${uploadId}`);
+          const response = await axios.get(`/api/v1/import-photos-status/${importId}`);
 
           if (!response.data || response.data.files.length === 0) return;
 
@@ -144,7 +143,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     setFileStatuses({});
     setProcessingComplete(false);
 
-    const uploadUrl = serverUrl + apiUrlFragment + 'uploadAndImport';
+    const uploadUrl = serverUrl + apiUrlFragment + 'importPhotos';
 
     const files: FileToImport[] = [];
     for (const key in selectedFiles) {
@@ -184,7 +183,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       console.log("Upload started:", response.data);
       files.forEach((file) => setFileStatuses((prev) => ({ ...prev, [file.name]: "processing" })));
 
-      await checkProcessingComplete(response.data.uploadId);
+      await checkProcessingComplete(response.data.importId);
 
       console.log("Processing is fully complete!");
 

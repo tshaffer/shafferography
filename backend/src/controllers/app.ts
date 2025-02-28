@@ -44,6 +44,7 @@ import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
 import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
+import { BASE_PEOPLE_TAKEOUT_FILES_PATH } from '../config';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {
@@ -261,9 +262,9 @@ export const getSubdirectoriesFromFs = async (dirPath: string): Promise<string[]
   }
 }
 
-const getTakeoutMetaDataFilePath = (albumName: string, fileName: string): string => {
+export const getTakeoutMetaDataFilePath = (baseDirectory: string, albumName: string, fileName: string): string => {
 
-  const peopleTakeoutFilesDir: string = path.join('/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles', albumName);
+  const peopleTakeoutFilesDir: string = path.join(baseDirectory, albumName);
 
   let takeoutMetaDataFilePath: string = path.join(peopleTakeoutFilesDir, fileName + '.supplemental-metadata.json');
 
@@ -289,7 +290,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
 
   const albumName: string = request.body.albumName;
 
-  const peopleTakeoutFilesDir = path.join('/Users/tedshaffer/Documents/Projects/shafferography/backend/public/peopleTakeoutFiles', albumName);
+  const peopleTakeoutFilesDir: string = path.join(BASE_PEOPLE_TAKEOUT_FILES_PATH, albumName);
   const metadataFilePath: string = path.join(peopleTakeoutFilesDir, 'metadata.json');
   const metadataFileContents: string = fs.readFileSync(metadataFilePath, 'utf8');
   const metadata = JSON.parse(metadataFileContents);
@@ -305,7 +306,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
 
-      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(albumName, mediaItemInAlbum.fileName);
+      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(BASE_PEOPLE_TAKEOUT_FILES_PATH, albumName, mediaItemInAlbum.fileName);
 
       // NOTE the current (as of 2/21/2025 file naming convention)
       const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
@@ -345,7 +346,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
     })
 
     for (const mediaItemInAlbum of mediaItemsInAlbum) {
-      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(albumName, mediaItemInAlbum.fileName);
+      const takeoutMetaDataFilePath: string = getTakeoutMetaDataFilePath(BASE_PEOPLE_TAKEOUT_FILES_PATH, albumName, mediaItemInAlbum.fileName);
       const encodedFilePath = takeoutMetaDataFilePath.replace(/&/g, "&amp_");
       const takeoutMetadata: any = await getJsonFromFile(encodedFilePath);
 

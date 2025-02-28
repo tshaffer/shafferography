@@ -122,6 +122,10 @@ export const writeJsonToFile = async (filePath: string, jsonData: any): Promise<
   })
 }
 
+export function fsLocalFileExists(fullPath: string): boolean {
+  return fs.existsSync(fullPath);
+};
+
 export function fsLocalFolderExists(fullPath: string): Promise<boolean> {
   return Promise.resolve(fs.existsSync(fullPath))
     .then((exists) => {

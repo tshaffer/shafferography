@@ -607,3 +607,14 @@ export const addPhotoSetToDb = async (photoSet: Required<PhotoSet>): Promise<IPh
     throw error;
   }
 };
+
+export const getPhotoSetById = async (photoSetId: string): Promise<PhotoSet> => {
+  try {
+    const querySpec = { photoSetId };  
+    const photoSet = await PhotoSetModel.find(querySpec).exec();
+    return photoSet[0];
+  } catch (error) {
+    console.error('Error retrieving photo set:', error);
+    throw error;
+  }
+};

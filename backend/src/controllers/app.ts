@@ -12,9 +12,6 @@ import {
   createKeywordNodeDocument,
   setRootKeywordNodeDb,
   getMediaItemsToDisplayFromDbUsingSearchSpec,
-  createTakeoutDocument,
-  getTakeoutsFromDb,
-  getTakeoutById,
   updateKeywordNodeDb,
   deleteMediaItemsFromDb,
   getMediaItemFromDb,
@@ -33,14 +30,13 @@ import {
   addPhotoSetToDb,
   getMediaItemsByPhotoSetFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, Takeout, AddedTakeoutData, StringToStringLUT, FileToImport } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, StringToStringLUT } from '../types';
 import {
   deleteDirectory,
   fsDeleteFiles,
   getJsonFromFile
 } from '../utilities';
 import { MatchRule, ReviewLevel } from 'enums';
-import { importFromTakeout, redownloadGooglePhoto } from './takeouts';
 import path from 'path';
 import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
@@ -170,24 +166,6 @@ export const setRootKeywordNode = async (request: Request, response: Response, n
   response.status(200).send();
 }
 
-export const getTakeouts = async (request: Request, response: Response, next: any) => {
-  const takeouts: any = await getTakeoutsFromDb();
-  response.json(takeouts);
-};
-
-export const addTakeout = async (request: Request, response: Response, next: any) => {
-  const { id, label, albumName, path } = request.body;
-  const takeoutIdFromDb: string = await createTakeoutDocument({ id, label, albumName, path });
-  response.json(takeoutIdFromDb);
-}
-
-export const importFromTakeoutEndpoint = async (request: Request, response: Response, next: any) => {
-  const { id, googleAccessToken } = request.body;
-  const takeout: Takeout = await getTakeoutById(id);
-  const addedTakeoutData: AddedTakeoutData = await importFromTakeout(googleAccessToken, takeout.albumName, takeout.path);
-  response.json(addedTakeoutData);
-}
-
 export const updateReviewLevelEndpoint = async (request: Request, response: Response, next: any) => {
   const { mediaItemIds, reviewLevel } = request.body;
   const updates: Partial<MediaItem> = {
@@ -227,13 +205,6 @@ export const clearDeletedMediaItems = async (request: Request, response: Respons
 export const removeDeletedMediaItem = async (request: Request, response: Response, next: any) => {
   const { mediaItemId } = request.body;
   await removeDeleteMediaItemFromDb(mediaItemId);
-  response.sendStatus(200);
-}
-
-export const redownloadMediaItemEndpoint = async (request: Request, response: Response, next: any) => {
-  const { id, googleAccessToken } = request.body;
-  const mediaItem: MediaItem = await getMediaItemFromDb(id);
-  await redownloadGooglePhoto(googleAccessToken, mediaItem);
   response.sendStatus(200);
 }
 

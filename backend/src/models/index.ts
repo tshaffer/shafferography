@@ -5,6 +5,5 @@ export * from './KeywordTree';
 export * from './Mediaitem';
 export * from './MediaItemSchema';
 export * from './PhotoSet';
-export * from './Takeout';
 export * from './User';
 

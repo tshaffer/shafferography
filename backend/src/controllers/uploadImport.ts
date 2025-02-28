@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { FileToImport, GeoData, Keyword, KeywordData, KeywordNode, MediaItem, PhotoSet, ReviewLevel, StringToStringLUT } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
-import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, deleteDirectory, extractGeoData, fsLocalFileExists, getJsonFromFile, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
+import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, getJsonFromFile, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
 import { addAutoPersonKeywordsToDb, addMediaItemToMediaItemsDBTable, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb, getMediaItemsInNamedAlbumFromDb, getPhotoSetById, updateMediaItemFieldsInDb } from './dbInterface';
 import { BASE_MEDIA_PATH } from '../config';
 import { getTakeoutMetaDataFilePath } from './app';

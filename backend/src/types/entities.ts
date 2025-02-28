@@ -77,18 +77,6 @@ export interface SearchSpec {
   searchRules: SearchRule[];
 }
 
-export interface Takeout {
-  id: string;
-  label: string;
-  albumName: string;
-  path: string;
-}
-
-export interface AddedTakeoutData {
-  addedKeywordData: KeywordData;
-  addedMediaItems: MediaItem[];
-}
-
 export interface User {
   googleId: string;
   email: string;

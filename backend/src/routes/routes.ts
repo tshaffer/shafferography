@@ -7,15 +7,12 @@ import {
   addKeywordNode,
   setRootKeywordNode,
   getMediaItemsToDisplayFromSearchSpec,
-  getTakeouts,
-  importFromTakeoutEndpoint,
   initializeKeywordTree,
   updateKeywordNode,
   deleteMediaItems,
   getDeletedMediaItems,
   clearDeletedMediaItems,
   removeDeletedMediaItem,
-  redownloadMediaItemEndpoint,
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   updateReviewLevelEndpoint,
@@ -36,7 +33,6 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/mediaItemsByReviewLevels', getMediaItemsByReviewLevels);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
-  app.get('/api/v1/takeouts', getTakeouts);
   app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
   app.get('/api/v1/photoSets', getPhotoSets);
 
@@ -55,14 +51,10 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/setRootKeywordNode', setRootKeywordNode);
   app.post('/api/v1/initializeKeywordTree', initializeKeywordTree);
 
-  app.post('/api/v1/importFromTakeout', importFromTakeoutEndpoint);
-
   app.get('/api/v1/albumNamesWherePeopleNotRetrieved', getAlbumNamesWherePeopleNotRetrievedEndpoint);
   app.post('/api/v1/uploadAndImport', uploadAndImportEndpoint);
   app.post('/api/v1/uploadToGoogle', uploadToGoogleEndpoint);
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
-
-  app.post('/api/v1/redownloadMediaItem', redownloadMediaItemEndpoint);
 
   app.post('/api/v1/updateReviewLevel', updateReviewLevelEndpoint);
 };

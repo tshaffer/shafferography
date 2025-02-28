@@ -16,14 +16,12 @@ import {
   SearchRule,
   KeywordSearchRule,
   DateSearchRule,
-  Takeout,
   KeywordData,
   User,
   PhotoSet,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, ReviewLevel, SearchRuleType } from '../types/enums';
-import { getTakeoutModel } from '../models';
 
 import { PhotoSetModel } from '../models';
 import { IPhotoSet } from '../models';
@@ -253,46 +251,6 @@ export const setRootKeywordNodeDb = async (rootNodeId: string): Promise<void> =>
     }).catch((err: any) => {
       return Promise.reject(err);
     });
-}
-
-export const createTakeoutDocument = async (takeout: Takeout): Promise<string> => {
-  const takeoutModel = getTakeoutModel();
-  return takeoutModel.create(takeout)
-    .then((takeoutDocument: any) => {
-      const dbTakeout: Takeout = takeoutDocument.toObject() as Takeout;
-      return Promise.resolve(dbTakeout.id);
-    }).catch((err: any) => {
-      return Promise.reject(err);
-    });
-}
-
-export const getTakeoutsFromDb = async (): Promise<Takeout[]> => {
-  const takeoutModel = getTakeoutModel();
-  const takeouts: Takeout[] = [];
-  const takeoutDocuments: any = await (takeoutModel as any).find().exec();
-  for (const document of takeoutDocuments) {
-    const takeout: Takeout = document.toObject() as Takeout;
-    takeout.id = document.id.toString();
-    takeout.label = document.label.toString();
-    takeout.albumName = document.albumName.toString();
-    takeout.path = document.path.toString();
-    takeouts.push(takeout);
-  }
-  return takeouts;
-}
-
-export const getTakeoutById = async (takeoutId: string): Promise<Takeout> => {
-
-  const takeoutModel = getTakeoutModel();
-
-  const filter = { id: takeoutId };
-  const takeoutDocument: Document = await takeoutModel.findOne(filter);
-
-  if (!isNil(takeoutDocument)) {
-    const takeout: Takeout = takeoutDocument.toObject() as Takeout;
-    return takeout;
-  }
-  return null;
 }
 
 export const updateKeywordNodeDb = async (keywordNode: KeywordNode): Promise<any> => {

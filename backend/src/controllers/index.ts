@@ -6,5 +6,4 @@ export * from './googlePhotos';
 export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
-export * from './takeouts';
 export * from './uploadImport'

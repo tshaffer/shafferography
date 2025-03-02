@@ -34,7 +34,6 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
-  const [localPhotoSetId, setLocalPhotoSetId] = React.useState<string>(props.photoSetId);
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [newPhotoSetName, setNewPhotoSetName] = React.useState<string>('');
@@ -46,10 +45,16 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
+  const localPhotoSetIdRef = React.useRef<string>(props.photoSetId);
 
+  const updateLocalPhotoSetId = (newId: string) => {
+    localPhotoSetIdRef.current = newId;
+    console.log("Updated localPhotoSetId (ref):", localPhotoSetIdRef.current);
+  };
+  
   React.useEffect(() => {
     if (props.open) {
-      setLocalPhotoSetId(props.photoSetId);
+      updateLocalPhotoSetId(props.photoSetId);
       setProgress(0);
       setIsAddingNew(props.photoSets.length === 0);
       setFileProgress({});
@@ -96,7 +101,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
     return props.onAddPhotoSet(newPhotoSet).then(() => {
       console.log('Photo Set added: ', newPhotoSet);
-      setLocalPhotoSetId(newPhotoSet.photoSetId);
+      updateLocalPhotoSetId(newPhotoSet.photoSetId);
       setLastAddedPhotoSetId(newPhotoSet.photoSetId);
       setNewPhotoSetName("");
       setIsAddingNew(false);
@@ -124,9 +129,9 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           if (Object.values(updatedStatuses).every((status) => status === "completed")) {
             clearInterval(interval);
             console.log("All files processed!");
-            props.onSetPhotoSetId(localPhotoSetId);
-            localStorage.setItem('photoSetId', localPhotoSetId);
-            props.onReloadMediaItemsByPhotoSet(localPhotoSetId);
+            props.onSetPhotoSetId(localPhotoSetIdRef.current);
+            localStorage.setItem('photoSetId', localPhotoSetIdRef.current);
+            props.onReloadMediaItemsByPhotoSet(localPhotoSetIdRef.current);
             setProcessingComplete(true);
             resolve();
           }
@@ -194,7 +199,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
   const handleImport = async () => {
     if (selectedFiles && (baseDirectory !== '')) {
-      let photoSetId = localPhotoSetId;
+      let photoSetId = localPhotoSetIdRef.current;
       if (isAddingNew) {
         const newPhotoSet: PhotoSet | undefined = await createPhotoSet();
         if (!newPhotoSet) return;
@@ -234,8 +239,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               <TextField
                 select
                 label="Choose a Photo Set"
-                value={localPhotoSetId}
-                onChange={(e) => setLocalPhotoSetId(e.target.value)}
+                value={localPhotoSetIdRef.current}
+                onChange={(e) => updateLocalPhotoSetId(e.target.value)}
                 fullWidth
               >
                 <MenuItem onClick={() => setIsAddingNew(true)} key={'newPhotoSet'} value={''}>

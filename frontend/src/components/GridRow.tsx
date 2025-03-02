@@ -19,7 +19,7 @@ export interface GridRowPropsFromParent {
 
 export interface GridRowProps extends GridRowPropsFromParent {
   onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
-  onDeselectAllMediaItems: () => void;
+  onDeselectAllPhotos: () => void;
   onSelectAllPhotos: () => void;
 }
 
@@ -58,7 +58,7 @@ const GridRow = (props: GridRowProps) => {
         props.onSelectAllPhotos();
       } else if (event.key === 'Escape') {
         event.preventDefault();
-        props.onDeselectAllMediaItems();
+        props.onDeselectAllPhotos();
         setLastSelectedIndex(null);
       }
     };
@@ -120,7 +120,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators(
     {
       onClickPhoto: selectPhoto,
-      onDeselectAllMediaItems: deselectAllPhotos,
+      onDeselectAllPhotos: deselectAllPhotos,
       onSelectAllPhotos: selectAllPhotos,
     },
     dispatch

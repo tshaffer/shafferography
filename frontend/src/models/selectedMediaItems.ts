@@ -141,7 +141,7 @@ export const selectedMediaItemsStateReducer = (
       };
     case SELECT_MEDIA_ITEMS: {
       const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.selectedMediaItemIds = [...newState.selectedMediaItemIds, ...(action.payload as SelectMediaItemsPayload).uniqueIds];
+      newState.selectedMediaItemIds = [...(action.payload as SelectMediaItemsPayload).uniqueIds];
       return newState;
     }
     case DESELECT_MEDIA_ITEM: {

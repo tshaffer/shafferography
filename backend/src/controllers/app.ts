@@ -140,6 +140,7 @@ export const initializeKeywordTree = async (request: Request, response: Response
     parentNodeId: '',
     childrenNodeIds: []
   };
+  await createKeywordNodeDocument(rootKeywordNode);
 
   const peopleKeyword: Keyword = {
     keywordId: 'peopleKeywordId',
@@ -154,6 +155,7 @@ export const initializeKeywordTree = async (request: Request, response: Response
     parentNodeId: rootKeywordNode.nodeId,
     childrenNodeIds: []
   };
+  await createKeywordNodeDocument(peopleKeywordNode);
 
   rootKeywordNode.childrenNodeIds.push(peopleKeywordNode.nodeId);
   await updateKeywordNodeDb(rootKeywordNode);

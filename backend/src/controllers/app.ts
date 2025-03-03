@@ -19,28 +19,20 @@ import {
   getDeletedMediaItemsFromDb,
   removeDeleteMediaItemFromDb,
   clearDeletedMediaItemsDb,
-  getMediaItemsInNamedAlbumFromDb,
-  addAutoPersonKeywordsToDb,
-  getAutoPersonKeywordNodesFromDb,
-  getKeywordsFromDb,
-  updateMediaItemFieldsInDb,
   updateMediaItemsFieldsInDb,
   getMediaItemsFromDbByReviewLevels,
   getAllPhotoSetsFromDb,
   addPhotoSetToDb,
   getMediaItemsByPhotoSetFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec, StringToStringLUT } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
 import {
   deleteDirectory,
-  fsDeleteFiles,
-  getJsonFromFile
-} from '../utilities';
+  fsDeleteFiles} from '../utilities';
 import { MatchRule, ReviewLevel } from 'enums';
 import path from 'path';
-import { isNil } from 'lodash';
 import { IPhotoSet } from '../models';
-import { BASE_PEOPLE_TAKEOUT_FILES_PATH } from '../config';
+import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
@@ -264,7 +256,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
 
   const albumName: string = request.body.albumName;
 
-  const peopleTakeoutFilesDir: string = path.join(BASE_PEOPLE_TAKEOUT_FILES_PATH, albumName);
+  const peopleTakeoutFilesDir: string = path.join(BASE_MEDIA_PATH, albumName);
   const metadataFilePath: string = path.join(peopleTakeoutFilesDir, 'metadata.json');
   const metadataFileContents: string = fs.readFileSync(metadataFilePath, 'utf8');
   const metadata = JSON.parse(metadataFileContents);
@@ -274,7 +266,7 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
   console.log('mergePeopleTakeoutEndpoint', metadata);
 
   try {
-    await mergePeople(BASE_PEOPLE_TAKEOUT_FILES_PATH, albumName);
+    await mergePeople(BASE_MEDIA_PATH, albumName);
     await deleteDirectory(peopleTakeoutFilesDir);
 
     response.sendStatus(200);

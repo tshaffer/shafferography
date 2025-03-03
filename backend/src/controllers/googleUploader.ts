@@ -139,6 +139,10 @@ const addMediaItemsToAlbum = async (
   mediaItemIds: string[]
 ): Promise<any> => {
 
+  if (mediaItemIds.length === 0) {
+    return;
+  }
+  
   const url = `https://photoslibrary.googleapis.com/v1/albums/${albumId}:batchAddMediaItems`;
 
   try {
@@ -466,9 +470,15 @@ function getMediaItemDifferences(
     throw new Error('getMediaItemDifferences: unexpected length mismatch 0');
   }
 
-  if ((mediaItems.length + mediaItemsToIgnore.length) !== googleMediaItems.length) {
-    throw new Error('getMediaItemDifferences: unexpected length mismatch 1');
-  }
+  // invalid comparison for the following scenario
+  //    mediaItems: 4 items
+  //    googleMediaItems: 5 items
+  //    mediaItemsToIgnore: 4 items
+  //    Deleting one of the mediaItems from the existing album
+
+  // if ((mediaItems.length + mediaItemsToIgnore.length) !== googleMediaItems.length) {
+  //   throw new Error('getMediaItemDifferences: unexpected length mismatch 1');
+  // }
 
   return {
     mediaItemsToUpload,

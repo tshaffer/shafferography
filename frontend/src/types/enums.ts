@@ -40,6 +40,7 @@ export enum PhotoLayout {
 export enum ReviewLevel {
   Mixed = 'mixed',
   Unreviewed = 'unreviewed',
-  ReadyForReview = 'readyForReview',
+  Undecided = 'undecided',
   ReadyForUpload = 'readyForUpload',
+  Uploaded = 'uploaded',
 }

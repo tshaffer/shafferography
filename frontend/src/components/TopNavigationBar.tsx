@@ -24,12 +24,13 @@ import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet } from '../controllers';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, setReviewLevel } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoSet } from '../types';
+import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
+import SetReviewLevelsDialog from './SetReviewLevelsDialog';
 
 const drawerWidth = 240;
 
@@ -78,12 +79,14 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onDeleteMediaItems: (mediaItemIds: string[]) => any;
   onSetPhotoSetId: (photoSetId: string) => void;
   onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
+  onSetReviewLevel: (mediaItemIds: string[], reviewLevel: ReviewLevel) => void;
 }
 
 const TopNavigationBar: React.FC<any> = (props) => {
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
+  const [showSetReviewLevelDialog, setShowSetReviewLevelDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
@@ -125,6 +128,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
     setShowUploadToGoogleDialog(false);
   };
 
+  const handleCloseSetReviewLevelDialog = () => {
+    setShowSetReviewLevelDialog(false);
+  };
+
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
 
     // return if the photo layout is already set to the requested layout.
@@ -161,6 +168,13 @@ const TopNavigationBar: React.FC<any> = (props) => {
       props.onSetPhotoLayout(photoLayout);
     }
   }
+
+  const handleSetReviewLevel = (reviewLevel: ReviewLevel) => {
+    console.log('set review level', reviewLevel);
+    props.onSetReviewLevel(props.selectedMediaItemIds, reviewLevel);
+    setShowSetReviewLevelDialog(false);
+  }
+
 
   const handleEnterFullScreenMode = () => {
     const elem = document.getElementById('loupeViewImage');
@@ -258,6 +272,40 @@ const TopNavigationBar: React.FC<any> = (props) => {
     );
   }
 
+  const renderSetReviewLevelsDialog = (): JSX.Element => {
+    return (
+      <SetReviewLevelsDialog
+        open={showSetReviewLevelDialog}
+        onClose={handleCloseSetReviewLevelDialog}
+        onSetReviewLevel={handleSetReviewLevel}
+      />
+    );
+  }
+
+  const renderZoomDialog = (): JSX.Element => {
+    return (
+      <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
+        <DialogTitle>Zoom In / Out</DialogTitle>
+        <DialogContent> {/* Increased bottom padding */}
+          <Slider
+            size='small'
+            value={props.numGridColumns}
+            onChange={handleSliderChange}
+            valueLabelDisplay='auto'
+            step={1}
+            marks
+            min={2}
+            max={10}
+          />
+          <Button onClick={() => setIsZoomDialogOpen(false)} fullWidth variant="contained" sx={{ mt: 2 }}>
+            Close
+          </Button>
+        </DialogContent>
+      </Dialog>
+
+    );
+  }
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -349,7 +397,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
           </Tooltip>
           <Tooltip title="Set Review Level">
             <span>
-              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><StarIcon /></IconButton>
+              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0} onClick={() => setShowSetReviewLevelDialog(true)}><StarIcon /></IconButton>
             </span>
           </Tooltip>
           <Tooltip title="Delete Selected Photos">
@@ -415,25 +463,8 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
       {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
-
-      <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
-        <DialogTitle>Zoom In / Out</DialogTitle>
-        <DialogContent> {/* Increased bottom padding */}
-          <Slider
-            size='small'
-            value={props.numGridColumns}
-            onChange={handleSliderChange}
-            valueLabelDisplay='auto'
-            step={1}
-            marks
-            min={2}
-            max={10}
-          />
-          <Button onClick={() => setIsZoomDialogOpen(false)} fullWidth variant="contained" sx={{ mt: 2 }}>
-            Close
-          </Button>
-        </DialogContent>
-      </Dialog>
+      {renderSetReviewLevelsDialog()}
+      {renderZoomDialog()}
 
     </React.Fragment >
   )
@@ -466,6 +497,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onDeleteMediaItems: deleteMediaItems,
     onSetPhotoSetId: setPhotoSetId,
     onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
+    onSetReviewLevel: setReviewLevel,
   }, dispatch);
 };
 

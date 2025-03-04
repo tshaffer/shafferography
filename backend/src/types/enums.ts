@@ -22,7 +22,7 @@ export enum DateSearchRuleType {
 
 export enum ReviewLevel {
   Unreviewed = 'unreviewed',
-  ReadyForReview = 'readyForReview',
+  Undecided = 'undecided',
   ReadyForUpload = 'readyForUpload',
-  UploadedToGoogle = 'uploadedToGoogle',
+  Uploaded = 'uploaded',
 }

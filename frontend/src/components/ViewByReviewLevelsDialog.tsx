@@ -27,8 +27,9 @@ export interface ViewByReviewsLevelDialogProps extends ViewByReviewsLevelDialogP
 
 const reviewLevels = [
   { key: 'Unreviewed', value: ReviewLevel.Unreviewed },
-  { key: 'Ready For Review', value: ReviewLevel.ReadyForReview },
+  { key: 'Undecided', value: ReviewLevel.Undecided },
   { key: 'Ready For Upload', value: ReviewLevel.ReadyForUpload },
+  { key: 'Uploaded', value: ReviewLevel.Uploaded },
 ];
 
 const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {

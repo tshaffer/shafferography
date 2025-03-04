@@ -69,10 +69,12 @@ const SetReviewLevelsDialog = (props: SetReviewLevelsDialogProps) => {
 
   const renderSelect = (): JSX.Element => {
     const reviewLevelOptions = [
-      { value: "unreviewed", label: "Unreviewed" },
-      { value: "readyForReview", label: "Ready for Review" },
-      { value: "readyForUpload", label: "Ready for Upload" },
+      { value: ReviewLevel.Unreviewed, label: "Unreviewed" },
+      { value: ReviewLevel.Undecided, label: "Undecided" },
+      { value: ReviewLevel.ReadyForUpload, label: "Ready for Upload" },
+      { value: ReviewLevel.Uploaded, label: "Uploaded" },
     ];
+    
     return (
       <Select
         value={reviewLevel}

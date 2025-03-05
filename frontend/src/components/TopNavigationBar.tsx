@@ -31,6 +31,7 @@ import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetReviewLevelsDialog from './SetReviewLevelsDialog';
+import MultiSelectDropdown from './MutliSelectDropdown';
 
 const drawerWidth = 240;
 
@@ -52,6 +53,8 @@ const AppBar = styled(MuiAppBar, {
     marginRight: rightPanelOpen ? `${drawerWidth}px` : 0,
   };
 });
+
+// const photoSets = ["Set A", "Set B", "Set C", "Set D"];
 
 export interface TopNavigationBarPropsFromParent {
   sidebarOpen: boolean;
@@ -92,7 +95,9 @@ const TopNavigationBar: React.FC<any> = (props) => {
   const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const open = Boolean(anchorEl);
+
+  // const [selectedPhotoSets, setSelectedPhotoSets] = useState([photoSets[0]]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([props.photoSetId]);
 
   React.useEffect(() => {
 
@@ -113,11 +118,16 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   }
 
-  const handlePhotoSetChange = (event: SelectChangeEvent<string>) => {
-    const newPhotoSetId = event.target.value as string;
-    props.onSetPhotoSetId(newPhotoSetId);
-    props.onReloadMediaItemsByPhotoSet(newPhotoSetId);
-    localStorage.setItem('photoSetId', newPhotoSetId);
+  // const handlePhotoSetChange = (event: SelectChangeEvent<string>) => {
+  //   const newPhotoSetId = event.target.value as string;
+  //   props.onSetPhotoSetId(newPhotoSetId);
+  //   props.onReloadMediaItemsByPhotoSet(newPhotoSetId);
+  //   localStorage.setItem('photoSetId', newPhotoSetId);
+  // };
+
+  const handlePhotoSetChange = (selected: string[]) => {
+    setSelectedIds(selected);
+    // onPhotoSetChange(selected);
   };
 
   const handleCloseImportFromDriveDialog = () => {
@@ -328,7 +338,66 @@ const TopNavigationBar: React.FC<any> = (props) => {
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
           {/* Photo Set Selection Dropdown */}
-          <Select
+          {/* <MultiSelectDropdown
+            label="Select Photo Sets"
+            items={photoSets}
+            selectedItems={selectedPhotoSets}
+            getItemLabel={(item) => item}
+            onChange={setSelectedPhotoSets}
+          /> */}
+
+          <Box display="flex" alignItems="center">
+            {/* MultiSelectDropdown Trigger Button */}
+            {/* <IconButton
+              onClick={() => { }}
+              disabled={props.photoSets.length === 0}
+              sx={{ color: "black", backgroundColor: "white", borderRadius: 1, mr: 2 }}
+            >
+              <TuneIcon />
+            </IconButton> */}
+
+            {/* Scrollable Label for Selected Photo Sets */}
+            {/* MultiSelectDropdown */}
+            <MultiSelectDropdown
+              label="Select Photo Sets"
+              items={props.photoSets}
+              selectedItems={props.photoSets.filter((set: PhotoSet) => selectedIds.includes(set.photoSetId))}
+              getItemLabel={(item: PhotoSet) => item.photoSetName}
+              onChange={(selected: PhotoSet[]) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
+            />
+
+            <Box
+              sx={{
+                minWidth: 200,
+                maxWidth: 200,
+                height: '38px',
+                color: "black",
+                backgroundColor: "white",
+                borderRadius: 1,
+                padding: "6px 10px",
+                overflow: "hidden",
+                whiteSpace: "nowrap",
+                textOverflow: "ellipsis",
+                display: "flex",
+                alignItems: "center",
+                flexGrow: 1, // Allows it to take available space
+              }}
+            >
+              <Typography variant="body2" sx={{ overflowX: "auto" }}>
+                {props.photoSets.length === 0
+                  ? "No Photo Sets Available"
+                  : selectedIds.length > 0
+                    ? props.photoSets
+                      .filter((set: PhotoSet) => selectedIds.includes(set.photoSetId))
+                      .map((set: PhotoSet) => set.photoSetName)
+                      .join(", ")
+                    : "Select Photo Set(s)"}
+              </Typography>
+            </Box>
+
+          </Box>
+
+          {/* <Select
             value={props.photoSetId || ""}
             onChange={handlePhotoSetChange}
             displayEmpty
@@ -352,7 +421,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
             ) : (
               <MenuItem value='' disabled>No Photo Sets Available</MenuItem>
             )}
-          </Select>
+          </Select> */}
 
           <Tooltip title="Zoom In / Out">
             <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>

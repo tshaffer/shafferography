@@ -48,10 +48,10 @@ export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
   return mediaItems;
 }
 
-export const getMediaItemsByPhotoSetFromDb = async (photoSetId: string): Promise<MediaItem[]> => {
+export const getMediaItemsByPhotoSetFromDb = async (photoSetIds: string[]): Promise<MediaItem[]> => {
   const mediaItemModel = getMediaitemModel();
 
-  const querySpec = { photoSetId };
+  const querySpec = { photoSetId: { $in: photoSetIds } };
 
   const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
 

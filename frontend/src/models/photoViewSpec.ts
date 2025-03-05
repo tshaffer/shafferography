@@ -12,7 +12,7 @@ export const SET_SURVEY_MODE_ZOOM_FACTOR = 'SET_SURVEY_MODE_ZOOM_FACTOR';
 export const SET_SCROLL_POSITION = 'SET_SCROLL_POSITION';
 export const SET_FULL_SCREEN_MODE = 'SET_FULL_SCREEN_MODE';
 export const SET_MEDIA_ITEM_ZOOM_FACTOR = 'SET_MEDIA_ITEM_ZOOM_FACTOR';
-export const SET_PHOTOSET_ID = 'SET_PHOTOSET_ID';
+export const SET_DISPLAYED_PHOTOSET_IDS = 'SET_DISPLAYED_PHOTOSET_IDS';
 
 // ------------------------------------
 // Actions
@@ -124,16 +124,15 @@ export const setMediaItemZoomFactor = (mediaItemId: string, zoomFactor: number):
   };
 };
 
-interface SetPhotoSetIdPayload {
-  photoSetId: string,
+interface SetDisplayedPhotoSetIdsPayload {
+  displayedPhotoSetIds: string[],
 }
 
-export const setPhotoSetId = (photoSetId: string): any => {
-  // console.log('photoViewSpec.ts: setPhotoSetId', photoSetId);
+export const setDisplayedPhotoSetIds = (displayedPhotoSetIds: string[]): any => {
   return {
-    type: SET_PHOTOSET_ID,
+    type: SET_DISPLAYED_PHOTOSET_IDS,
     payload: {
-      photoSetId,
+      displayedPhotoSetIds,
     },
   };
 };
@@ -152,12 +151,12 @@ const initialState: PhotoViewSpec = {
   scrollPosition: 0,
   fullScreenMode: false,
   mediaItemZoomFactorById: {},
-  photoSetId: '',
+  displayedPhotoSetIds: [],
 };
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetPhotoSetIdPayload>
+  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedPhotoSetIdsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -175,10 +174,10 @@ export const photoViewSpecReducer = (
         ...state,
         loupeViewMediaItemId: action.payload.loupeViewMediaItemId,
       };
-    case SET_PHOTOSET_ID:
+    case SET_DISPLAYED_PHOTOSET_IDS:
       return {
         ...state,
-        photoSetId: action.payload.photoSetId,
+        displayedPhotoSetIds: action.payload.displayedPhotoSetIds,
       };
     case SET_DISPLAY_METADATA:
       return {

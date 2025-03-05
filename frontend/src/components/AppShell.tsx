@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadMediaItemsByPhotoSet, loadPhotoSets } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setPhotoSetId, setGoogleUserProfile } from "../models";
+import { loadMediaItems, loadMediaItemsByPhotoSets, loadPhotoSets } from "../controllers";
+import { TedTaggerDispatch, setAppInitialized, setDisplayedPhotoSetIds, setGoogleUserProfile } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
 import { MediaItem, PhotoLayout } from "../types";
 import PhotosContainer from './PhotosContainer';
@@ -48,11 +48,11 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onLoadMediaItems: () => any;
-  onLoadMediaItemsByPhotoSet: (photoSetId: string) => any;
+  onLoadMediaItemsByPhotoSets: (photoSetIds: string[]) => any;
   onLoadPhotoSets: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
-  onSetPhotoSetId: (photoSetId: string) => any;
+  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
 }
 
 const AppShell = (props: AppShellProps) => {
@@ -224,23 +224,25 @@ const AppShell = (props: AppShellProps) => {
 
   React.useEffect(() => {
 
-    const initializePhotoSetId = async (): Promise<string | null> => {
-      const photoSetId: string | null = localStorage.getItem('photoSetId');
-      if (photoSetId) {
-        props.onSetPhotoSetId(photoSetId);
+    const initializeDisplayedPhotoSetIds = async (): Promise<string[]> => {
+      let displayedPhotoSetIds: string[] = [];
+      const displayedPhotoSetsStr: string | null = localStorage.getItem('displayedPhotoSetIds');
+      if (displayedPhotoSetsStr) {
+        displayedPhotoSetIds = displayedPhotoSetsStr.split(',');
+        props.onSetDisplayedPhotoSetIds(displayedPhotoSetIds);
       }
-      return photoSetId;
+      return displayedPhotoSetIds;
     }
 
     props.onLoadPhotoSets()
       .then(function () {
-        return initializePhotoSetId()
-      }).then(function (photoSetId: string | null) {
-        console.log('photoSetId: ', photoSetId);
-        if (!photoSetId) {
+        return initializeDisplayedPhotoSetIds()
+      }).then(function (displayedPhotoSetIds: string[]) {
+        console.log('displayedPhotoSetIds: ', displayedPhotoSetIds);
+        if (displayedPhotoSetIds.length === 0) {
           return props.onLoadMediaItems()
         } else {
-          return props.onLoadMediaItemsByPhotoSet(photoSetId)
+          return props.onLoadMediaItemsByPhotoSets(displayedPhotoSetIds)
         }
       }).then(function () {
         return props.onSetAppInitialized();
@@ -306,11 +308,11 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onLoadMediaItems: loadMediaItems,
-    onLoadMediaItemsByPhotoSet: loadMediaItemsByPhotoSet,
+    onLoadMediaItemsByPhotoSets: loadMediaItemsByPhotoSets,
     onLoadPhotoSets: loadPhotoSets,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
-    onSetPhotoSetId: setPhotoSetId,
+    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
   }, dispatch);
 };
 

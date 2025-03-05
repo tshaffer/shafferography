@@ -27,12 +27,12 @@ import {
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
 
-export const loadMediaItemsByPhotoSet = (photoSetId: string): any => {
+export const loadMediaItemsByPhotoSets = (photoSetIds: string[]): any => {
 
   return (dispatch: TedTaggerDispatch) => {
 
-    let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSet';
-    path += '?photoSetId=' + photoSetId;
+    let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSets';
+    path += '?photoSetIds=' + photoSetIds.join(',');
 
     return axios.get(path).then((mediaItemsResponse: any) => {
       console.log('loadMediaItemsByPhotoSet, mediaItemsResponse:', mediaItemsResponse);
@@ -49,10 +49,10 @@ export const loadMediaItemsByPhotoSet = (photoSetId: string): any => {
   };
 }
 
-export const reloadMediaItemsByPhotoSet = (photoSetId: string): any => {
+export const reloadMediaItemsByPhotoSets = (photoSetIds: string[]): any => {
   return (dispatch: TedTaggerDispatch) => {
     dispatch(clearMediaItems());
-    dispatch(loadMediaItemsByPhotoSet(photoSetId));
+    dispatch(loadMediaItemsByPhotoSets(photoSetIds));
   }
 };
 

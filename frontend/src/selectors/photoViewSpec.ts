@@ -36,6 +36,6 @@ export const getMediaItemZoomFactor = (state: TedTaggerState, mediaItemId: strin
   return state.photoViewSpec.mediaItemZoomFactorById[mediaItemId] || 1;
 };
 
-export const getPhotoSetId = (state: TedTaggerState): string => {
-  return state.photoViewSpec.photoSetId;
+export const getDisplayedPhotoSetIds = (state: TedTaggerState): string[] => {
+  return state.photoViewSpec.displayedPhotoSetIds;
 };

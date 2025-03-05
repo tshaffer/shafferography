@@ -22,11 +22,10 @@ import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
-import MenuItem from "@mui/material/MenuItem";
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSet, setReviewLevel } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setPhotoSetId } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getPhotoSetId, getPhotoSets } from '../selectors';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSets, setReviewLevel } from '../controllers';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setDisplayedPhotoSetIds } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getPhotoSet } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
@@ -54,8 +53,6 @@ const AppBar = styled(MuiAppBar, {
   };
 });
 
-// const photoSets = ["Set A", "Set B", "Set C", "Set D"];
-
 export interface TopNavigationBarPropsFromParent {
   sidebarOpen: boolean;
   onOpenSidebar: () => void;
@@ -71,7 +68,7 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   photoLayout: PhotoLayout;
   numGridColumns: number;
   selectedMediaItemsCount: number;
-  photoSetId: string;
+  displayedPhotoSetIds: string;
   photoSets: PhotoSet[];
 
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
@@ -80,12 +77,13 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
   onDeleteMediaItems: (mediaItemIds: string[]) => any;
-  onSetPhotoSetId: (photoSetId: string) => void;
-  onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
+  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => void;
+  onReloadMediaItemsByPhotoSet: (photoSetIds: string[]) => void;
   onSetReviewLevel: (mediaItemIds: string[], reviewLevel: ReviewLevel) => void;
 }
 
 const TopNavigationBar: React.FC<any> = (props) => {
+
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
@@ -96,18 +94,18 @@ const TopNavigationBar: React.FC<any> = (props) => {
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
 
-  // const [selectedPhotoSets, setSelectedPhotoSets] = useState([photoSets[0]]);
-  const [selectedIds, setSelectedIds] = useState<string[]>([props.photoSetId]);
-
   React.useEffect(() => {
-
     if (props.photoSets.length === 0) {
-      props.onSetPhotoSetId(null); // Clear Redux state
-    } else if (!props.photoSetId || !props.photoSets.some((set: PhotoSet | undefined) => set && set.photoSetId === props.photoSetId)) {
+      props.onSetDisplayedPhotoSetIds([]); // Clear Redux state
+      // } else if (!props.photoSetId || !props.photoSets.some((set: PhotoSet | undefined) => set && set.photoSetId === props.photoSetId)) {
+      //   // ✅ Auto-select first available photo set when sets are added or when selection is invalid
+      //   props.onSetDisplayedPhotoSetIds([props.photoSets[0].photoSetId]);
+    } else {
       // ✅ Auto-select first available photo set when sets are added or when selection is invalid
-      props.onSetPhotoSetId(props.photoSets[0].photoSetId);
+      props.onSetDisplayedPhotoSetIds([props.photoSets[0].photoSetId]);
     }
-  }, [props.photoSets, props.photoSetId, props.onSetPhotoSetId]);
+
+  }, [props.photoSets, props.photoDiplayedPhotoSetIds, props.onSetDisplayedPhotoSetIds]);
 
 
   const getShafferographyPaddingLeft = (): any => {
@@ -118,16 +116,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   }
 
-  // const handlePhotoSetChange = (event: SelectChangeEvent<string>) => {
-  //   const newPhotoSetId = event.target.value as string;
-  //   props.onSetPhotoSetId(newPhotoSetId);
-  //   props.onReloadMediaItemsByPhotoSet(newPhotoSetId);
-  //   localStorage.setItem('photoSetId', newPhotoSetId);
-  // };
-
-  const handlePhotoSetChange = (selected: string[]) => {
-    setSelectedIds(selected);
-    // onPhotoSetChange(selected);
+  const handlePhotoSetChange = (selectedPhotoSetIds: string[]) => {
+    props.onSetDisplayedPhotoSetIds(selectedPhotoSetIds);
+    props.onReloadMediaItemsByPhotoSet(selectedPhotoSetIds);
+    localStorage.setItem('displayedPhotoSetIds', selectedPhotoSetIds.join(','));
   };
 
   const handleCloseImportFromDriveDialog = () => {
@@ -180,7 +172,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
   }
 
   const handleSetReviewLevel = (reviewLevel: ReviewLevel) => {
-    console.log('set review level', reviewLevel);
     props.onSetReviewLevel(props.selectedMediaItemIds, reviewLevel);
     setShowSetReviewLevelDialog(false);
   }
@@ -316,6 +307,27 @@ const TopNavigationBar: React.FC<any> = (props) => {
     );
   }
 
+  const getPhotoSetsLabel = (): string => {
+    console.log('getPhotoSetLabel');
+    console.log(props.displayedPhotoSetIds);
+    const photoSetLabel: string = props.photoSets
+      .filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))
+      .map((set: PhotoSet) => set.photoSetName)
+      .join(", ");
+    console.log(photoSetLabel);
+    return photoSetLabel;
+  }
+
+  const renderPhotoSetsLabel = (): JSX.Element => {
+    return (
+      <Typography variant="body2" sx={{ overflowX: "auto" }}>
+        {props.photoSets.length === 0
+          ? "No Photo Sets Available"
+          : getPhotoSetsLabel()}
+      </Typography>
+    );
+  }
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -337,31 +349,11 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
-          {/* Photo Set Selection Dropdown */}
-          {/* <MultiSelectDropdown
-            label="Select Photo Sets"
-            items={photoSets}
-            selectedItems={selectedPhotoSets}
-            getItemLabel={(item) => item}
-            onChange={setSelectedPhotoSets}
-          /> */}
-
           <Box display="flex" alignItems="center">
-            {/* MultiSelectDropdown Trigger Button */}
-            {/* <IconButton
-              onClick={() => { }}
-              disabled={props.photoSets.length === 0}
-              sx={{ color: "black", backgroundColor: "white", borderRadius: 1, mr: 2 }}
-            >
-              <TuneIcon />
-            </IconButton> */}
-
-            {/* Scrollable Label for Selected Photo Sets */}
-            {/* MultiSelectDropdown */}
             <MultiSelectDropdown
               label="Select Photo Sets"
               items={props.photoSets}
-              selectedItems={props.photoSets.filter((set: PhotoSet) => selectedIds.includes(set.photoSetId))}
+              selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
               getItemLabel={(item: PhotoSet) => item.photoSetName}
               onChange={(selected: PhotoSet[]) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
             />
@@ -383,45 +375,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
                 flexGrow: 1, // Allows it to take available space
               }}
             >
-              <Typography variant="body2" sx={{ overflowX: "auto" }}>
-                {props.photoSets.length === 0
-                  ? "No Photo Sets Available"
-                  : selectedIds.length > 0
-                    ? props.photoSets
-                      .filter((set: PhotoSet) => selectedIds.includes(set.photoSetId))
-                      .map((set: PhotoSet) => set.photoSetName)
-                      .join(", ")
-                    : "Select Photo Set(s)"}
-              </Typography>
+              {renderPhotoSetsLabel()}
             </Box>
 
           </Box>
-
-          {/* <Select
-            value={props.photoSetId || ""}
-            onChange={handlePhotoSetChange}
-            displayEmpty
-            disabled={props.photoSets.length === 0}
-            sx={{
-              minWidth: 200,
-              backgroundColor: "white",
-              borderRadius: 1,
-              mr: 2,
-              "& .MuiSelect-select": {
-                padding: "6px 10px", // Adjust padding (top/bottom, left/right)
-              },
-            }}
-          >
-            {props.photoSets.length > 0 ? (
-              (props.photoSets as PhotoSet[]).map((set: PhotoSet) => (
-                <MenuItem key={set.photoSetId as string} value={set.photoSetId as string}>
-                  {set.photoSetName}
-                </MenuItem>
-              ))
-            ) : (
-              <MenuItem value='' disabled>No Photo Sets Available</MenuItem>
-            )}
-          </Select> */}
 
           <Tooltip title="Zoom In / Out">
             <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>
@@ -541,8 +498,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
 function mapStateToProps(state: any): any {
 
-  const photoSetId: string = getPhotoSetId(state);
-
   return {
     mediaItemIds: getMediaItemIds(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
@@ -550,7 +505,7 @@ function mapStateToProps(state: any): any {
     photoLayout: getPhotoLayout(state),
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
-    photoSetId,
+    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
     photoSets: getPhotoSets(state),
     mediaItems: getMediaItems(state),
   };
@@ -564,8 +519,8 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
     onDeleteMediaItems: deleteMediaItems,
-    onSetPhotoSetId: setPhotoSetId,
-    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
+    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSets,
     onSetReviewLevel: setReviewLevel,
   }, dispatch);
 };

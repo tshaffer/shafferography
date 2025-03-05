@@ -79,7 +79,7 @@ function MultiSelectDropdown<T>({
 
   return (
     <>
-      <IconButton onClick={handleOpen} sx={{ color: "white" }} aria-label={label}>
+      <IconButton onClick={handleOpen} sx={{ color: "white" }} disabled={items.length === 0}>
         <SearchIcon />
       </IconButton>
       <Menu

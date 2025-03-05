@@ -81,5 +81,5 @@ export interface PhotoViewSpec {
   scrollPosition: number;
   fullScreenMode: boolean;
   mediaItemZoomFactorById: StringToNumberLUT;
-  photoSetId: string;
+  displayedPhotoSetIds: string[];
 }

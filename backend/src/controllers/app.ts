@@ -28,7 +28,8 @@ import {
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
 import {
   deleteDirectory,
-  fsDeleteFiles} from '../utilities';
+  fsDeleteFiles
+} from '../utilities';
 import { MatchRule, ReviewLevel } from 'enums';
 import path from 'path';
 import { IPhotoSet } from '../models';
@@ -42,13 +43,11 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   response.json(data);
 };
 
-export const getMediaItemsByPhotoSet = async (request: Request, response: Response) => {
-  const photoSetId: string | null = request.query.photoSetId ? request.query.photoSetId as string : null;
-  if (!photoSetId) {
-    response.status(400).send('photoSetId is required');
-    return;
-  }
-  const mediaItems: MediaItem[] = await getMediaItemsByPhotoSetFromDb(photoSetId);
+export const getMediaItemsByPhotoSets = async (request: Request, response: Response) => {
+  console.log('getMediaItemsByPhotoSets', request.query.photoSetIds);
+  const photoSetIdsAsStr: string = request.query.photoSetIds as string;
+  const photoSetIds: string[] = photoSetIdsAsStr.split(',');
+  const mediaItems: MediaItem[] = await getMediaItemsByPhotoSetFromDb(photoSetIds);
   response.json(mediaItems);
 }
 

@@ -1,5 +1,3 @@
-import { cloneDeep } from 'lodash';
-
 import { PhotoSet, PhotoSetsState } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 

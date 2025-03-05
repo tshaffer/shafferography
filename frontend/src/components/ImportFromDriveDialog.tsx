@@ -12,11 +12,11 @@ import { Button, DialogActions, DialogContent, IconButton, Stack, Typography, Al
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { getAppInitialized, getPhotoSets, getPhotoSetId } from '../selectors';
+import { getAppInitialized, getDisplayedPhotoSetIds, getPhotoSets } from '../selectors';
 import { apiUrlFragment, FileToImport, PhotoSet, serverUrl } from '../types';
-import { setPhotoSetId, TedTaggerDispatch } from '../models';
+import { setDisplayedPhotoSetIds, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
-import { addPhotoSet, reloadMediaItemsByPhotoSet } from '../controllers';
+import { addPhotoSet, reloadMediaItemsByPhotoSets } from '../controllers';
 import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
@@ -26,11 +26,11 @@ export interface ImportFromDriveDialogPropsFromParent {
 
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
-  photoSetId: string;
+  displayedPhotoSetIds: string[];
   photoSets: PhotoSet[];
   onAddPhotoSet: (photoSet: PhotoSet) => any;
-  onSetPhotoSetId: (photoSetId: string) => any;
-  onReloadMediaItemsByPhotoSet: (photoSetId: string) => void;
+  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
+  onReloadMediaItemsByPhotoSets: (photoSetIds: string[]) => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
@@ -45,16 +45,16 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
-  const localPhotoSetIdRef = React.useRef<string>(props.photoSetId);
+  const localPhotoSetIdRef = React.useRef<string>(props.displayedPhotoSetIds[0]);
 
   const updateLocalPhotoSetId = (newId: string) => {
     localPhotoSetIdRef.current = newId;
     console.log("Updated localPhotoSetId (ref):", localPhotoSetIdRef.current);
   };
-  
+
   React.useEffect(() => {
     if (props.open) {
-      updateLocalPhotoSetId(props.photoSetId);
+      updateLocalPhotoSetId(props.displayedPhotoSetIds[0]);
       setProgress(0);
       setIsAddingNew(props.photoSets.length === 0);
       setFileProgress({});
@@ -129,9 +129,9 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           if (Object.values(updatedStatuses).every((status) => status === "completed")) {
             clearInterval(interval);
             console.log("All files processed!");
-            props.onSetPhotoSetId(localPhotoSetIdRef.current);
-            localStorage.setItem('photoSetId', localPhotoSetIdRef.current);
-            props.onReloadMediaItemsByPhotoSet(localPhotoSetIdRef.current);
+            props.onSetDisplayedPhotoSetIds([localPhotoSetIdRef.current]);
+            localStorage.setItem('displayedPhotoSetIds', localPhotoSetIdRef.current);
+            props.onReloadMediaItemsByPhotoSets([localPhotoSetIdRef.current]);
             setProcessingComplete(true);
             resolve();
           }
@@ -297,7 +297,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
-    photoSetId: getPhotoSetId(state),
+    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
     photoSets: getPhotoSets(state),
   };
 }
@@ -305,8 +305,8 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onAddPhotoSet: addPhotoSet,
-    onSetPhotoSetId: setPhotoSetId,
-    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSet,
+    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onReloadMediaItemsByPhotoSets: reloadMediaItemsByPhotoSets,
   }, dispatch);
 };
 

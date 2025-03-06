@@ -48,23 +48,6 @@ export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
   return mediaItems;
 }
 
-export const getMediaItemsByPhotoSetFromDb = async (photoSetIds: string[]): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
-
-  const querySpec = { photoSetId: { $in: photoSetIds } };
-
-  const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
-
-  const documents: any = await query.exec();
-  const mediaItems: MediaItem[] = [];
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
-    mediaItems.push(mediaItem);
-  }
-  return mediaItems;
-}
-
 export const getMediaItemsToDisplayFromDb = async (
   specifyDateRange: boolean,
   startDate: string | null,
@@ -92,6 +75,23 @@ export const getMediaItemsToDisplayFromDb = async (
   return mediaItems;
 }
 
+export const getMediaItemsByPhotoSetFromDb = async (photoSetIds: string[]): Promise<MediaItem[]> => {
+  const mediaItemModel = getMediaitemModel();
+
+  const querySpec = { photoSetId: { $in: photoSetIds } };
+
+  const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
+
+  const documents: any = await query.exec();
+  const mediaItems: MediaItem[] = [];
+  for (const document of documents) {
+    const mediaItem: MediaItem = document.toObject() as MediaItem;
+    mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
+    mediaItems.push(mediaItem);
+  }
+  return mediaItems;
+}
+
 export const getMediaItemsFromDbByReviewLevels = async (
   reviewLevels: ReviewLevel[],
 ): Promise<MediaItem[]> => {
@@ -108,6 +108,29 @@ export const getMediaItemsFromDbByReviewLevels = async (
   }
   return mediaItems;
 }
+
+export const getMediaItemsByViewSpecFromDb = async (
+  photoSetIds: string[],
+  reviewLevels: ReviewLevel[],
+): Promise<MediaItem[]> => {
+  const mediaItemModel = getMediaitemModel();
+
+  const query = mediaItemModel
+    .find({
+      $and: [
+        { photoSetId: { $in: photoSetIds } },
+        { reviewLevel: { $in: reviewLevels } },
+      ],
+    })
+    .sort({ creationTime: -1 });
+
+  const documents: any = await query.exec();
+  return documents.map((document: any) => {
+    const mediaItem: MediaItem = document.toObject() as MediaItem;
+    mediaItem.uniqueId = document.uniqueId.toString();
+    return mediaItem;
+  });
+};
 
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
   searchSpec: SearchSpec,
@@ -568,7 +591,7 @@ export const addPhotoSetToDb = async (photoSet: Required<PhotoSet>): Promise<IPh
 
 export const getPhotoSetById = async (photoSetId: string): Promise<PhotoSet> => {
   try {
-    const querySpec = { photoSetId };  
+    const querySpec = { photoSetId };
     const photoSet = await PhotoSetModel.find(querySpec).exec();
     return photoSet[0];
   } catch (error) {

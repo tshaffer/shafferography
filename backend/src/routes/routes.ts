@@ -24,11 +24,13 @@ import {
   importPhotosEndpoint,
   getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
+  getMediaItemsByViewSpec,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
+  app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsByViewSpec);
   app.get('/api/v1/mediaItemsByPhotoSets', getMediaItemsByPhotoSets);
   app.get('/api/v1/mediaItemsByReviewLevels', getMediaItemsByReviewLevels);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);

@@ -1,4 +1,4 @@
-import { TedTaggerState, PhotoViewSpec, PhotoLayout } from '../types';
+import { TedTaggerState, PhotoViewSpec, PhotoLayout, ReviewLevel } from '../types';
 
 export const getPhotoViewSpec = (state: TedTaggerState): PhotoViewSpec => {
   return state.photoViewSpec;
@@ -38,4 +38,8 @@ export const getMediaItemZoomFactor = (state: TedTaggerState, mediaItemId: strin
 
 export const getDisplayedPhotoSetIds = (state: TedTaggerState): string[] => {
   return state.photoViewSpec.displayedPhotoSetIds;
+};
+
+export const getDisplayedReviewLevels = (state: TedTaggerState): ReviewLevel[] => {
+  return state.photoViewSpec.displayedReviewLevels;
 };

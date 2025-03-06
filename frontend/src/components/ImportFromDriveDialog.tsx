@@ -16,7 +16,7 @@ import { getAppInitialized, getDisplayedPhotoSetIds, getPhotoSets } from '../sel
 import { apiUrlFragment, FileToImport, PhotoSet, serverUrl } from '../types';
 import { setDisplayedPhotoSetIds, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
-import { addPhotoSet, reloadMediaItemsByPhotoSets } from '../controllers';
+import { addPhotoSet, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
@@ -30,7 +30,7 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   photoSets: PhotoSet[];
   onAddPhotoSet: (photoSet: PhotoSet) => any;
   onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
-  onReloadMediaItemsByPhotoSets: (photoSetIds: string[]) => void;
+  onReloadMediaItemsByViewSpec: () => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
@@ -131,7 +131,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
             console.log("All files processed!");
             props.onSetDisplayedPhotoSetIds([localPhotoSetIdRef.current]);
             localStorage.setItem('displayedPhotoSetIds', localPhotoSetIdRef.current);
-            props.onReloadMediaItemsByPhotoSets([localPhotoSetIdRef.current]);
+            props.onReloadMediaItemsByViewSpec();
             setProcessingComplete(true);
             resolve();
           }
@@ -306,7 +306,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onAddPhotoSet: addPhotoSet,
     onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
-    onReloadMediaItemsByPhotoSets: reloadMediaItemsByPhotoSets,
+    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
   }, dispatch);
 };
 

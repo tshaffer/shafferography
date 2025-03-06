@@ -23,7 +23,8 @@ import {
   getMediaItemsFromDbByReviewLevels,
   getAllPhotoSetsFromDb,
   addPhotoSetToDb,
-  getMediaItemsByPhotoSetFromDb
+  getMediaItemsByPhotoSetFromDb,
+  getMediaItemsByViewSpecFromDb
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
 import {
@@ -42,6 +43,15 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   };
   response.json(data);
 };
+
+export const getMediaItemsByViewSpec = async (request: Request, response: Response) => {
+  const reviewLevels: ReviewLevel[] = JSON.parse(request.query.reviewLevels as string);
+  const photoSetIdsAsStr: string = request.query.photoSetIds as string;
+  const photoSetIds: string[] = photoSetIdsAsStr.split(',');
+  console.log('getMediaItemsByViewSpec', reviewLevels, photoSetIds);
+  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, reviewLevels);
+  response.json(mediaItems);
+}
 
 export const getMediaItemsByPhotoSets = async (request: Request, response: Response) => {
   console.log('getMediaItemsByPhotoSets', request.query.photoSetIds);

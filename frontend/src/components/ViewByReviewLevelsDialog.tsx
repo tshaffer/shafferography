@@ -13,7 +13,7 @@ import { getAppInitialized } from '../selectors';
 import { Button, DialogActions, DialogContent } from '@mui/material';
 
 import { ReviewLevel } from '../types';
-import { loadMediaItemsByReviewLevels } from '../controllers';
+import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface ViewByReviewsLevelDialogPropsFromParent {
   open: boolean;
@@ -22,7 +22,7 @@ export interface ViewByReviewsLevelDialogPropsFromParent {
 
 export interface ViewByReviewsLevelDialogProps extends ViewByReviewsLevelDialogPropsFromParent {
   appInitialized: boolean;
-  onLoadMediaItemsByReviewLevels: (reviewLevels: ReviewLevel[]) => void;
+  onReloadMediaItemsByViewSpec: () => void;
 }
 
 const reviewLevels = [
@@ -50,7 +50,7 @@ const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {
   };
 
   const handleViewByReviewLevels = () => {
-    props.onLoadMediaItemsByReviewLevels(selectedReviewLevels);
+    props.onReloadMediaItemsByViewSpec();
     onClose();
   };
 
@@ -101,7 +101,7 @@ function mapStateToProps(state: any) {
 
 const mapDispatchToProps = (dispatch: any) => {
   return bindActionCreators({
-    onLoadMediaItemsByReviewLevels: loadMediaItemsByReviewLevels,
+    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
   }, dispatch);
 };
 

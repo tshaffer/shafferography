@@ -1,4 +1,4 @@
-import { PhotoLayout, PhotoViewSpec } from '../types';
+import { PhotoLayout, PhotoViewSpec, ReviewLevel } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 
 // ------------------------------------
@@ -13,6 +13,7 @@ export const SET_SCROLL_POSITION = 'SET_SCROLL_POSITION';
 export const SET_FULL_SCREEN_MODE = 'SET_FULL_SCREEN_MODE';
 export const SET_MEDIA_ITEM_ZOOM_FACTOR = 'SET_MEDIA_ITEM_ZOOM_FACTOR';
 export const SET_DISPLAYED_PHOTOSET_IDS = 'SET_DISPLAYED_PHOTOSET_IDS';
+export const SET_DISPLAYED_REVIEW_LEVELS = 'SET_DISPLAYED_REVIEW_LEVELS';
 
 // ------------------------------------
 // Actions
@@ -137,6 +138,19 @@ export const setDisplayedPhotoSetIds = (displayedPhotoSetIds: string[]): any => 
   };
 };
 
+interface SetDisplayedReviewLevelsPayload {
+  displayedReviewLevels: ReviewLevel[],
+}
+
+export const setDisplayedReviewLevels = (displayedReviewLevels: ReviewLevel[]): any => {
+  return {
+    type: SET_DISPLAYED_REVIEW_LEVELS,
+    payload: {
+      displayedReviewLevels,
+    },
+  };
+};
+
 
 // ------------------------------------
 // Reducer
@@ -152,11 +166,12 @@ const initialState: PhotoViewSpec = {
   fullScreenMode: false,
   mediaItemZoomFactorById: {},
   displayedPhotoSetIds: [],
+  displayedReviewLevels: [ReviewLevel.ReadyForUpload, ReviewLevel.Unreviewed, ReviewLevel.Undecided, ReviewLevel.Uploaded],
 };
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedPhotoSetIdsPayload>
+  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedPhotoSetIdsPayload & SetDisplayedReviewLevelsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -178,6 +193,11 @@ export const photoViewSpecReducer = (
       return {
         ...state,
         displayedPhotoSetIds: action.payload.displayedPhotoSetIds,
+      };
+    case SET_DISPLAYED_REVIEW_LEVELS:
+      return {
+        ...state,
+        displayedReviewLevels: action.payload.displayedReviewLevels,
       };
     case SET_DISPLAY_METADATA:
       return {

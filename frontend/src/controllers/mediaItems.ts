@@ -19,42 +19,60 @@ import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
   ReviewLevel,
 } from '../types';
-import { cloneDeep, isEmpty, isNil, isString } from 'lodash';
+import { cloneDeep } from 'lodash';
 import {
+  getDisplayedPhotoSetIds,
+  getDisplayedReviewLevels,
   getMatchRule,
   getMediaItemById,
   getSearchRules,
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
 
-export const loadMediaItemsByPhotoSets = (photoSetIds: string[]): any => {
 
+export const loadMediaItemsByViewSpecParams= (photoSetIds: string[], reviewLevels: ReviewLevel[]): any => {
   return (dispatch: TedTaggerDispatch) => {
-
-    let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSets';
+    
+    let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
     path += '?photoSetIds=' + photoSetIds.join(',');
+    path += '&reviewLevels=' + JSON.stringify(reviewLevels);
 
-    return axios.get(path).then((mediaItemsResponse: any) => {
-      console.log('loadMediaItemsByPhotoSet, mediaItemsResponse:', mediaItemsResponse);
-      const mediaItems: MediaItem[] = [];
-      const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
-
-      // derive mediaItems from serverMediaItems
-      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-        const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
-        mediaItems.push(mediaItem);
-      }
-      dispatch(addMediaItems(mediaItems));
-    });
-  };
-}
-
-export const reloadMediaItemsByPhotoSets = (photoSetIds: string[]): any => {
-  return (dispatch: TedTaggerDispatch) => {
-    dispatch(clearMediaItems());
-    dispatch(loadMediaItemsByPhotoSets(photoSetIds));
+    return axios.get(path)
+      .then((mediaItemsResponse: any) => {
+        dispatch(replaceMediaItems(mediaItemsResponse));
+      });
   }
 };
+
+export const reloadMediaItemsByViewSpec = (): any => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    const state: TedTaggerState = getState();
+    const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
+    const reviewLevels: ReviewLevel[] = getDisplayedReviewLevels(state);
+    dispatch(clearMediaItems());
+    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, reviewLevels));
+  }
+};
+
+//   return (dispatch: TedTaggerDispatch) => {
+
+//     let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSets';
+//     path += '?photoSetIds=' + photoSetIds.join(',');
+
+//     return axios.get(path).then((mediaItemsResponse: any) => {
+//       console.log('loadMediaItemsByPhotoSet, mediaItemsResponse:', mediaItemsResponse);
+//       const mediaItems: MediaItem[] = [];
+//       const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
+
+//       // derive mediaItems from serverMediaItems
+//       for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
+//         const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
+//         mediaItems.push(mediaItem);
+//       }
+//       dispatch(addMediaItems(mediaItems));
+//     });
+//   };
+// }
 
 export const loadMediaItems = (): any => {
 
@@ -107,23 +125,6 @@ const replaceMediaItems = (mediaItemsResponse: any): any => {
     dispatch(replaceMediaItemsRedux(mediaItems));
   };
 }
-
-export const loadMediaItemsByReviewLevels = (reviewLevels: ReviewLevel[]): TedTaggerAnyPromiseThunkAction => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
-    let path = serverUrl
-      + apiUrlFragment
-      + 'mediaItemsByReviewLevels';
-
-    path += '?reviewLevels=' + JSON.stringify(reviewLevels);
-
-    return axios.get(path)
-      .then((mediaItemsResponse: any) => {
-        dispatch(replaceMediaItems(mediaItemsResponse));
-      });
-  };
-};
 
 export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction => {
 

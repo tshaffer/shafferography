@@ -108,3 +108,9 @@ export interface FileToImport {
   lastModified: number;
   lastModifiedDate: string;
 }
+
+export interface ReviewLevelOption {
+  value: ReviewLevel;
+  label: string;
+}
+

@@ -6,6 +6,7 @@ import {
   MainDisplayMode,
   MatchRule,
   PhotoLayout,
+  ReviewLevel,
   SearchRuleType,
 } from './enums';
 
@@ -82,4 +83,5 @@ export interface PhotoViewSpec {
   fullScreenMode: boolean;
   mediaItemZoomFactorById: StringToNumberLUT;
   displayedPhotoSetIds: string[];
+  displayedReviewLevels: ReviewLevel[];
 }

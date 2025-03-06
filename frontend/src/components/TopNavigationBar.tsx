@@ -23,14 +23,16 @@ import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByPhotoSets, setReviewLevel } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setDisplayedPhotoSetIds } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getPhotoSet } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel } from '../types';
+import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByViewSpec, setReviewLevel } from '../controllers';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setDisplayedPhotoSetIds, setDisplayedReviewLevels } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getPhotoSet, getDisplayedReviewLevels } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel, ReviewLevelOption } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetReviewLevelsDialog from './SetReviewLevelsDialog';
 import MultiSelectDropdown from './MutliSelectDropdown';
+
+import { reviewLevelOptions } from '../constants';
 
 const drawerWidth = 240;
 
@@ -68,7 +70,8 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   photoLayout: PhotoLayout;
   numGridColumns: number;
   selectedMediaItemsCount: number;
-  displayedPhotoSetIds: string;
+  displayedPhotoSetIds: string[];
+  displayedReviewLevels: string[];
   photoSets: PhotoSet[];
 
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
@@ -78,7 +81,9 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onDeselectAllPhotos: () => void;
   onDeleteMediaItems: (mediaItemIds: string[]) => any;
   onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => void;
-  onReloadMediaItemsByPhotoSet: (photoSetIds: string[]) => void;
+  onReloadMediaItemsByViewSpec: () => any;
+  onSetDisplayedReviewLevels: (displayedReviewLevels: ReviewLevel[]) => void;
+  onReloadMediaItemsByReviewLevels: (reviewLevels: ReviewLevel[]) => void;
   onSetReviewLevel: (mediaItemIds: string[], reviewLevel: ReviewLevel) => void;
 }
 
@@ -118,8 +123,14 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handlePhotoSetChange = (selectedPhotoSetIds: string[]) => {
     props.onSetDisplayedPhotoSetIds(selectedPhotoSetIds);
-    props.onReloadMediaItemsByPhotoSet(selectedPhotoSetIds);
+    props.onReloadMediaItemsByViewSpec();
     localStorage.setItem('displayedPhotoSetIds', selectedPhotoSetIds.join(','));
+  };
+
+  const handleReviewLevelsToViewChange = (selectedReviewLevels: ReviewLevel[]) => {
+    props.onSetDisplayedReviewLevels(selectedReviewLevels);
+    props.onReloadMediaItemsByViewSpec();
+    localStorage.setItem('displayedReviewLevels', selectedReviewLevels.join(','));
   };
 
   const handleCloseImportFromDriveDialog = () => {
@@ -308,13 +319,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
   }
 
   const getPhotoSetsLabel = (): string => {
-    console.log('getPhotoSetLabel');
-    console.log(props.displayedPhotoSetIds);
     const photoSetLabel: string = props.photoSets
       .filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))
       .map((set: PhotoSet) => set.photoSetName)
       .join(", ");
-    console.log(photoSetLabel);
     return photoSetLabel;
   }
 
@@ -325,6 +333,103 @@ const TopNavigationBar: React.FC<any> = (props) => {
           ? "No Photo Sets Available"
           : getPhotoSetsLabel()}
       </Typography>
+    );
+  }
+
+  const renderPhotoSetsBox = (): JSX.Element => {
+    if (props.photoSets.length === 0) {
+      return (
+        <Box display="flex" alignItems="center">
+          <Typography variant="body2" sx={{ overflowX: "auto" }}>
+            No Photo Sets Available
+          </Typography>
+        </Box>
+      );
+    }
+    return (
+      <Box display="flex" alignItems="center">
+        <MultiSelectDropdown
+          label="Select Photo Sets"
+          items={props.photoSets}
+          selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
+          getItemLabel={(item: PhotoSet) => item.photoSetName}
+          onChange={(selected: PhotoSet[]) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
+        />
+
+        <Box
+          sx={{
+            minWidth: 200,
+            maxWidth: 200,
+            height: '38px',
+            color: "black",
+            backgroundColor: "white",
+            borderRadius: 1,
+            padding: "6px 10px",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1, // Allows it to take available space
+          }}
+        >
+          {renderPhotoSetsLabel()}
+        </Box>
+
+      </Box>
+
+    );
+  }
+
+  const getReviewLevelsLabel = (): string => {
+    const reviewLevelsLabel: string = reviewLevelOptions
+      .filter((set: ReviewLevelOption) => props.displayedReviewLevels.includes(set.value))
+      .map((set: ReviewLevelOption) => set.label)
+      .join(", ");
+    return reviewLevelsLabel;
+  }
+
+  const renderReviewLevelsLabel = (): JSX.Element => {
+    return (
+      <Typography variant="body2" sx={{ overflowX: "auto" }}>
+        {getReviewLevelsLabel()}
+      </Typography>
+    );
+  }
+
+  const renderReviewLevelsBox = (): JSX.Element => {
+    return (
+      <Box display="flex" alignItems="center">
+        <MultiSelectDropdown
+          label="Review Levels"
+          items={reviewLevelOptions}
+          selectedItems={reviewLevelOptions.filter((set: ReviewLevelOption) => props.displayedReviewLevels.includes(set.value))}
+          getItemLabel={(item: ReviewLevelOption) => item.label}
+          onChange={(reviewLevels: ReviewLevelOption[]) => handleReviewLevelsToViewChange(reviewLevels.map((reviewLevelOption: ReviewLevelOption) => reviewLevelOption.value))}
+        />
+
+        <Box
+          sx={{
+            minWidth: 200,
+            maxWidth: 200,
+            height: '38px',
+            color: "black",
+            backgroundColor: "white",
+            borderRadius: 1,
+            padding: "6px 10px",
+            overflow: "hidden",
+            whiteSpace: "nowrap",
+            textOverflow: "ellipsis",
+            display: "flex",
+            alignItems: "center",
+            flexGrow: 1, // Allows it to take available space
+          }}
+        >
+          {renderReviewLevelsLabel()}
+        </Box>
+
+      </Box>
+
     );
   }
 
@@ -349,36 +454,9 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
-          <Box display="flex" alignItems="center">
-            <MultiSelectDropdown
-              label="Select Photo Sets"
-              items={props.photoSets}
-              selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
-              getItemLabel={(item: PhotoSet) => item.photoSetName}
-              onChange={(selected: PhotoSet[]) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
-            />
+          {renderPhotoSetsBox()}
 
-            <Box
-              sx={{
-                minWidth: 200,
-                maxWidth: 200,
-                height: '38px',
-                color: "black",
-                backgroundColor: "white",
-                borderRadius: 1,
-                padding: "6px 10px",
-                overflow: "hidden",
-                whiteSpace: "nowrap",
-                textOverflow: "ellipsis",
-                display: "flex",
-                alignItems: "center",
-                flexGrow: 1, // Allows it to take available space
-              }}
-            >
-              {renderPhotoSetsLabel()}
-            </Box>
-
-          </Box>
+          {renderReviewLevelsBox()}
 
           <Tooltip title="Zoom In / Out">
             <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>
@@ -506,6 +584,7 @@ function mapStateToProps(state: any): any {
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
     displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
+    displayedReviewLevels: getDisplayedReviewLevels(state),
     photoSets: getPhotoSets(state),
     mediaItems: getMediaItems(state),
   };
@@ -520,7 +599,8 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onDeselectAllPhotos: deselectAllPhotos,
     onDeleteMediaItems: deleteMediaItems,
     onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
-    onReloadMediaItemsByPhotoSet: reloadMediaItemsByPhotoSets,
+    onSetDisplayedReviewLevels: setDisplayedReviewLevels,
+    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onSetReviewLevel: setReviewLevel,
   }, dispatch);
 };

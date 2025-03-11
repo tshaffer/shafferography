@@ -1,6 +1,6 @@
 import { cloneDeep, isNil } from 'lodash';
 
-import { MediaItem, MediaItemsState, ReviewLevel } from '../types';
+import { MediaItem, MediaItemsState, PhotoState } from '../types';
 import { TedTaggerAction, TedTaggerModelBaseAction } from './baseAction';
 
 // ------------------------------------
@@ -23,26 +23,26 @@ export const ADD_DELETED_MEDIA_ITEMS = 'ADD_DELETED_MEDIA_ITEMS';
 export const CLEAR_DELETED_MEDIA_ITEMS = 'CLEAR_DELETED_MEDIA_ITEMS';
 export const REMOVE_DELETED_MEDIA_ITEM = 'REMOVE_DELETED_MEDIA_ITEM';
 
-export const SET_REVIEW_LEVEL = 'SET_REVIEW_LEVEL';
+export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
 
 // ------------------------------------
 // Actions
 // ------------------------------------
 
-interface SetReviewLevelPayload {
+interface SetPhotoStatePayload {
   mediaItemIds: string[];
-  reviewLevel: ReviewLevel;
+  photoState: PhotoState;
 }
 
-export const setReviewLevelRedux = (
+export const setPhotoStateRedux = (
   mediaItemIds: string[],
-  reviewLevel: ReviewLevel,
+  photoState: PhotoState,
 ): any => {
   return {
-    type: SET_REVIEW_LEVEL,
+    type: SET_PHOTO_STATE,
     payload: {
       mediaItemIds,
-      reviewLevel
+      photoState
     }
   };
 }
@@ -231,7 +231,7 @@ const initialState: MediaItemsState =
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & RemoveDeletedMediaItemIdPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetReviewLevelPayload & SetReviewLevelPayload>
+  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & RemoveDeletedMediaItemIdPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
     case REPLACE_MEDIA_ITEMS: {
@@ -354,12 +354,12 @@ export const mediaItemsStateReducer = (
         loupeViewMediaItemIds,
       };
     }
-    case SET_REVIEW_LEVEL: {
+    case SET_PHOTO_STATE: {
       const newState = cloneDeep(state) as MediaItemsState;
       newState.mediaItems.forEach((mediaItem) => {
         const matchingInputItem = action.payload.mediaItemIds.find((inputItemId) => inputItemId === mediaItem.uniqueId);
         if (matchingInputItem) {
-          mediaItem.reviewLevel = action.payload.reviewLevel;
+          mediaItem.photoState = action.payload.photoState;
         }
       });
       return newState;

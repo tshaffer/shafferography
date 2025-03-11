@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { connect } from 'react-redux';
 
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider, Select, SelectChangeEvent } from "@mui/material";
+import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
@@ -13,26 +13,25 @@ import ViewComfyIcon from "@mui/icons-material/ViewComfy";
 import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import LabelIcon from "@mui/icons-material/Label";
-import StarIcon from "@mui/icons-material/Star";
 import ClearIcon from "@mui/icons-material/Clear";
-import DeleteIcon from '@mui/icons-material/Delete';
 import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
+import DeleteIcon from '@mui/icons-material/Delete';
+import HelpOutline from '@mui/icons-material/HelpOutline';
+import CloudUpload from '@mui/icons-material/CloudUpload';
+import CloudDone from '@mui/icons-material/CloudDone';
+import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
-import { deleteMediaItems, deselectAllPhotos, reloadMediaItemsByViewSpec, setReviewLevel } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, setDisplayedPhotoSetIds, setDisplayedReviewLevels } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getPhotoSet, getDisplayedReviewLevels } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoSet, ReviewLevel, ReviewLevelOption } from '../types';
+import { deselectAllPhotos, reloadMediaItemsByViewSpec, setPhotoState } from '../controllers';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getDisplayedPhotoStates } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoSet, PhotoState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
-import SetReviewLevelsDialog from './SetReviewLevelsDialog';
-import MultiSelectDropdown from './MutliSelectDropdown';
-
-import { reviewLevelOptions } from '../constants';
 
 const drawerWidth = 240;
 
@@ -71,7 +70,7 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   numGridColumns: number;
   selectedMediaItemsCount: number;
   displayedPhotoSetIds: string[];
-  displayedReviewLevels: string[];
+  displayedPhotoStates: string[];
   photoSets: PhotoSet[];
 
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
@@ -79,12 +78,9 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
-  onDeleteMediaItems: (mediaItemIds: string[]) => any;
-  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => void;
+  onReloadMediaItemsByPhotoStates: (photoStates: PhotoState[]) => void;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
   onReloadMediaItemsByViewSpec: () => any;
-  onSetDisplayedReviewLevels: (displayedReviewLevels: ReviewLevel[]) => void;
-  onReloadMediaItemsByReviewLevels: (reviewLevels: ReviewLevel[]) => void;
-  onSetReviewLevel: (mediaItemIds: string[], reviewLevel: ReviewLevel) => void;
 }
 
 const TopNavigationBar: React.FC<any> = (props) => {
@@ -92,26 +88,11 @@ const TopNavigationBar: React.FC<any> = (props) => {
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
-  const [showSetReviewLevelDialog, setShowSetReviewLevelDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-
-  React.useEffect(() => {
-    if (props.photoSets.length === 0) {
-      props.onSetDisplayedPhotoSetIds([]); // Clear Redux state
-      // } else if (!props.photoSetId || !props.photoSets.some((set: PhotoSet | undefined) => set && set.photoSetId === props.photoSetId)) {
-      //   // ✅ Auto-select first available photo set when sets are added or when selection is invalid
-      //   props.onSetDisplayedPhotoSetIds([props.photoSets[0].photoSetId]);
-    } else {
-      // ✅ Auto-select first available photo set when sets are added or when selection is invalid
-      props.onSetDisplayedPhotoSetIds([props.photoSets[0].photoSetId]);
-    }
-
-  }, [props.photoSets, props.photoDiplayedPhotoSetIds, props.onSetDisplayedPhotoSetIds]);
-
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -121,28 +102,12 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   }
 
-  const handlePhotoSetChange = (selectedPhotoSetIds: string[]) => {
-    props.onSetDisplayedPhotoSetIds(selectedPhotoSetIds);
-    props.onReloadMediaItemsByViewSpec();
-    localStorage.setItem('displayedPhotoSetIds', selectedPhotoSetIds.join(','));
-  };
-
-  const handleReviewLevelsToViewChange = (selectedReviewLevels: ReviewLevel[]) => {
-    props.onSetDisplayedReviewLevels(selectedReviewLevels);
-    props.onReloadMediaItemsByViewSpec();
-    localStorage.setItem('displayedReviewLevels', selectedReviewLevels.join(','));
-  };
-
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
   };
 
   const handleCloseUploadToGoogleDialogDialog = () => {
     setShowUploadToGoogleDialog(false);
-  };
-
-  const handleCloseSetReviewLevelDialog = () => {
-    setShowSetReviewLevelDialog(false);
   };
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
@@ -182,11 +147,17 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   }
 
-  const handleSetReviewLevel = (reviewLevel: ReviewLevel) => {
-    props.onSetReviewLevel(props.selectedMediaItemIds, reviewLevel);
-    setShowSetReviewLevelDialog(false);
+  const handleSetPhotoState = (photoState: PhotoState) => {
+    props.onSetPhotoState(props.selectedMediaItemIds, photoState)
+      .then(() => {
+        props.onReloadMediaItemsByViewSpec();
+      });
   }
 
+  const handleDeletePhotos = () => {
+    props.onDeselectAllPhotos();
+    handleSetPhotoState(PhotoState.Deleted);
+  }
 
   const handleEnterFullScreenMode = () => {
     const elem = document.getElementById('loupeViewImage');
@@ -284,16 +255,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
     );
   }
 
-  const renderSetReviewLevelsDialog = (): JSX.Element => {
-    return (
-      <SetReviewLevelsDialog
-        open={showSetReviewLevelDialog}
-        onClose={handleCloseSetReviewLevelDialog}
-        onSetReviewLevel={handleSetReviewLevel}
-      />
-    );
-  }
-
   const renderZoomDialog = (): JSX.Element => {
     return (
       <Dialog open={isZoomDialogOpen} onClose={() => setIsZoomDialogOpen(false)}>
@@ -318,128 +279,12 @@ const TopNavigationBar: React.FC<any> = (props) => {
     );
   }
 
-  const getPhotoSetsLabel = (): string => {
-    const photoSetLabel: string = props.photoSets
-      .filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))
-      .map((set: PhotoSet) => set.photoSetName)
-      .join(", ");
-    return photoSetLabel;
-  }
-
-  const renderPhotoSetsLabel = (): JSX.Element => {
-    return (
-      <Typography variant="body2" sx={{ overflowX: "auto" }}>
-        {props.photoSets.length === 0
-          ? "No Photo Sets Available"
-          : getPhotoSetsLabel()}
-      </Typography>
-    );
-  }
-
-  const renderPhotoSetsBox = (): JSX.Element => {
-    if (props.photoSets.length === 0) {
-      return (
-        <Box display="flex" alignItems="center">
-          <Typography variant="body2" sx={{ overflowX: "auto" }}>
-            No Photo Sets Available
-          </Typography>
-        </Box>
-      );
-    }
-    return (
-      <Box display="flex" alignItems="center">
-        <MultiSelectDropdown
-          label="Select Photo Sets"
-          items={props.photoSets}
-          selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
-          getItemLabel={(item: PhotoSet) => item.photoSetName}
-          onChange={(selected: PhotoSet[]) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
-        />
-
-        <Box
-          sx={{
-            minWidth: 200,
-            maxWidth: 200,
-            height: '38px',
-            color: "black",
-            backgroundColor: "white",
-            borderRadius: 1,
-            padding: "6px 10px",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-            display: "flex",
-            alignItems: "center",
-            flexGrow: 1, // Allows it to take available space
-          }}
-        >
-          {renderPhotoSetsLabel()}
-        </Box>
-
-      </Box>
-
-    );
-  }
-
-  const getReviewLevelsLabel = (): string => {
-    const reviewLevelsLabel: string = reviewLevelOptions
-      .filter((set: ReviewLevelOption) => props.displayedReviewLevels.includes(set.value))
-      .map((set: ReviewLevelOption) => set.label)
-      .join(", ");
-    return reviewLevelsLabel;
-  }
-
-  const renderReviewLevelsLabel = (): JSX.Element => {
-    return (
-      <Typography variant="body2" sx={{ overflowX: "auto" }}>
-        {getReviewLevelsLabel()}
-      </Typography>
-    );
-  }
-
-  const renderReviewLevelsBox = (): JSX.Element => {
-    return (
-      <Box display="flex" alignItems="center">
-        <MultiSelectDropdown
-          label="Review Levels"
-          items={reviewLevelOptions}
-          selectedItems={reviewLevelOptions.filter((set: ReviewLevelOption) => props.displayedReviewLevels.includes(set.value))}
-          getItemLabel={(item: ReviewLevelOption) => item.label}
-          onChange={(reviewLevels: ReviewLevelOption[]) => handleReviewLevelsToViewChange(reviewLevels.map((reviewLevelOption: ReviewLevelOption) => reviewLevelOption.value))}
-        />
-
-        <Box
-          sx={{
-            minWidth: 200,
-            maxWidth: 200,
-            height: '38px',
-            color: "black",
-            backgroundColor: "white",
-            borderRadius: 1,
-            padding: "6px 10px",
-            overflow: "hidden",
-            whiteSpace: "nowrap",
-            textOverflow: "ellipsis",
-            display: "flex",
-            alignItems: "center",
-            flexGrow: 1, // Allows it to take available space
-          }}
-        >
-          {renderReviewLevelsLabel()}
-        </Box>
-
-      </Box>
-
-    );
-  }
-
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
             onClick={props.onOpenSidebar}
             edge="start"
             sx={[
@@ -454,10 +299,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
           <Typography variant="h6" sx={{ paddingLeft: getShafferographyPaddingLeft(), flexGrow: 1 }}>Shafferography</Typography>
 
-          {renderPhotoSetsBox()}
-
-          {renderReviewLevelsBox()}
-
           <Tooltip title="Zoom In / Out">
             <IconButton color="inherit" onClick={() => setIsZoomDialogOpen(true)}>
               <TuneIcon />
@@ -469,6 +310,8 @@ const TopNavigationBar: React.FC<any> = (props) => {
             <SearchIcon />
             <TextField variant="outlined" size="small" placeholder="Search photos..." sx={{ ml: 1, backgroundColor: "white", borderRadius: 1 }} />
           </Box>
+
+          <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* Selection Count & Actions */}
           {props.selectedMediaItemsCount > 0 && (
@@ -499,16 +342,56 @@ const TopNavigationBar: React.FC<any> = (props) => {
               <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
             </span>
           </Tooltip>
-          <Tooltip title="Set Review Level">
+          <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
+          <Tooltip title="Set Unreviewed">
             <span>
-              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0} onClick={() => setShowSetReviewLevelDialog(true)}><StarIcon /></IconButton>
+              <IconButton
+                color="inherit"
+                onClick={() => handleSetPhotoState(PhotoState.Unreviewed)}
+                disabled={props.selectedMediaItemsCount === 0}
+              >
+                <MoreHoriz />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Set Undecided">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={() => handleSetPhotoState(PhotoState.Undecided)}
+                disabled={props.selectedMediaItemsCount === 0}
+              >
+                <HelpOutline />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Set Ready for Upload">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)}
+                disabled={props.selectedMediaItemsCount === 0}
+              >
+                <CloudUpload />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Set Uploaded">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={() => handleSetPhotoState(PhotoState.Uploaded)}
+                disabled={props.selectedMediaItemsCount === 0}
+              >
+                <CloudDone />
+              </IconButton>
             </span>
           </Tooltip>
           <Tooltip title="Delete Selected Photos">
             <span>
               <IconButton
                 color="inherit"
-                onClick={() => props.onDeleteMediaItems(props.selectedMediaItemIds)}
+                onClick={handleDeletePhotos}
                 disabled={props.selectedMediaItemsCount === 0}
               >
                 <DeleteIcon />
@@ -567,7 +450,6 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
       {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
-      {renderSetReviewLevelsDialog()}
       {renderZoomDialog()}
 
     </React.Fragment >
@@ -584,7 +466,7 @@ function mapStateToProps(state: any): any {
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
     displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
-    displayedReviewLevels: getDisplayedReviewLevels(state),
+    displayedPhotoStates: getDisplayedPhotoStates(state),
     photoSets: getPhotoSets(state),
     mediaItems: getMediaItems(state),
   };
@@ -597,11 +479,8 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
-    onDeleteMediaItems: deleteMediaItems,
-    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
-    onSetDisplayedReviewLevels: setDisplayedReviewLevels,
+    onSetPhotoState: setPhotoState,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
-    onSetReviewLevel: setReviewLevel,
   }, dispatch);
 };
 

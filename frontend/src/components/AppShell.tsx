@@ -3,9 +3,9 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
 import { loadMediaItems, loadMediaItemsByViewSpecParams, loadPhotoSets, reloadMediaItemsByViewSpec } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setDisplayedPhotoSetIds, setDisplayedReviewLevels, setGoogleUserProfile } from "../models";
+import { TedTaggerDispatch, setAppInitialized, setDisplayedPhotoSetIds, setDisplayedPhotoStates, setGoogleUserProfile } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
-import { MediaItem, PhotoLayout, ReviewLevel } from "../types";
+import { MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';
@@ -48,13 +48,13 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
-  onLoadMediaItemsByViewSpecParams: (photoSetIds: string[], reviewLevels: ReviewLevel[]) => any; 
+  onLoadMediaItemsByViewSpecParams: (photoSetIds: string[], photoStates: PhotoState[]) => any;
   onLoadMediaItems: () => any;
   onLoadPhotoSets: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
   onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
-  onSetDisplayedReviewLevels: (displayedReviewLevels: ReviewLevel[]) => any;
+  onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => any;
 }
 
 const AppShell = (props: AppShellProps) => {
@@ -236,24 +236,24 @@ const AppShell = (props: AppShellProps) => {
       return displayedPhotoSetIds;
     }
 
-    const initializeDisplayedReviewLevels = async (): Promise<ReviewLevel[]> => {
-      let displayedReviewLevels: ReviewLevel[] = [];
-      const displayedReviewLevelsStr: string | null = localStorage.getItem('displayedReviewLevels');
-      if (displayedReviewLevelsStr) {
-        displayedReviewLevels = displayedReviewLevelsStr
+    const initializeDisplayedPhotoStates = async (): Promise<PhotoState[]> => {
+      let displayedPhotoStates: PhotoState[] = [];
+      const displayedPhotoStatesStr: string | null = localStorage.getItem('displayedPhotoStates');
+      if (displayedPhotoStatesStr) {
+        displayedPhotoStates = displayedPhotoStatesStr
           .split(',')
           .map(level => level.trim()) // Trim spaces
-          .filter((level): level is ReviewLevel => Object.values(ReviewLevel).includes(level as ReviewLevel)); // Ensure valid enum values
-    
-        props.onSetDisplayedReviewLevels(displayedReviewLevels);
+          .filter((level): level is PhotoState => Object.values(PhotoState).includes(level as PhotoState)); // Ensure valid enum values
+
+        props.onSetDisplayedPhotoStates(displayedPhotoStates);
       }
-      return displayedReviewLevels;
+      return displayedPhotoStates;
     };
-    
+
     props.onLoadPhotoSets()
       .then(function () {
-        return initializeDisplayedReviewLevels()
-      }).then(function (displayedReviewLevels: ReviewLevel[]) {
+        return initializeDisplayedPhotoStates()
+      }).then(function (displayedPhotoStates: PhotoState[]) {
         return initializeDisplayedPhotoSetIds()
       }).then(function (displayedPhotoSetIds: string[]) {
         return props.onReloadMediaItemsByViewSpec();
@@ -327,7 +327,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
     onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
-    onSetDisplayedReviewLevels: setDisplayedReviewLevels,
+    onSetDisplayedPhotoStates: setDisplayedPhotoStates,
   }, dispatch);
 };
 

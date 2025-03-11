@@ -1,4 +1,4 @@
-import { TedTaggerState, PhotoViewSpec, PhotoLayout, ReviewLevel } from '../types';
+import { TedTaggerState, PhotoViewSpec, PhotoLayout, PhotoState } from '../types';
 
 export const getPhotoViewSpec = (state: TedTaggerState): PhotoViewSpec => {
   return state.photoViewSpec;
@@ -40,6 +40,6 @@ export const getDisplayedPhotoSetIds = (state: TedTaggerState): string[] => {
   return state.photoViewSpec.displayedPhotoSetIds;
 };
 
-export const getDisplayedReviewLevels = (state: TedTaggerState): ReviewLevel[] => {
-  return state.photoViewSpec.displayedReviewLevels;
+export const getDisplayedPhotoStates = (state: TedTaggerState): PhotoState[] => {
+  return state.photoViewSpec.displayedPhotoStates;
 };

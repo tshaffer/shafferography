@@ -1,4 +1,4 @@
-import { ReviewLevel } from "./enums";
+import { PhotoState } from "./enums";
 
 export interface GeoData {
   latitude: number;
@@ -30,7 +30,7 @@ export interface ServerMediaItem {
   geoData?: GeoData,
   people?: ServerPerson[],
   keywordNodeIds: string[],
-  reviewLevel: ReviewLevel,
+  photoState: PhotoState,
 }
 
 export interface MediaItem {
@@ -50,7 +50,7 @@ export interface MediaItem {
   geoData?: GeoData,
   people?: string[],
   keywordNodeIds: string[],
-  reviewLevel: ReviewLevel,
+  photoState: PhotoState,
 }
 
 export interface Keyword {
@@ -109,8 +109,8 @@ export interface FileToImport {
   lastModifiedDate: string;
 }
 
-export interface ReviewLevelOption {
-  value: ReviewLevel;
+export interface PhotoStateOption {
+  value: PhotoState;
   label: string;
 }
 

@@ -15,8 +15,8 @@ import {
   removeDeletedMediaItem,
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
-  updateReviewLevelEndpoint,
-  getMediaItemsByReviewLevels,
+  setPhotoStateEndpoint,
+  getMediaItemsByPhotoStates,
   getPhotoSets,
   addPhotoSet,
   getMediaItemsByPhotoSets,
@@ -32,7 +32,7 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
   app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsByViewSpec);
   app.get('/api/v1/mediaItemsByPhotoSets', getMediaItemsByPhotoSets);
-  app.get('/api/v1/mediaItemsByReviewLevels', getMediaItemsByReviewLevels);
+  app.get('/api/v1/mediaItemsByPhotoStates', getMediaItemsByPhotoStates);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
   app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
@@ -58,6 +58,6 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/uploadToGoogle', uploadToGoogleEndpoint);
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 
-  app.post('/api/v1/updateReviewLevel', updateReviewLevelEndpoint);
+  app.post('/api/v1/setPhotoState', setPhotoStateEndpoint);
 };
 

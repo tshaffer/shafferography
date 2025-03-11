@@ -1,10 +1,17 @@
 import React from "react";
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
 import { List, ListItem, ListItemText, Divider, Typography, Box, Drawer, IconButton, styled, ListItemButton } from "@mui/material";
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
-import { getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout } from "../controllers";
+import { getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
+import CheckboxListSelector from "./CheckboxListSelector";
+import { PhotoSet, PhotoState, PhotoStateOption } from "../types";
+import { setDisplayedPhotoSetIds, setDisplayedPhotoStates, TedTaggerDispatch } from "../models";
+import { getDisplayedPhotoSetIds, getDisplayedPhotoStates, getPhotoSets } from "../selectors";
+import { photoStateOptions } from "../constants";
 
 const drawerWidth = 240;
 
@@ -17,12 +24,22 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-export interface SidebarProps {
+export interface SidebarPropsFromParent {
   open: boolean;
   onClose: () => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
+export interface SidebarProps extends SidebarPropsFromParent {
+  displayedPhotoSetIds: string[];
+  displayedPhotoStates: string[];
+  photoSets: PhotoSet[];
+  onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
+  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => void;
+  onReloadMediaItemsByViewSpec: () => any;
+}
+
+const Sidebar: React.FC<any> = (props: any) => {
 
   const { open, onClose } = props;
 
@@ -55,6 +72,58 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
     setShowRetrievePeopleDialog(false);
   };
 
+  const handlePhotoSetChange = (selectedPhotoSetIds: string[]) => {
+    props.onSetDisplayedPhotoSetIds(selectedPhotoSetIds);
+    props.onReloadMediaItemsByViewSpec();
+    localStorage.setItem('displayedPhotoSetIds', selectedPhotoSetIds.join(','));
+  };
+
+  const handlePhotoStatesToViewChange = (selectedPhotoStates: PhotoState[]) => {
+    props.onSetDisplayedPhotoStates(selectedPhotoStates);
+    props.onReloadMediaItemsByViewSpec();
+    localStorage.setItem('displayedPhotoStates', selectedPhotoStates.join(','));
+  };
+
+  const renderPhotoSetsToDisplayChooser = () => {
+    return (
+      <React.Fragment>
+        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Photo Sets</Typography>
+        <Box>
+          {props.photoSets.length === 0 ? (
+            <Typography variant="body2">No Photo Sets Available</Typography>
+          ) : (
+            <Box>
+              <CheckboxListSelector
+                label="Select Photo Sets"
+                items={props.photoSets}
+                selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
+                getItemLabel={(item: PhotoSet) => item.photoSetName}
+                onChange={(selected) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
+              />
+            </Box>
+          )}
+        </Box>
+      </React.Fragment>
+    )
+  };
+
+  const renderPhotoStatesToDisplayChooser = () => {
+    return (
+      <React.Fragment>
+        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Photo States</Typography>
+        <Box>
+          <CheckboxListSelector
+            label="Photo States"
+            items={photoStateOptions}
+            selectedItems={photoStateOptions.filter((set: PhotoStateOption) => props.displayedPhotoStates.includes(set.value))}
+            getItemLabel={(item) => item.label}
+            onChange={(photoStates: PhotoStateOption[]) => handlePhotoStatesToViewChange(photoStates.map((photoStateOption: PhotoStateOption) => photoStateOption.value))}
+          />
+        </Box>
+      </React.Fragment>
+    )
+  }
+
   return (
     <React.Fragment>
       <Drawer
@@ -78,29 +147,29 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
         <Divider />
         <List>
 
-        <ListItemButton onClick={() => setShowRetrievePeopleDialog(true)}>
+          <ListItemButton onClick={() => setShowRetrievePeopleDialog(true)}>
             <ListItemText primary="Retrieve Albums without People" />
           </ListItemButton>
 
           <ListItemButton onClick={() => setShowMergePeopleDialog(true)}>
             <ListItemText primary="Merge People" />
           </ListItemButton>
-
-          <ListItem button>
-            <ListItemText primary="Unreviewed" />
-          </ListItem>
-          <ListItem button>
-            <ListItemText primary="Ready For Review" />
-          </ListItem>
-          <ListItem button>
-            <ListItemText primary="Ready For Upload" />
-          </ListItem>
-          <Divider sx={{ my: 2 }} />
+          {/* <Divider sx={{ my: 2 }} />
           <Typography variant="subtitle1">Keywords</Typography>
           <ListItem button>
             <ListItemText primary="+ Add Keyword" />
-          </ListItem>
+          </ListItem> */}
+
+          <Divider sx={{ my: 2 }} />
+
+          {/* Photo Set Selection */}
+          {renderPhotoSetsToDisplayChooser()}
+
+          {/* Photo State Selection */}
+          {renderPhotoStatesToDisplayChooser()}
+
         </List>
+
       </Drawer>
       <MergePeopleDialog
         open={showMergePeopleDialog}
@@ -115,4 +184,23 @@ const Sidebar: React.FC<SidebarProps> = (props: SidebarProps) => {
   );
 };
 
-export default Sidebar;
+function mapStateToProps(state: any): any {
+
+  return {
+    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
+    displayedPhotoStates: getDisplayedPhotoStates(state),
+    photoSets: getPhotoSets(state),
+  };
+}
+
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
+  return bindActionCreators({
+    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+    onSetDisplayedPhotoStates: setDisplayedPhotoStates,
+    onSetPhotoState: setPhotoState,
+
+  }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(Sidebar) as React.FC<any>;

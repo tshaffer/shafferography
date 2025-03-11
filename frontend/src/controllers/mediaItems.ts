@@ -7,35 +7,31 @@ import {
   addKeywordToMediaItemIdsRedux,
   removeKeywordFromMediaItemIdsRedux,
   replaceMediaItemsRedux,
-  deleteMediaItemsRedux,
-  addDeletedMediaItems,
   removeDeletedMediaItemRedux,
   clearDeletedMediaItemsRedux,
   setDeletedMediaItems,
-  setReviewLevelRedux,
+  setPhotoStateRedux,
   clearMediaItems
 } from '../models';
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
-  ReviewLevel,
+  PhotoState,
 } from '../types';
 import { cloneDeep } from 'lodash';
 import {
   getDisplayedPhotoSetIds,
-  getDisplayedReviewLevels,
+  getDisplayedPhotoStates,
   getMatchRule,
-  getMediaItemById,
   getSearchRules,
 } from '../selectors';
-import { deselectMediaItems } from './selectMediaItem';
 
 
-export const loadMediaItemsByViewSpecParams= (photoSetIds: string[], reviewLevels: ReviewLevel[]): any => {
+export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoStates: PhotoState[]): any => {
   return (dispatch: TedTaggerDispatch) => {
-    
+
     let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
     path += '?photoSetIds=' + photoSetIds.join(',');
-    path += '&reviewLevels=' + JSON.stringify(reviewLevels);
+    path += '&photoStates=' + JSON.stringify(photoStates);
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
@@ -48,31 +44,11 @@ export const reloadMediaItemsByViewSpec = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
     const state: TedTaggerState = getState();
     const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
-    const reviewLevels: ReviewLevel[] = getDisplayedReviewLevels(state);
+    const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     dispatch(clearMediaItems());
-    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, reviewLevels));
+    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates));
   }
 };
-
-//   return (dispatch: TedTaggerDispatch) => {
-
-//     let path = serverUrl + apiUrlFragment + 'mediaItemsByPhotoSets';
-//     path += '?photoSetIds=' + photoSetIds.join(',');
-
-//     return axios.get(path).then((mediaItemsResponse: any) => {
-//       console.log('loadMediaItemsByPhotoSet, mediaItemsResponse:', mediaItemsResponse);
-//       const mediaItems: MediaItem[] = [];
-//       const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
-
-//       // derive mediaItems from serverMediaItems
-//       for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-//         const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
-//         mediaItems.push(mediaItem);
-//       }
-//       dispatch(addMediaItems(mediaItems));
-//     });
-//   };
-// }
 
 export const loadMediaItems = (): any => {
 
@@ -200,37 +176,40 @@ export const addKeywordToMediaItems = (
 export const deleteMediaItems = (mediaItemIds: string[]): any => {
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
+    dispatch(setPhotoState(mediaItemIds, PhotoState.Deleted));
+  }
+  // return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const state = getState();
+  //   const state = getState();
 
-    const path = serverUrl + apiUrlFragment + 'deleteMediaItems';
+  //   const path = serverUrl + apiUrlFragment + 'deleteMediaItems';
 
-    const deleteMediaItemsBody = { mediaItemIds };
+  //   const deleteMediaItemsBody = { mediaItemIds };
 
-    return axios.post(
-      path,
-      deleteMediaItemsBody
-    ).then((response) => {
-      dispatch(deselectMediaItems(mediaItemIds));
-      dispatch(deleteMediaItemsRedux(mediaItemIds));
+  //   return axios.post(
+  //     path,
+  //     deleteMediaItemsBody
+  //   ).then((response) => {
+  //     dispatch(deselectMediaItems(mediaItemIds));
+  //     dispatch(deleteMediaItemsRedux(mediaItemIds));
 
-      // this is very suboptimal
-      const deletedMediaItems: MediaItem[] = [];
-      for (const mediaItemId of mediaItemIds) {
-        const deletedMediaItem: MediaItem | null = getMediaItemById(state, mediaItemId);
-        if (deletedMediaItem) {
-          deletedMediaItems.push(deletedMediaItem);
-        }
-      }
-      dispatch(addDeletedMediaItems(deletedMediaItems));
+  //     // this is very suboptimal
+  //     const deletedMediaItems: MediaItem[] = [];
+  //     for (const mediaItemId of mediaItemIds) {
+  //       const deletedMediaItem: MediaItem | null = getMediaItemById(state, mediaItemId);
+  //       if (deletedMediaItem) {
+  //         deletedMediaItems.push(deletedMediaItem);
+  //       }
+  //     }
+  //     dispatch(addDeletedMediaItems(deletedMediaItems));
 
-      return Promise.resolve();
-    }).catch((error) => {
-      console.log('error');
-      console.log(error);
-      return Promise.reject();
-    });
-  };
+  //     return Promise.resolve();
+  //   }).catch((error) => {
+  //     console.log('error');
+  //     console.log(error);
+  //     return Promise.reject();
+  //   });
+  // };
 };
 
 export const loadDeletedMediaItems = (): TedTaggerAnyPromiseThunkAction => {
@@ -294,19 +273,19 @@ export const removeDeletedMediaItem = (mediaItemId: string): any => {
   };
 };
 
-export const setReviewLevel = (mediaItemIds: string[], reviewLevel: ReviewLevel): any => {
+export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): any => {
 
   return (dispatch: TedTaggerDispatch) => {
 
-    const path = serverUrl + apiUrlFragment + 'updateReviewLevel';
+    const path = serverUrl + apiUrlFragment + 'setPhotoState';
 
-    const updateReviewLevelBody = { mediaItemIds, reviewLevel };
+    const setPhotoStateBody = { mediaItemIds, photoState };
 
     return axios.post(
       path,
-      updateReviewLevelBody
+      setPhotoStateBody
     ).then((response) => {
-      dispatch(setReviewLevelRedux(mediaItemIds, reviewLevel));
+      dispatch(setPhotoStateRedux(mediaItemIds, photoState));
       return Promise.resolve();
     }).catch((error) => {
       console.log('error');

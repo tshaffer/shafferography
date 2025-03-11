@@ -12,7 +12,7 @@ import Checkbox from '@mui/material/Checkbox';
 import { getAppInitialized } from '../selectors';
 import { Button, DialogActions, DialogContent } from '@mui/material';
 
-import { ReviewLevel } from '../types';
+import { PhotoState } from '../types';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface ViewByReviewsLevelDialogPropsFromParent {
@@ -25,17 +25,18 @@ export interface ViewByReviewsLevelDialogProps extends ViewByReviewsLevelDialogP
   onReloadMediaItemsByViewSpec: () => void;
 }
 
-const reviewLevels = [
-  { key: 'Unreviewed', value: ReviewLevel.Unreviewed },
-  { key: 'Undecided', value: ReviewLevel.Undecided },
-  { key: 'Ready For Upload', value: ReviewLevel.ReadyForUpload },
-  { key: 'Uploaded', value: ReviewLevel.Uploaded },
+const photoStates = [
+  { key: 'Unreviewed', value: PhotoState.Unreviewed },
+  { key: 'Undecided', value: PhotoState.Undecided },
+  { key: 'Ready For Upload', value: PhotoState.ReadyForUpload },
+  { key: 'Uploaded', value: PhotoState.Uploaded },
+  { key: 'Deleted', value: PhotoState.Deleted },
 ];
 
 const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {
   const { open, onClose } = props;
 
-  const [selectedReviewLevels, setSelectedReviewLevels] = React.useState<ReviewLevel[]>([]);
+  const [selectedPhotoStates, setSelectedPhotoStates] = React.useState<PhotoState[]>([]);
 
   if (!props.appInitialized) {
     return null;
@@ -49,16 +50,16 @@ const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {
     onClose();
   };
 
-  const handleViewByReviewLevels = () => {
+  const handleViewByPhotoStates = () => {
     props.onReloadMediaItemsByViewSpec();
     onClose();
   };
 
-  const handleCheckboxChange = (level: ReviewLevel) => (event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCheckboxChange = (level: PhotoState) => (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      setSelectedReviewLevels((prev) => [...prev, level]);
+      setSelectedPhotoStates((prev) => [...prev, level]);
     } else {
-      setSelectedReviewLevels((prev) => prev.filter((l) => l !== level));
+      setSelectedPhotoStates((prev) => prev.filter((l) => l !== level));
     }
   };
 
@@ -68,12 +69,12 @@ const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {
       <DialogContent style={{ paddingBottom: '0px' }}>
         <Box component="form" noValidate autoComplete="off">
           <FormGroup>
-            {reviewLevels.map(({ key, value }) => (
+            {photoStates.map(({ key, value }) => (
               <FormControlLabel
                 key={value}
                 control={
                   <Checkbox
-                    checked={selectedReviewLevels.includes(value)}
+                    checked={selectedPhotoStates.includes(value)}
                     onChange={handleCheckboxChange(value)}
                   />
                 }
@@ -85,7 +86,7 @@ const ViewByReviewsLevelDialog = (props: ViewByReviewsLevelDialogProps) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={handleClose}>Cancel</Button>
-        <Button onClick={handleViewByReviewLevels} autoFocus>
+        <Button onClick={handleViewByPhotoStates} autoFocus>
           OK
         </Button>
       </DialogActions>

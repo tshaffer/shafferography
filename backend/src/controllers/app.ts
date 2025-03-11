@@ -20,7 +20,7 @@ import {
   removeDeleteMediaItemFromDb,
   clearDeletedMediaItemsDb,
   updateMediaItemsFieldsInDb,
-  getMediaItemsFromDbByReviewLevels,
+  getMediaItemsFromDbByPhotoStates,
   getAllPhotoSetsFromDb,
   addPhotoSetToDb,
   getMediaItemsByPhotoSetFromDb,
@@ -31,7 +31,7 @@ import {
   deleteDirectory,
   fsDeleteFiles
 } from '../utilities';
-import { MatchRule, ReviewLevel } from 'enums';
+import { MatchRule, PhotoState } from 'enums';
 import path from 'path';
 import { IPhotoSet } from '../models';
 import { BASE_MEDIA_PATH } from '../config';
@@ -45,11 +45,11 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 };
 
 export const getMediaItemsByViewSpec = async (request: Request, response: Response) => {
-  const reviewLevels: ReviewLevel[] = JSON.parse(request.query.reviewLevels as string);
+  const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
   const photoSetIdsAsStr: string = request.query.photoSetIds as string;
   const photoSetIds: string[] = photoSetIdsAsStr.split(',');
-  console.log('getMediaItemsByViewSpec', reviewLevels, photoSetIds);
-  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, reviewLevels);
+  console.log('getMediaItemsByViewSpec', photoStates, photoSetIds);
+  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, photoStates);
   response.json(mediaItems);
 }
 
@@ -75,9 +75,9 @@ export const getMediaItemsToDisplay = async (request: Request, response: Respons
   response.json(mediaItems);
 };
 
-export const getMediaItemsByReviewLevels = async (request: Request, response: Response) => {
-  const reviewLevels: ReviewLevel[] = JSON.parse(request.query.reviewLevels as string);
-  const mediaItems: MediaItem[] = await getMediaItemsFromDbByReviewLevels(reviewLevels);
+export const getMediaItemsByPhotoStates = async (request: Request, response: Response) => {
+  const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
+  const mediaItems: MediaItem[] = await getMediaItemsFromDbByPhotoStates(photoStates);
   response.json(mediaItems);
 }
 
@@ -170,10 +170,10 @@ export const setRootKeywordNode = async (request: Request, response: Response, n
   response.status(200).send();
 }
 
-export const updateReviewLevelEndpoint = async (request: Request, response: Response, next: any) => {
-  const { mediaItemIds, reviewLevel } = request.body;
+export const setPhotoStateEndpoint = async (request: Request, response: Response, next: any) => {
+  const { mediaItemIds, photoState } = request.body;
   const updates: Partial<MediaItem> = {
-    reviewLevel
+    photoState
   };
 
   await updateMediaItemsFieldsInDb(mediaItemIds, updates);

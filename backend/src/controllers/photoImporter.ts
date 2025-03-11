@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { FileToImport, GeoData, GoogleAlbum, MediaItem, PhotoSet, ReviewLevel } from '../types';
+import { FileToImport, GeoData, GoogleAlbum, MediaItem, PhotoSet, PhotoState } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
@@ -53,7 +53,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, photoSetId: str
     people: null,
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
-    reviewLevel: ReviewLevel.Unreviewed,
+    photoState: PhotoState.Unreviewed,
     photoSetId,
   }
 

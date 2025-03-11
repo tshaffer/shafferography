@@ -21,7 +21,7 @@ import {
   PhotoSet,
 } from '../types';
 import { Document } from 'mongoose';
-import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, ReviewLevel, SearchRuleType } from '../types/enums';
+import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
 import { PhotoSetModel } from '../models';
 import { IPhotoSet } from '../models';
@@ -92,13 +92,13 @@ export const getMediaItemsByPhotoSetFromDb = async (photoSetIds: string[]): Prom
   return mediaItems;
 }
 
-export const getMediaItemsFromDbByReviewLevels = async (
-  reviewLevels: ReviewLevel[],
+export const getMediaItemsFromDbByPhotoStates = async (
+  photoStates: PhotoState[],
 ): Promise<MediaItem[]> => {
 
   const mediaItemModel = getMediaitemModel();
 
-  const query = mediaItemModel.find({ reviewLevel: { $in: reviewLevels } }).sort({ creationTime: -1 });
+  const query = mediaItemModel.find({ photoState: { $in: photoStates } }).sort({ creationTime: -1 });
   const documents: any = await query.exec();
   const mediaItems: MediaItem[] = [];
   for (const document of documents) {
@@ -111,7 +111,7 @@ export const getMediaItemsFromDbByReviewLevels = async (
 
 export const getMediaItemsByViewSpecFromDb = async (
   photoSetIds: string[],
-  reviewLevels: ReviewLevel[],
+  photoStates: PhotoState[],
 ): Promise<MediaItem[]> => {
   const mediaItemModel = getMediaitemModel();
 
@@ -119,7 +119,7 @@ export const getMediaItemsByViewSpecFromDb = async (
     .find({
       $and: [
         { photoSetId: { $in: photoSetIds } },
-        { reviewLevel: { $in: reviewLevels } },
+        { photoState: { $in: photoStates } },
       ],
     })
     .sort({ creationTime: -1 });

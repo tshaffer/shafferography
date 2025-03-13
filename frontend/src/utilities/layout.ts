@@ -24,7 +24,24 @@ export const getGridRowHeight = (
     const item = mediaItems[i];
     if (!item.width || !item.height) continue; // Ensure valid dimensions
 
-    const itemAspectRatio = item.width / item.height;
+    console.log('mediaItem: ', item.fileName, item.width, item.height, item.orientation);
+
+    let localWidth = item.width;
+    let localHeight = item.height;
+
+    // swap width and height if orientation is portrait
+    if (item.orientation === 6) {
+      const tmp = localWidth;
+      localWidth = localHeight;
+      localHeight = tmp;
+    }
+    else if (item.orientation === 1) {
+      console.log('Orientation 1: ', item.fileName);
+    } else if (item.orientation && item.orientation !== 0) {
+      console.error('Unsupported orientation: ', item.orientation);
+      debugger;
+    }
+    const itemAspectRatio = localWidth / localHeight;
     const scaledWidth = itemAspectRatio * targetHeight;
     const scaledWidthWithMargin = scaledWidth + margin;
 
@@ -47,7 +64,18 @@ export const getGridRowHeight = (
   /** Pass 2: Calculate exact rendered widths using adjusted height */
   for (let i = startingMediaItemIndex; i < startingMediaItemIndex + itemCount; i++) {
     const item = mediaItems[i];
-    const itemAspectRatio = item.width! / item.height!;
+
+    let localWidth = item.width;
+    let localHeight = item.height;
+
+    // swap width and height if orientation is portrait
+    if (item.orientation === 6) {
+      const tmp = localWidth;
+      localWidth = localHeight;
+      localHeight = tmp;
+    }
+
+    const itemAspectRatio = localWidth! / localHeight!;
     const scaledWidthWithoutMargin = itemAspectRatio * adjustedHeight;
     itemWidthsWithoutMargin.push(roundToPrecision(scaledWidthWithoutMargin, 2));
   }

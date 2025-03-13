@@ -7,9 +7,6 @@ import {
   addKeywordToMediaItemIdsRedux,
   removeKeywordFromMediaItemIdsRedux,
   replaceMediaItemsRedux,
-  removeDeletedMediaItemRedux,
-  clearDeletedMediaItemsRedux,
-  setDeletedMediaItems,
   setPhotoStateRedux,
   clearMediaItems
 } from '../models';
@@ -170,106 +167,6 @@ export const addKeywordToMediaItems = (
     //   console.log(error);
     //   return '';
     // });
-  };
-};
-
-export const deleteMediaItems = (mediaItemIds: string[]): any => {
-
-  return (dispatch: TedTaggerDispatch, getState: any) => {
-    dispatch(setPhotoState(mediaItemIds, PhotoState.Deleted));
-  }
-  // return (dispatch: TedTaggerDispatch, getState: any) => {
-
-  //   const state = getState();
-
-  //   const path = serverUrl + apiUrlFragment + 'deleteMediaItems';
-
-  //   const deleteMediaItemsBody = { mediaItemIds };
-
-  //   return axios.post(
-  //     path,
-  //     deleteMediaItemsBody
-  //   ).then((response) => {
-  //     dispatch(deselectMediaItems(mediaItemIds));
-  //     dispatch(deleteMediaItemsRedux(mediaItemIds));
-
-  //     // this is very suboptimal
-  //     const deletedMediaItems: MediaItem[] = [];
-  //     for (const mediaItemId of mediaItemIds) {
-  //       const deletedMediaItem: MediaItem | null = getMediaItemById(state, mediaItemId);
-  //       if (deletedMediaItem) {
-  //         deletedMediaItems.push(deletedMediaItem);
-  //       }
-  //     }
-  //     dispatch(addDeletedMediaItems(deletedMediaItems));
-
-  //     return Promise.resolve();
-  //   }).catch((error) => {
-  //     console.log('error');
-  //     console.log(error);
-  //     return Promise.reject();
-  //   });
-  // };
-};
-
-export const loadDeletedMediaItems = (): TedTaggerAnyPromiseThunkAction => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
-    const path = serverUrl
-      + apiUrlFragment
-      + 'deletedMediaItems';
-
-    return axios.get(path)
-      .then((deletedMediaItemsResponse: any) => {
-
-        const deletedMediaItems: MediaItem[] = (deletedMediaItemsResponse as any).data;
-
-        dispatch(setDeletedMediaItems(deletedMediaItems));
-
-        return Promise.resolve();
-      });
-  };
-};
-
-export const clearDeletedMediaItems = (): any => {
-
-  return (dispatch: any) => {
-
-    const path = serverUrl + apiUrlFragment + 'clearDeletedMediaItems';
-
-    return axios.post(
-      path,
-    ).then((response) => {
-      dispatch(clearDeletedMediaItemsRedux());
-      return Promise.resolve();
-    }).catch((error) => {
-      console.log('error');
-      console.log(error);
-      return Promise.reject();
-    });
-  };
-};
-
-export const removeDeletedMediaItem = (mediaItemId: string): any => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
-    const path = serverUrl + apiUrlFragment + 'removeDeletedMediaItem';
-
-    const removeDeletedMediaItemBody = { mediaItemId };
-
-    return axios.post(
-      path,
-      removeDeletedMediaItemBody
-    ).then((response) => {
-      dispatch(removeDeletedMediaItemRedux(mediaItemId));
-      return Promise.resolve();
-    }).catch((error) => {
-      console.log('error');
-      console.log(error);
-      return Promise.reject();
-    });
   };
 };
 

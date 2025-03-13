@@ -22,10 +22,6 @@ export const getMediaItemById = (state: TedTaggerState, uniqueId: string): Media
   return null;
 };
 
-export const getDeletedMediaItems = (state: TedTaggerState): MediaItem[] => {
-  return state.mediaItemsState.deletedMediaItems;
-};
-
 export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };

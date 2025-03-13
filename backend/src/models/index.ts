@@ -1,4 +1,3 @@
-export * from './DeletedMediaItem';
 export * from './Keyword';
 export * from './KeywordNode';
 export * from './KeywordTree';

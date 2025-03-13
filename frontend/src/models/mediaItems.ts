@@ -18,11 +18,6 @@ export const ADD_KEYWORD_TO_MEDIA_ITEMS = 'ADD_KEYWORD_TO_MEDIA_ITEMS';
 export const SET_LOUPE_VIEW_MEDIA_ITEM_IDS = 'SET_LOUPE_VIEW_MEDIA_ITEM_IDS';
 export const REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID = 'REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID';
 
-export const SET_DELETED_MEDIA_ITEMS = 'SET_DELETED_MEDIA_ITEMS';
-export const ADD_DELETED_MEDIA_ITEMS = 'ADD_DELETED_MEDIA_ITEMS';
-export const CLEAR_DELETED_MEDIA_ITEMS = 'CLEAR_DELETED_MEDIA_ITEMS';
-export const REMOVE_DELETED_MEDIA_ITEM = 'REMOVE_DELETED_MEDIA_ITEM';
-
 export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
 
 // ------------------------------------
@@ -74,28 +69,6 @@ export const addMediaItems = (
   };
 };
 
-export const setDeletedMediaItems = (
-  mediaItems: MediaItem[],
-): any => {
-  return {
-    type: SET_DELETED_MEDIA_ITEMS,
-    payload: {
-      mediaItems
-    }
-  };
-};
-
-export const addDeletedMediaItems = (
-  mediaItems: MediaItem[],
-): any => {
-  return {
-    type: ADD_DELETED_MEDIA_ITEMS,
-    payload: {
-      mediaItems
-    }
-  };
-};
-
 interface DeleteMediaItemIdsPayload {
   mediaItemIds: string[];
 }
@@ -115,28 +88,6 @@ export const clearMediaItems = (): TedTaggerAction<any> => ({
   type: 'CLEAR_MEDIA_ITEMS',
   payload: {},
 });
-
-export const clearDeletedMediaItemsRedux = (
-) => {
-  return {
-    type: CLEAR_DELETED_MEDIA_ITEMS,
-  };
-};
-
-interface RemoveDeletedMediaItemIdPayload {
-  mediaItemId: string;
-}
-
-export const removeDeletedMediaItemRedux = (
-  mediaItemId: string,
-) => {
-  return {
-    type: REMOVE_DELETED_MEDIA_ITEM,
-    payload: {
-      mediaItemId,
-    }
-  };
-};
 
 interface AddOrRemoveKeywordToMediaItemIdsPayload {
   mediaItemIds: string[];
@@ -225,13 +176,12 @@ export const removeLoupeViewMediaItemId = (
 const initialState: MediaItemsState =
 {
   mediaItems: [],
-  deletedMediaItems: [],
   loupeViewMediaItemIds: [],
 };
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & RemoveDeletedMediaItemIdPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
+  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
     case REPLACE_MEDIA_ITEMS: {
@@ -250,32 +200,6 @@ export const mediaItemsStateReducer = (
       return {
         ...state,
         mediaItems: []
-      };
-    }
-    case SET_DELETED_MEDIA_ITEMS: {
-      return {
-        ...state,
-        deletedMediaItems: action.payload.mediaItems
-      };
-    }
-    case ADD_DELETED_MEDIA_ITEMS: {
-      return {
-        ...state,
-        deletedMediaItems: state.deletedMediaItems.concat(action.payload.mediaItems)
-      };
-    }
-    case CLEAR_DELETED_MEDIA_ITEMS: {
-      return {
-        ...state,
-        deletedMediaItems: []
-      };
-    }
-    case REMOVE_DELETED_MEDIA_ITEM: {
-      let updatedDeletedMediaItems = cloneDeep(state.deletedMediaItems);
-      updatedDeletedMediaItems = updatedDeletedMediaItems.filter(item => item.uniqueId !== action.payload.mediaItemId);
-      return {
-        ...state,
-        deletedMediaItems: updatedDeletedMediaItems,
       };
     }
     case DELETE_MEDIA_ITEMS: {

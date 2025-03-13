@@ -13,17 +13,9 @@ import {
   setRootKeywordNodeDb,
   getMediaItemsToDisplayFromDbUsingSearchSpec,
   updateKeywordNodeDb,
-  deleteMediaItemsFromDb,
-  getMediaItemFromDb,
-  addMediaItemToDeletedMediaItemsDBTable,
-  getDeletedMediaItemsFromDb,
-  removeDeleteMediaItemFromDb,
-  clearDeletedMediaItemsDb,
   updateMediaItemsFieldsInDb,
-  getMediaItemsFromDbByPhotoStates,
   getAllPhotoSetsFromDb,
   addPhotoSetToDb,
-  getMediaItemsByPhotoSetFromDb,
   getMediaItemsByViewSpecFromDb
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
@@ -53,14 +45,6 @@ export const getMediaItemsByViewSpec = async (request: Request, response: Respon
   response.json(mediaItems);
 }
 
-export const getMediaItemsByPhotoSets = async (request: Request, response: Response) => {
-  console.log('getMediaItemsByPhotoSets', request.query.photoSetIds);
-  const photoSetIdsAsStr: string = request.query.photoSetIds as string;
-  const photoSetIds: string[] = photoSetIdsAsStr.split(',');
-  const mediaItems: MediaItem[] = await getMediaItemsByPhotoSetFromDb(photoSetIds);
-  response.json(mediaItems);
-}
-
 export const getMediaItemsToDisplay = async (request: Request, response: Response) => {
 
   const specifyDateRange: boolean = JSON.parse(request.query.specifyDateRange as string);
@@ -74,12 +58,6 @@ export const getMediaItemsToDisplay = async (request: Request, response: Respons
   );
   response.json(mediaItems);
 };
-
-export const getMediaItemsByPhotoStates = async (request: Request, response: Response) => {
-  const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
-  const mediaItems: MediaItem[] = await getMediaItemsFromDbByPhotoStates(photoStates);
-  response.json(mediaItems);
-}
 
 export const getMediaItemsToDisplayFromSearchSpec = async (request: Request, response: Response) => {
 
@@ -177,38 +155,6 @@ export const setPhotoStateEndpoint = async (request: Request, response: Response
   };
 
   await updateMediaItemsFieldsInDb(mediaItemIds, updates);
-  response.sendStatus(200);
-}
-
-export const deleteMediaItems = async (request: Request, response: Response, next: any) => {
-
-  const { mediaItemIds } = request.body;
-
-  const filePaths: string[] = await Promise.all(mediaItemIds.map(async (iterator: string) => {
-    const mediaItem: MediaItem = await getMediaItemFromDb(iterator);
-    await addMediaItemToDeletedMediaItemsDBTable(mediaItem);
-    return mediaItem.filePath;
-  }));
-
-  await deleteMediaItemsFromDb(mediaItemIds);
-  await fsDeleteFiles(filePaths);
-
-  response.sendStatus(200);
-}
-
-export const getDeletedMediaItems = async (request: Request, response: Response, next: any) => {
-  const deletedMediaItems: any = await getDeletedMediaItemsFromDb();
-  response.json(deletedMediaItems);
-};
-
-export const clearDeletedMediaItems = async (request: Request, response: Response, next: any) => {
-  await clearDeletedMediaItemsDb();
-  response.sendStatus(200);
-}
-
-export const removeDeletedMediaItem = async (request: Request, response: Response, next: any) => {
-  const { mediaItemId } = request.body;
-  await removeDeleteMediaItemFromDb(mediaItemId);
   response.sendStatus(200);
 }
 

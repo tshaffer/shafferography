@@ -1,7 +1,7 @@
 import { TedTaggerDispatch, setPhotoLayoutRedux } from '../models';
 import { getSelectedMediaItemIds } from '../selectors';
 import { PhotoLayout, PhotoState, TedTaggerState } from '../types';
-import { deleteMediaItems, setPhotoState } from './mediaItems';
+import { setPhotoState } from './mediaItems';
 
 export const deleteSurveyViewImageContainerItem = (mediaItemId: string) => {
   return (dispatch: TedTaggerDispatch, getState: any) => {

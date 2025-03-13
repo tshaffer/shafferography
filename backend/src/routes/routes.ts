@@ -9,17 +9,11 @@ import {
   getMediaItemsToDisplayFromSearchSpec,
   initializeKeywordTree,
   updateKeywordNode,
-  deleteMediaItems,
-  getDeletedMediaItems,
-  clearDeletedMediaItems,
-  removeDeletedMediaItem,
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   setPhotoStateEndpoint,
-  getMediaItemsByPhotoStates,
   getPhotoSets,
   addPhotoSet,
-  getMediaItemsByPhotoSets,
   mergePeopleTakeoutEndpoint,
   importPhotosEndpoint,
   getPerFileImportPhotosStatus,
@@ -31,19 +25,12 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
   app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsByViewSpec);
-  app.get('/api/v1/mediaItemsByPhotoSets', getMediaItemsByPhotoSets);
-  app.get('/api/v1/mediaItemsByPhotoStates', getMediaItemsByPhotoStates);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
-  app.get('/api/v1/deletedMediaItems', getDeletedMediaItems);
   app.get('/api/v1/photoSets', getPhotoSets);
 
   app.get('/api/v1/import-photos-status/:importId', getPerFileImportPhotosStatus);
   app.get('/api/v1/upload-to-google-status/:uploadId', getPerFileUploadToGoogleStatus);
-
-  app.post('/api/v1/deleteMediaItems', deleteMediaItems);
-  app.post('/api/v1/clearDeletedMediaItems', clearDeletedMediaItems);
-  app.post('/api/v1/removeDeletedMediaItem', removeDeletedMediaItem);
 
   app.post('/api/v1/photoSet', addPhotoSet);
 

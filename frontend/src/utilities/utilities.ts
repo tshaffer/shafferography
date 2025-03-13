@@ -1,4 +1,3 @@
-import path from 'path-browserify';
 import { MediaItem } from '../types';
 
 export const formatISOString = (ISOString: string): string => {

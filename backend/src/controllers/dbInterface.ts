@@ -1,7 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil } from 'lodash';
 import {
-  getDeletedMediaItemModel,
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
@@ -70,40 +69,6 @@ export const getMediaItemsToDisplayFromDb = async (
   for (const document of documents) {
     const mediaItem: MediaItem = document.toObject() as MediaItem;
     mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
-    mediaItems.push(mediaItem);
-  }
-  return mediaItems;
-}
-
-export const getMediaItemsByPhotoSetFromDb = async (photoSetIds: string[]): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
-
-  const querySpec = { photoSetId: { $in: photoSetIds } };
-
-  const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
-
-  const documents: any = await query.exec();
-  const mediaItems: MediaItem[] = [];
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();  // is this still necessary?
-    mediaItems.push(mediaItem);
-  }
-  return mediaItems;
-}
-
-export const getMediaItemsFromDbByPhotoStates = async (
-  photoStates: PhotoState[],
-): Promise<MediaItem[]> => {
-
-  const mediaItemModel = getMediaitemModel();
-
-  const query = mediaItemModel.find({ photoState: { $in: photoStates } }).sort({ creationTime: -1 });
-  const documents: any = await query.exec();
-  const mediaItems: MediaItem[] = [];
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
     mediaItems.push(mediaItem);
   }
   return mediaItems;
@@ -463,12 +428,6 @@ export const updateMediaItemsFieldsInDb = async (
   }
 };
 
-export const deleteMediaItemsFromDb = async (mediaItemIds: string[]): Promise<any> => {
-  const mediaItemModel = getMediaitemModel();
-  const filter = { uniqueId: { $in: mediaItemIds } };
-  await mediaItemModel.deleteMany(filter);
-}
-
 const addMediaItemToDb = async (mediaItemModel: any, mediaItem: MediaItem): Promise<any> => {
 
   try {
@@ -494,36 +453,6 @@ export const addMediaItemToMediaItemsDBTable = async (mediaItem: MediaItem): Pro
   const mediaItemModel = getMediaitemModel();
   return addMediaItemToDb(mediaItemModel, mediaItem);
 };
-
-export const addMediaItemToDeletedMediaItemsDBTable = async (mediaItem: MediaItem): Promise<any> => {
-  const deletedMediaItemModel = getDeletedMediaItemModel();
-  return addMediaItemToDb(deletedMediaItemModel, mediaItem);
-};
-
-export const clearDeletedMediaItemsDb = async (): Promise<any> => {
-  const deletedMediaItemModel = getDeletedMediaItemModel();
-  await deletedMediaItemModel.deleteMany({});
-}
-
-export const removeDeleteMediaItemFromDb = async (mediaItemId: string): Promise<any> => {
-  const deletedMediaItemModel = getDeletedMediaItemModel();
-  const filter = { uniqueId: mediaItemId };
-  await deletedMediaItemModel.deleteOne(filter);
-}
-
-export const getDeletedMediaItemsFromDb = async (): Promise<MediaItem[]> => {
-
-  const deletedMediaItemModel = getDeletedMediaItemModel();
-
-  const deletedMediaItems: MediaItem[] = [];
-  const documents: any = await (deletedMediaItemModel as any).find().exec();
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    deletedMediaItems.push(mediaItem);
-  }
-  return deletedMediaItems;
-}
 
 export const getAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {
   const mediaItemModel = getMediaitemModel();

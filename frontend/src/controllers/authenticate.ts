@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch, setDeletedMediaItems } from '../models';
+import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch } from '../models';
 import { serverUrl, apiUrlFragment, MediaItem } from '../types';
 
 export const authenticate = (): TedTaggerAnyPromiseThunkAction => {

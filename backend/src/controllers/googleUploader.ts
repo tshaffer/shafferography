@@ -356,8 +356,6 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
       await updateMediaItemFieldsInDb(mediaItemId, updates);
     }
 
-    // googleMediaItemIdsToRemove - media items already removed from db
-
     console.log('uploadToGoogle complete');
 
   } catch (error) {

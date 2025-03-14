@@ -1,15 +1,5 @@
 import axios from "axios";
 
-export const getGoogleHeaders = async (googleAccessToken: string) => {
-
-  const headers = {
-    'Content-Type': 'application/json',
-    'Authorization': 'Bearer ' + googleAccessToken
-  };
-  return headers;
-
-};
-
 export const getGoogleRequest = async (googleAccessToken: string, url: string): Promise<any> => {
 
   const headers = {

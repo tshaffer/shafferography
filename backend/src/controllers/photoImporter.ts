@@ -165,7 +165,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     console.log('localStorageMediaItems:', localStorageMediaItems.length);
 
   } catch (error) {
-    console.error('Error in uploadAndImportEndpoint:', error);
+    console.error('Error in importPhotosEndpoint:', error);
     response.status(500).json(error);
   }
 }

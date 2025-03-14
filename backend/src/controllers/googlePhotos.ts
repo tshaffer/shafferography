@@ -1,7 +1,10 @@
+import { Request } from 'express';
+
 import { GoogleAlbum, GoogleMediaItem } from "../types";
-// import { AuthService } from "../auth";
 import { isArray, isNil } from 'lodash';
 import { getGoogleRequest, postGoogleRequest } from './googleUtils';
+import { getAlbumNamesWherePeopleNotRetrieved } from './dbInterface';
+import { TypedResponse } from '../types';
 
 export const GooglePhotoAPIs = {
   mediaItem: 'https://photoslibrary.googleapis.com/v1/mediaItems/',
@@ -14,15 +17,14 @@ export const GooglePhotoAPIs = {
   BATCH_GET_LIMIT: 49
 };
 
-export const getMediaItemFromGoogle = async (googleAccessToken: string, id: string): Promise<GoogleMediaItem> => {
-
-  const url = `${GooglePhotoAPIs.mediaItem}${id}`;
-
-  const googleMediaItem: GoogleMediaItem = await getGoogleRequest(googleAccessToken, url);
-
-  return googleMediaItem;
+export const getAlbumNamesWherePeopleNotRetrievedEndpoint = async (request: Request, response: TypedResponse<string[]>, next: any) => {
+  try {
+    const albumNames = await getAlbumNamesWherePeopleNotRetrieved();
+    response.status(200).json(albumNames); 
+  } catch (error) {
+    response.status(500).json({ message: error.message });
+  }
 }
-
 export const getAlbumMediaItemsFromGoogle = async (googleAccessToken: string, albumId: string, nextPageToken: any = null): Promise<GoogleMediaItem[]> => {
 
   const googleMediaItems: GoogleMediaItem[] = [];
@@ -112,23 +114,3 @@ export const getAllGoogleAlbums = async (googleAccessToken: string, nextPageToke
   return googleAlbums;
 };
 
-/*
-export const getGoogleAlbumData = async (authService: AuthService, albumId: string): Promise<GoogleAlbum> => {
-
-  const url = `${GooglePhotoAPIs.album}${albumId}`;
-
-  const response: any = await getRequest(authService, url);
-
-  const { coverPhotoBaseUrl, coverPhotoMediaItemId, id, mediaItemsCount, productUrl, baseUrl, title } = response;
-  const googleAlbum: GoogleAlbum = {
-    coverPhotoBaseUrl,
-    coverPhotoMediaItemId,
-    id,
-    mediaItemsCount,
-    productUrl,
-    baseUrl,
-    title,
-  }
-  return googleAlbum;
-}
-*/

@@ -24,8 +24,6 @@ export const getGridRowHeight = (
     const item = mediaItems[i];
     if (!item.width || !item.height) continue; // Ensure valid dimensions
 
-    console.log('mediaItem: ', item.fileName, item.width, item.height, item.orientation);
-
     let localWidth = item.width;
     let localHeight = item.height;
 

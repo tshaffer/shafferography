@@ -28,16 +28,23 @@ export const getGridRowHeight = (
     let localHeight = item.height;
 
     // swap width and height if orientation is portrait
-    if (item.orientation === 6) {
-      const tmp = localWidth;
-      localWidth = localHeight;
-      localHeight = tmp;
-    }
-    else if (item.orientation === 1) {
-      console.log('Orientation 1: ', item.fileName);
-    } else if (item.orientation && item.orientation !== 0) {
-      console.error('Unsupported orientation: ', item.orientation);
-      debugger;
+    switch (item.orientation) {
+      case 6:
+      case 8:
+        const tmp = localWidth;
+        localWidth = localHeight;
+        localHeight = tmp;
+        break;
+      case undefined:
+      case null:
+      case 0:
+      case 1:
+      case 3:
+        break;
+      default:
+        console.log('Unsupported orientation: ', item.orientation);
+        debugger;
+        break;
     }
     const itemAspectRatio = localWidth / localHeight;
     const scaledWidth = itemAspectRatio * targetHeight;

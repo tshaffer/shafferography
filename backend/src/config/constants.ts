@@ -1,1 +1,1 @@
-export const BASE_MEDIA_PATH = "/Users/tedshaffer/Pictures/ShafferographyMedia";
+export const BASE_MEDIA_PATH = "/Volumes/ShMedia/Shafferography/ShafferographyMedia";

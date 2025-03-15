@@ -29,3 +29,8 @@ export type StringToKeywordNodeLUT = {
 export type StringToNumberLUT = {
   [key: string]: number;
 }
+
+export type Dimensions = {
+  width: number;
+  height: number;
+};

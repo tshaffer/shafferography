@@ -1,11 +1,11 @@
-import { GridRowData, MediaItem } from '../types';
+import { Dimensions, GridRowData, MediaItem } from '../types';
 
 export const getGridRowHeight = (
   availableWidth: number,  // Renamed from rowWidth to match dynamic calculations
   targetHeight: number,
   mediaItems: MediaItem[],
   startingMediaItemIndex: number,
-  maxRowIndex: number,
+  maxMediaItemIndex: number,
   margin: number = 8 // Optional, default to 8px (4px left + 4px right)
 ): GridRowData => {
   let totalWidth = 0;
@@ -20,38 +20,18 @@ export const getGridRowHeight = (
   };
 
   /** Pass 1: Determine how many items can fit using target height */
-  for (let i = startingMediaItemIndex; i <= maxRowIndex; i++) {
+  for (let i = startingMediaItemIndex; i <= maxMediaItemIndex; i++) {
     const item = mediaItems[i];
     if (!item.width || !item.height) continue; // Ensure valid dimensions
 
-    let localWidth = item.width;
-    let localHeight = item.height;
-
-    // swap width and height if orientation is portrait
-    switch (item.orientation) {
-      case 6:
-      case 8:
-        const tmp = localWidth;
-        localWidth = localHeight;
-        localHeight = tmp;
-        break;
-      case undefined:
-      case null:
-      case 0:
-      case 1:
-      case 3:
-        break;
-      default:
-        console.log('Unsupported orientation: ', item.orientation);
-        debugger;
-        break;
-    }
-    const itemAspectRatio = localWidth / localHeight;
+    const { width, height }: Dimensions = getWidthHeightFromOrientation(item);
+    const itemAspectRatio = width / height;
     const scaledWidth = itemAspectRatio * targetHeight;
     const scaledWidthWithMargin = scaledWidth + margin;
 
     // Stop adding items if row width is exceeded
     if (totalWidth + scaledWidthWithMargin > availableWidth) {
+      // This code should be reached for all except the last row
       break;
     }
 
@@ -59,6 +39,7 @@ export const getGridRowHeight = (
     totalImageWidth += scaledWidth;
     itemCount++;
   }
+
 
   /** Adjust height if the row wasn't fully filled */
   if (totalWidth < availableWidth && itemCount > 0) {
@@ -69,18 +50,8 @@ export const getGridRowHeight = (
   /** Pass 2: Calculate exact rendered widths using adjusted height */
   for (let i = startingMediaItemIndex; i < startingMediaItemIndex + itemCount; i++) {
     const item = mediaItems[i];
-
-    let localWidth = item.width;
-    let localHeight = item.height;
-
-    // swap width and height if orientation is portrait
-    if (item.orientation === 6) {
-      const tmp = localWidth;
-      localWidth = localHeight;
-      localHeight = tmp;
-    }
-
-    const itemAspectRatio = localWidth! / localHeight!;
+    const { width, height }: Dimensions = getWidthHeightFromOrientation(item);
+    const itemAspectRatio = width! / height!;
     const scaledWidthWithoutMargin = itemAspectRatio * adjustedHeight;
     itemWidthsWithoutMargin.push(roundToPrecision(scaledWidthWithoutMargin, 2));
   }
@@ -92,3 +63,32 @@ export const getGridRowHeight = (
     cellWidths: itemWidthsWithoutMargin,
   };
 };
+
+const getWidthHeightFromOrientation = (mediaItem: MediaItem): Dimensions => {
+
+  let width = mediaItem.width!;
+  let height = mediaItem.height!;
+
+  // swap width and height if orientation is portrait
+  switch (mediaItem.orientation) {
+    case 6:
+    case 8:
+      const tmp = width;
+      width = height;
+      height = tmp;
+      break;
+    case undefined:
+    case null:
+    case 0:
+    case 1:
+    case 3:
+      break;
+    default:
+      console.log('Unsupported orientation: ', mediaItem.orientation);
+      debugger;
+      break;
+  }
+
+  return { width, height };
+
+}

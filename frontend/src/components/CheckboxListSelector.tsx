@@ -42,12 +42,14 @@ function CheckboxListSelector<T>({
     onChange(newSelected);
   };
 
-  const handleSelectionChange = (event: any) => {
+  const handleSelectAllOrNoneChange = (event: any) => {
     const value = event.target.value;
     if (value === "all") {
       setTempSelected(items);
+      onChange(items);
     } else if (value === "none") {
       setTempSelected([]);
+      onChange([]);
     }
   };
 
@@ -60,7 +62,7 @@ function CheckboxListSelector<T>({
             <Select
               displayEmpty
               value={tempSelected.length === items.length ? "all" : tempSelected.length === 0 ? "none" : ""}
-              onChange={handleSelectionChange}
+              onChange={handleSelectAllOrNoneChange}
               variant="standard"
               IconComponent={KeyboardArrowDownIcon} // Ensures only one arrow is rendered
               renderValue={() => (

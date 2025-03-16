@@ -26,7 +26,7 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
-import { deselectAllPhotos, reloadMediaItemsByViewSpec, setPhotoState } from '../controllers';
+import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reloadMediaItemsByViewSpec, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getDisplayedPhotoStates } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoSet, PhotoState } from '../types';
@@ -168,12 +168,8 @@ const TopNavigationBar: React.FC<any> = (props) => {
     }
   };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+  const handleOpenMoreOptionsMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
-  };
-
-  const handleMenuClose = () => {
-    setAnchorEl(null);
   };
 
   function handleSliderChange(event: Event, value: number | number[]): void {
@@ -437,7 +433,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
           {/* More Options Menu */}
           <Tooltip title="More Options">
-            <IconButton color="inherit" onClick={handleMenuOpen}>
+            <IconButton color="inherit" onClick={handleOpenMoreOptionsMenu}>
               <MoreVertIcon />
             </IconButton>
           </Tooltip>
@@ -480,7 +476,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
     onSetPhotoState: setPhotoState,
-    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 

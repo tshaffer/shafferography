@@ -2,24 +2,22 @@ import * as React from 'react';
 import { VariableSizeList as List } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { GridRowData, MediaItem } from '../types';
+import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
-import { getAppInitialized, getMediaItems, getNumGridColumns } from '../selectors';
+import { getAppInitialized, getFilteredMediaItems, getNumGridColumns } from '../selectors';
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
 
 export interface GridViewProps {
   appInitialized: boolean;
-  allMediaItems: MediaItem[],
   numGridColumns: number;
+  allMediaItems: FilteredMediaItemPicker[];
 }
 
 const GridView = ({ setTooltip, ...props }: GridViewProps & {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
 }) => {
-
-  // console.log('GridView rerender');
 
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
@@ -49,7 +47,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
       const gridRowData: GridRowData = getGridRowHeight(
         gridWidth,
         targetHeight,
-        props.allMediaItems,
+        props.allMediaItems as MediaItem[],
         mediaItemIndex,
         props.allMediaItems.length - 1
       );
@@ -71,21 +69,24 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   const rowHeights = React.useMemo(() => gridRows.map(row => row.rowHeight), [gridRows]);
 
-  const renderRow = ({ index, style }: { index: number; style: React.CSSProperties }) => {
-    const rowData = gridRows[index];
-    return (
-      <div style={{ ...style, height: rowData.rowHeight }}>
-        <GridRow
-          key={rowData.mediaItemIndex}
-          mediaItemIndex={rowData.mediaItemIndex}
-          numMediaItems={rowData.numMediaItems}
-          rowHeight={rowData.rowHeight}
-          cellWidths={rowData.cellWidths}
-          setTooltip={setTooltip} // Pass setTooltip down to GridRow
-        />
-      </div>
-    );
-  };
+  const renderRow = React.useCallback(
+    ({ index, style }: { index: number; style: React.CSSProperties }) => {
+      const rowData = gridRows[index];
+      return (
+        <div style={{ ...style, height: rowData.rowHeight }}>
+          <GridRow
+            key={rowData.mediaItemIndex}
+            mediaItemIndex={rowData.mediaItemIndex}
+            numMediaItems={rowData.numMediaItems}
+            rowHeight={rowData.rowHeight}
+            cellWidths={rowData.cellWidths}
+            setTooltip={setTooltip} // Pass setTooltip down to GridRow
+          />
+        </div>
+      );
+    },
+    [gridRows, setTooltip] // Memoize based on dependencies
+  );
 
   const getItemSize = (index: number) => rowHeights[index];
 
@@ -104,11 +105,11 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   );
 };
 
-function mapStateToProps(state: any, ownProps: any) {
+function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
-    allMediaItems: getMediaItems(state),
     numGridColumns: getNumGridColumns(state),
+    allMediaItems: getFilteredMediaItems(state),
   };
 }
 

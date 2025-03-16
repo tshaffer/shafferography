@@ -114,3 +114,9 @@ export interface PhotoStateOption {
   label: string;
 }
 
+export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "albumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "albumId", "filePath", "productUrl", "baseUrl", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
+
+export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
+
+export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = FilteredMediaItemPropertyNames;

@@ -1,4 +1,8 @@
+import { createSelector } from 'reselect';
+
 import {
+  FILTERED_MEDIA_ITEM_KEYS,
+  FilteredMediaItemPicker,
   MediaItem,
   TedTaggerState
 } from '../types';
@@ -25,3 +29,34 @@ export const getMediaItemById = (state: TedTaggerState, uniqueId: string): Media
 export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };
+
+const selectAllMediaItems = (state: TedTaggerState): MediaItem[] =>
+  [...state.mediaItemsState.mediaItems]; // Ensures a new array reference
+
+// Persistent cache for memoization
+let previousMediaItems: FilteredMediaItemPicker[] = [];
+
+export const getFilteredMediaItems = createSelector(
+  [selectAllMediaItems],
+  (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
+
+    // If length is the same, no other property changes effect visibility
+    if (previousMediaItems.length === mediaItems.length) {
+      return previousMediaItems; // Return previous reference if unchanged
+    }
+
+    // Otherwise, recompute the filtered items
+    const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
+      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>; // Allow dynamic keys
+
+      for (const key of FILTERED_MEDIA_ITEM_KEYS) {
+        filteredItem[key] = item[key as keyof MediaItem]; // Explicitly cast `key`
+      }
+
+      return filteredItem as FilteredMediaItemPicker; // Cast back to the correct type
+    });
+
+    previousMediaItems = newFilteredItems; // Update cache
+    return newFilteredItems;
+  }
+);

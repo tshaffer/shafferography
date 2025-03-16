@@ -10,6 +10,7 @@ export const REPLACE_MEDIA_ITEMS = 'REPLACE_MEDIA_ITEMS';
 export const ADD_MEDIA_ITEMS = 'ADD_MEDIA_ITEMS';
 export const DELETE_MEDIA_ITEMS = 'DELETE_MEDIA_ITEMS';
 export const CLEAR_MEDIA_ITEMS = 'CLEAR_MEDIA_ITEMS';
+export const UPDATE_MEDIA_ITEMS = 'UPDATE_MEDIA_ITEMS';
 
 export const ADD_KEYWORD_TO_MEDIA_ITEM_IDS = 'ADD_KEYWORD_TO_MEDIA_ITEM_IDS';
 export const REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS = 'REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS';
@@ -35,12 +36,9 @@ export const setPhotoStateRedux = (
 ): any => {
   return {
     type: SET_PHOTO_STATE,
-    payload: {
-      mediaItemIds,
-      photoState
-    }
+    payload: { mediaItemIds, photoState }
   };
-}
+};
 
 interface SetMediaItemsPayload {
   mediaItems: MediaItem[];
@@ -57,6 +55,12 @@ export const replaceMediaItemsRedux = (
   };
 };
 
+export const updateMediaItemsRedux = (mediaItems: MediaItem[]): any => {
+  return {
+    type: UPDATE_MEDIA_ITEMS, // A new action type
+    payload: { mediaItems }
+  };
+};
 
 export const addMediaItems = (
   mediaItems: MediaItem[],
@@ -184,6 +188,26 @@ export const mediaItemsStateReducer = (
   action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
+    case UPDATE_MEDIA_ITEMS: {
+      // Create a Set of updated item IDs
+      const updatedIds = new Set(action.payload.mediaItems.map(item => item.uniqueId));
+
+      // Only keep items that are either updated or newly added
+      const newMediaItems = action.payload.mediaItems.concat(
+        state.mediaItems.filter(item => !updatedIds.has(item.uniqueId))
+      );
+
+      // If the array hasn't changed, return the existing state to avoid unnecessary re-renders
+      if (newMediaItems.length === state.mediaItems.length &&
+        newMediaItems.every((item, index) => item === state.mediaItems[index])) {
+        return state;
+      }
+
+      return {
+        ...state,
+        mediaItems: newMediaItems
+      };
+    }
     case REPLACE_MEDIA_ITEMS: {
       return {
         ...state,
@@ -279,14 +303,31 @@ export const mediaItemsStateReducer = (
       };
     }
     case SET_PHOTO_STATE: {
-      const newState = cloneDeep(state) as MediaItemsState;
-      newState.mediaItems.forEach((mediaItem) => {
-        const matchingInputItem = action.payload.mediaItemIds.find((inputItemId) => inputItemId === mediaItem.uniqueId);
-        if (matchingInputItem) {
-          mediaItem.photoState = action.payload.photoState;
+      const { mediaItemIds, photoState } = action.payload;
+
+      // Convert state to a Map for fast lookups
+      const mediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
+
+      let hasChanges = false;
+
+      for (const mediaItemId of mediaItemIds) {
+        const mediaItem = mediaItemsMap.get(mediaItemId);
+
+        if (mediaItem && mediaItem.photoState !== photoState) {
+          mediaItemsMap.set(mediaItemId, { ...mediaItem, photoState }); // Only update changed items
+          hasChanges = true;
         }
-      });
-      return newState;
+      }
+
+      // Only return a new state if changes were made
+      if (!hasChanges) {
+        return state;
+      }
+
+      return {
+        ...state,
+        mediaItems: Array.from(mediaItemsMap.values()) // Convert Map back to array
+      };
     }
     default:
       return state;

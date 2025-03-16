@@ -1,21 +1,42 @@
-import React, { } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { connect } from 'react-redux';
 
 import '../styles/TedTagger.css';
 import LoupeViewController from './LoupeViewController';
 import SurveyView from './SurveyView';
-import { getAppInitialized, getMediaItems, getPhotoLayout } from '../selectors';
-import { PhotoLayout, MediaItem } from '../types';
-import GridView from './GridView';
+import { getAppInitialized, getFilteredMediaItems, getMediaItems, getPhotoLayout } from '../selectors';
+import { PhotoLayout, MediaItem, FilteredMediaItemPropertyName } from '../types';
 import GridViewContainer from './GridViewContainer';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
   photoLayout: PhotoLayout;
-  allMediaItems: MediaItem[];
+  allMediaItems: Pick<MediaItem, FilteredMediaItemPropertyName>[]; // Match filtered type
 }
 
-const PhotosContainer = (props: PhotosContainerProps) => {
+const PhotosContainer = React.memo((props: PhotosContainerProps) => {
+  const prevProps = useRef<PhotosContainerProps | null>(null);
+
+  useEffect(() => {
+    if (prevProps.current) {
+      const changedProps: Partial<PhotosContainerProps> = {};
+
+      if (prevProps.current.appInitialized !== props.appInitialized) {
+        changedProps.appInitialized = props.appInitialized;
+      }
+      if (prevProps.current.photoLayout !== props.photoLayout) {
+        changedProps.photoLayout = props.photoLayout;
+      }
+      if (prevProps.current.allMediaItems !== props.allMediaItems) {
+        changedProps.allMediaItems = props.allMediaItems;
+      }
+
+      // if (Object.keys(changedProps).length > 0) {
+      //   console.log("PhotosContainer: rerender due to changes in:", changedProps);
+      // }
+    }
+    prevProps.current = props;
+  }, [props]);
 
   if (!props.appInitialized) {
     return null;
@@ -25,48 +46,39 @@ const PhotosContainer = (props: PhotosContainerProps) => {
     return null;
   }
 
-
   const renderPhotoDisplay = (): JSX.Element => {
     if (props.photoLayout === PhotoLayout.Loupe) {
       return (
-        <React.Fragment>
-          <div id='centerColumn'>
-            <LoupeViewController />
-          </div>
-        </React.Fragment>
+        <div id='centerColumn'>
+          <LoupeViewController />
+        </div>
       );
     } else if (props.photoLayout === PhotoLayout.Survey) {
       return (
-        <React.Fragment>
-          <div id='centerColumn' className='centerColumnStyle'>
-            <SurveyView />
-          </div>
-        </React.Fragment>
+        <div id='centerColumn' className='centerColumnStyle'>
+          <SurveyView />
+        </div>
       );
     } else {
       return (
-        <React.Fragment>
-          <div id='centerColumn'>
-            <GridViewContainer />
-          </div>
-        </React.Fragment>
+        <div id='centerColumn'>
+          <GridViewContainer />
+        </div>
       );
     }
   };
 
-  const photoDisplay: JSX.Element = renderPhotoDisplay();
-
   return (
-    <div>
-      {photoDisplay}
+    <div key={JSON.stringify(props.allMediaItems)}>
+      {renderPhotoDisplay()}
     </div>
   );
-}
+});
 
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
-    allMediaItems: getMediaItems(state),
+    allMediaItems: getFilteredMediaItems(state),
     photoLayout: getPhotoLayout(state),
   };
 }

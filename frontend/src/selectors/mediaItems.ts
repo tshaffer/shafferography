@@ -2,6 +2,7 @@ import { createSelector } from 'reselect';
 
 import {
   FilteredMediaItemPicker,
+  // FilteredMediaItemPicker,
   MediaItem,
   TedTaggerState
 } from '../types';
@@ -77,6 +78,13 @@ const selectAllMediaItems = (state: any): MediaItem[] =>
 
 // Persistent cache for memoization
 let previousFilteredItems: FilteredMediaItemPicker[] = [];
+
+// type FilteredMediaItemPicker = Pick<MediaItem, "uniqueId" | "fileName">;
+// // const FILTERED_MEDIA_ITEM_KEYS = Object.keys({} as FilteredMediaItemPicker) as (keyof FilteredMediaItemPicker)[];
+// const FILTERED_MEDIA_ITEM_KEYS = ["uniqueId", "fileName"] as const;
+// // const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = ["uniqueId", "fileName"];
+// console.log('FILTERED_MEDIA_ITEM_KEYS', FILTERED_MEDIA_ITEM_KEYS);
+// type FilteredMediaItemKey = typeof FILTERED_MEDIA_ITEM_KEYS[number]; // "uniqueId" | "fileName"
 
 const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = ["uniqueId", "fileName"];
 

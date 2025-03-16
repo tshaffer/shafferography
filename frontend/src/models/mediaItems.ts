@@ -10,6 +10,7 @@ export const REPLACE_MEDIA_ITEMS = 'REPLACE_MEDIA_ITEMS';
 export const ADD_MEDIA_ITEMS = 'ADD_MEDIA_ITEMS';
 export const DELETE_MEDIA_ITEMS = 'DELETE_MEDIA_ITEMS';
 export const CLEAR_MEDIA_ITEMS = 'CLEAR_MEDIA_ITEMS';
+export const UPDATE_MEDIA_ITEMS = 'UPDATE_MEDIA_ITEMS';
 
 export const ADD_KEYWORD_TO_MEDIA_ITEM_IDS = 'ADD_KEYWORD_TO_MEDIA_ITEM_IDS';
 export const REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS = 'REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS';
@@ -57,6 +58,12 @@ export const replaceMediaItemsRedux = (
   };
 };
 
+export const updateMediaItemsRedux = (mediaItems: MediaItem[]): any => {
+  return {
+    type: UPDATE_MEDIA_ITEMS, // A new action type
+    payload: { mediaItems }
+  };
+};
 
 export const addMediaItems = (
   mediaItems: MediaItem[],
@@ -184,7 +191,17 @@ export const mediaItemsStateReducer = (
   action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
-    case REPLACE_MEDIA_ITEMS: {
+    case UPDATE_MEDIA_ITEMS: {
+      debugger;
+      const newMediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
+      for (const updatedItem of action.payload.mediaItems) {
+        newMediaItemsMap.set(updatedItem.uniqueId, updatedItem);
+      }
+      return {
+        ...state,
+        mediaItems: Array.from(newMediaItemsMap.values()) // Convert back to array
+      };
+    } case REPLACE_MEDIA_ITEMS: {
       return {
         ...state,
         mediaItems: action.payload.mediaItems

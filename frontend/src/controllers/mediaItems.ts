@@ -1,4 +1,5 @@
 import axios from 'axios';
+import isEqual from 'lodash/isEqual';
 
 import {
   TedTaggerAnyPromiseThunkAction,
@@ -6,9 +7,9 @@ import {
   addMediaItems,
   addKeywordToMediaItemIdsRedux,
   removeKeywordFromMediaItemIdsRedux,
-  replaceMediaItemsRedux,
   setPhotoStateRedux,
-  clearMediaItems
+  clearMediaItems,
+  updateMediaItemsRedux
 } from '../models';
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
@@ -19,6 +20,7 @@ import {
   getDisplayedPhotoSetIds,
   getDisplayedPhotoStates,
   getMatchRule,
+  getMediaItems,
   getSearchRules,
 } from '../selectors';
 
@@ -32,7 +34,7 @@ export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoState
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
-        dispatch(replaceMediaItems(mediaItemsResponse));
+        dispatch(replaceMediaItems(mediaItemsResponse.data));
       });
   }
 };
@@ -43,6 +45,15 @@ export const reloadMediaItemsByViewSpec = (): any => {
     const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     dispatch(clearMediaItems());
+    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates));
+  }
+};
+
+export const loadAndReplaceMediaItemsByViewSpec = (): any => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    const state: TedTaggerState = getState();
+    const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
+    const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates));
   }
 };
@@ -84,20 +95,32 @@ export const loadMediaItems = (): any => {
   };
 };
 
-const replaceMediaItems = (mediaItemsResponse: any): any => {
-  return (dispatch: TedTaggerDispatch) => {
-    const mediaItems: MediaItem[] = [];
-    const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
+const replaceMediaItems = (mediaItemEntitiesFromServer: ServerMediaItem[]): any => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    const state: TedTaggerState = getState();
+    const currentMediaItems: MediaItem[] = getMediaItems(state) || []; // Get current media items
+    const currentMediaItemsMap = new Map(currentMediaItems.map((mediaItem: MediaItem) => [mediaItem.uniqueId, mediaItem]));
 
-    // derive mediaItems from serverMediaItems
+    const mediaItems: MediaItem[] = [];
+
+    let hasChanges = false;
+
     for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
       const mediaItem: MediaItem = cloneDeep(mediaItemEntityFromServer) as MediaItem;
-      mediaItems.push(mediaItem as MediaItem);
+      
+      const existingItem = currentMediaItemsMap.get(mediaItem.uniqueId);
+
+      if (!existingItem || !isEqual(existingItem, mediaItem)) {
+        hasChanges = true;
+        mediaItems.push(mediaItem); // Add only changed or new items
+      }
     }
 
-    dispatch(replaceMediaItemsRedux(mediaItems));
+    if (hasChanges) {
+      dispatch(updateMediaItemsRedux(mediaItems)); // Dispatch only if there are changes
+    }
   };
-}
+};
 
 export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction => {
 
@@ -117,7 +140,7 @@ export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction =
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
-        dispatch(replaceMediaItems(mediaItemsResponse));
+        dispatch(replaceMediaItems(mediaItemsResponse.data));
       });
   };
 };
@@ -190,4 +213,4 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
       return Promise.reject();
     });
   };
-}
+};

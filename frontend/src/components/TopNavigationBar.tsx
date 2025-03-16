@@ -149,9 +149,9 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
   const handleSetPhotoState = (photoState: PhotoState) => {
     props.onSetPhotoState(props.selectedMediaItemIds, photoState)
-      .then(() => {
-        props.onReloadMediaItemsByViewSpec();
-      });
+      // .then(() => {
+      //   props.onReloadMediaItemsByViewSpec();
+      // });
   }
 
   const handleDeletePhotos = () => {

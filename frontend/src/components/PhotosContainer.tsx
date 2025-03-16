@@ -22,7 +22,7 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
   useEffect(() => {
     if (prevProps.current) {
       const changedProps: Partial<PhotosContainerProps> = {};
-      
+  
       if (prevProps.current.appInitialized !== props.appInitialized) {
         changedProps.appInitialized = props.appInitialized;
       }
@@ -30,16 +30,22 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
         changedProps.photoLayout = props.photoLayout;
       }
       if (prevProps.current.allMediaItems !== props.allMediaItems) {
+        console.log("Previous allMediaItems:", prevProps.current.allMediaItems);
+        console.log("New allMediaItems:", props.allMediaItems);
+        console.log(
+          "Shallow comparison:",
+          prevProps.current.allMediaItems === props.allMediaItems
+        );
         changedProps.allMediaItems = props.allMediaItems;
       }
-      
+  
       if (Object.keys(changedProps).length > 0) {
-        console.log('PhotosContainer: rerender due to changes in:', changedProps);
+        console.log("PhotosContainer: rerender due to changes in:", changedProps);
       }
     }
     prevProps.current = props;
   }, [props]);
-
+  
   if (!props.appInitialized) {
     return null;
   }

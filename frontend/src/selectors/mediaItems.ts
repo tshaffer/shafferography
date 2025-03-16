@@ -113,7 +113,7 @@ getFilteredMediaItems.lastResult = [] as Pick<
 //       uniqueId,
 //       fileName,
 //     }));
-    
+
 //     if (
 //       lastResult.length === newFilteredItems.length &&
 //       lastResult.every((item, index) =>
@@ -132,20 +132,103 @@ getFilteredMediaItems.lastResult = [] as Pick<
 
 
 // Select raw media items from the state
+// const selectAllMediaItems = (state: any): MediaItem[] =>
+//   state.mediaItemsState.mediaItems || [];
+
+// // Memoized selector that only recalculates if uniqueId or fileName changes
+// export const getFilteredMediaItems = createSelector(
+//   [selectAllMediaItems],
+//   (mediaItems: MediaItem[]): Pick<MediaItem, "uniqueId" | "fileName">[] => {
+//     const newFilteredItems = mediaItems.map(({ uniqueId, fileName }) => ({
+//       uniqueId,
+//       fileName,
+//     }));
+
+//     console.log("getFilteredMediaItems recomputed:", newFilteredItems);
+
+//     return newFilteredItems;
+//   }
+// );
+
+// Select raw media items from the state
+// const selectAllMediaItems = (state: any): MediaItem[] =>
+//   state.mediaItemsState.mediaItems || [];
+
+// // Memoized selector that only recomputes if uniqueId or fileName changes
+// export const getFilteredMediaItems = createSelector(
+//   [selectAllMediaItems],
+//   (mediaItems: MediaItem[]): Pick<MediaItem, "uniqueId" | "fileName">[] => {
+//     // Static cache to prevent unnecessary re-renders
+//     debugger;
+//     let previousFilteredItems: Pick<MediaItem, "uniqueId" | "fileName">[] = [];
+
+//     // If length is the same, check if items have actually changed
+//     if (
+//       previousFilteredItems.length === mediaItems.length &&
+//       previousFilteredItems.every(
+//         (item, index) =>
+//           item.uniqueId === mediaItems[index].uniqueId &&
+//           item.fileName === mediaItems[index].fileName
+//       )
+//     ) {
+//       return previousFilteredItems; // Return previous reference if unchanged
+//     }
+
+//     // Otherwise, recompute the filtered items
+//     const newFilteredItems = mediaItems.map(({ uniqueId, fileName }) => ({
+//       uniqueId,
+//       fileName,
+//     }));
+
+//     console.log("getFilteredMediaItems recomputed");
+
+//     previousFilteredItems = newFilteredItems; // Update cache
+//     return newFilteredItems;
+//   }
+// );
+
+// Select raw media items from the state
 const selectAllMediaItems = (state: any): MediaItem[] =>
   state.mediaItemsState.mediaItems || [];
 
-// Memoized selector that only recalculates if uniqueId or fileName changes
+// Persistent cache for memoization
+let previousFilteredItems: Pick<MediaItem, "uniqueId" | "fileName">[] = [];
+
+// Memoized selector that only recomputes if uniqueId or fileName changes
 export const getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): Pick<MediaItem, "uniqueId" | "fileName">[] => {
+    // If length is the same, check if items have actually changed
+    if (
+      previousFilteredItems.length === mediaItems.length &&
+      previousFilteredItems.every(
+        (item, index) => {
+          // console.log("item:", item);
+          // console.log("mediaItems[index]:", mediaItems[index]);
+          if (item.uniqueId !== mediaItems[index].uniqueId ||
+            item.fileName !== mediaItems[index].fileName) {
+            debugger;
+          }
+
+          return (
+            item.uniqueId === mediaItems[index].uniqueId &&
+            item.fileName === mediaItems[index].fileName
+          );
+        }
+      )
+    ) {
+      return previousFilteredItems; // Return previous reference if unchanged
+    }
+
+    // Otherwise, recompute the filtered items
     const newFilteredItems = mediaItems.map(({ uniqueId, fileName }) => ({
       uniqueId,
       fileName,
     }));
 
-    console.log("getFilteredMediaItems recomputed:", newFilteredItems);
-    
+    console.log("getFilteredMediaItems recomputed");
+
+    previousFilteredItems = newFilteredItems; // Update cache
     return newFilteredItems;
   }
 );

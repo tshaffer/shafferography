@@ -75,6 +75,8 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
     }
   };
 
+  console.log("re-render PhotosContainer: allMediaItems:", props.allMediaItems);
+
   return (
     <div key={JSON.stringify(props.allMediaItems)}>
       {renderPhotoDisplay()}
@@ -86,7 +88,7 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
 function mapStateToProps(state: any) {
   const filteredMediaItems = getFilteredMediaItems(state);
   
-  console.log("mapStateToProps - allMediaItems:", filteredMediaItems);
+  // console.log("mapStateToProps - allMediaItems:", filteredMediaItems);
 
   return {
     appInitialized: getAppInitialized(state),

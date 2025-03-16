@@ -89,6 +89,8 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   const getItemSize = (index: number) => rowHeights[index];
 
+  console.log('GridView rerender');
+  
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>
       <List

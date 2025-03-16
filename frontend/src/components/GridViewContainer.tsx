@@ -5,6 +5,8 @@ import TooltipOverlay from './TooltipOverlay';
 const GridViewContainer = () => {
   const [tooltip, setTooltip] = React.useState<{ text: string; position: { top: number; left: number } } | null>(null);
 
+  console.log('GridViewContainer rendering');
+  
   return (
     <div style={{ position: 'relative' }}>
       <GridView setTooltip={setTooltip} />

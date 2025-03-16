@@ -116,6 +116,8 @@ export interface PhotoStateOption {
 
 export type FilteredMediaItemPicker = Pick<MediaItem, "uniqueId" | "fileName">;
 
+export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = ["uniqueId", "fileName"];
+
 export interface FilteredMediaItem {
   uniqueId: string;
   fileName: string;

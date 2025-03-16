@@ -14,9 +14,8 @@ export interface PhotosContainerProps {
   allMediaItems: Pick<MediaItem, 'uniqueId' | 'fileName'>[]; // Match filtered type
 }
 
-// const PhotosContainer = React.memo((props: PhotosContainerProps) => {
-  const PhotosContainer = (props: PhotosContainerProps) => {
-
+  // const PhotosContainer = (props: PhotosContainerProps) => {
+const PhotosContainer = React.memo((props: PhotosContainerProps) => {
   const prevProps = useRef<PhotosContainerProps | null>(null);
 
   useEffect(() => {
@@ -81,8 +80,8 @@ export interface PhotosContainerProps {
       {renderPhotoDisplay()}
     </div>
   );
-// });
-};
+});
+// };
 
 function mapStateToProps(state: any) {
   const filteredMediaItems = getFilteredMediaItems(state);

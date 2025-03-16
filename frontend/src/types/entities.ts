@@ -114,3 +114,9 @@ export interface PhotoStateOption {
   label: string;
 }
 
+export type FilteredMediaItemPicker = Pick<MediaItem, "uniqueId" | "fileName">;
+
+export interface FilteredMediaItem {
+  uniqueId: string;
+  fileName: string;
+}

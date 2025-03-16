@@ -88,6 +88,8 @@ let previousFilteredItems: FilteredMediaItemPicker[] = [];
 
 const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = ["uniqueId", "fileName"];
 
+// const FILTERED_MEDIA_ITEM_KEYS = ["uniqueId", "fileName"] as const;
+
 export const getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
@@ -114,7 +116,7 @@ export const getFilteredMediaItems = createSelector(
     
       return filteredItem as FilteredMediaItemPicker;
     });
-            
+
     console.log("getFilteredMediaItems recomputed");
     console.log(newFilteredItems);
 

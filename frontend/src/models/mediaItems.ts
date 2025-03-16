@@ -36,12 +36,9 @@ export const setPhotoStateRedux = (
 ): any => {
   return {
     type: SET_PHOTO_STATE,
-    payload: {
-      mediaItemIds,
-      photoState
-    }
+    payload: { mediaItemIds, photoState }
   };
-}
+};
 
 interface SetMediaItemsPayload {
   mediaItems: MediaItem[];
@@ -192,7 +189,6 @@ export const mediaItemsStateReducer = (
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
-      debugger;
       const newMediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
       for (const updatedItem of action.payload.mediaItems) {
         newMediaItemsMap.set(updatedItem.uniqueId, updatedItem);
@@ -296,14 +292,31 @@ export const mediaItemsStateReducer = (
       };
     }
     case SET_PHOTO_STATE: {
-      const newState = cloneDeep(state) as MediaItemsState;
-      newState.mediaItems.forEach((mediaItem) => {
-        const matchingInputItem = action.payload.mediaItemIds.find((inputItemId) => inputItemId === mediaItem.uniqueId);
-        if (matchingInputItem) {
-          mediaItem.photoState = action.payload.photoState;
+      const { mediaItemIds, photoState } = action.payload;
+
+      // Convert state to a Map for fast lookups
+      const mediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
+
+      let hasChanges = false;
+
+      for (const mediaItemId of mediaItemIds) {
+        const mediaItem = mediaItemsMap.get(mediaItemId);
+
+        if (mediaItem && mediaItem.photoState !== photoState) {
+          mediaItemsMap.set(mediaItemId, { ...mediaItem, photoState }); // Only update changed items
+          hasChanges = true;
         }
-      });
-      return newState;
+      }
+
+      // Only return a new state if changes were made
+      if (!hasChanges) {
+        return state;
+      }
+
+      return {
+        ...state,
+        mediaItems: Array.from(mediaItemsMap.values()) // Convert Map back to array
+      };
     }
     default:
       return state;

@@ -11,8 +11,8 @@ import GridRow from './GridRow';
 
 export interface GridViewProps {
   appInitialized: boolean;
-  allMediaItems: Pick<MediaItem, 'uniqueId' | 'fileName'>[]; // Match filtered type
   numGridColumns: number;
+  allMediaItems: FilteredMediaItemPicker[];
 }
 
 const GridView = ({ setTooltip, ...props }: GridViewProps & {
@@ -110,15 +110,13 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 };
 
 function mapStateToProps(state: any, ownProps: any) {
-  const allMediaItems: MediaItem[] = getMediaItems(state);
   const filteredMediaItems: FilteredMediaItemPicker[] = getFilteredMediaItems(state);
   console.log('filteredMediaItems', filteredMediaItems);
   
-  debugger;
   return {
     appInitialized: getAppInitialized(state),
-    allMediaItems: allMediaItems, // Use optimized selector
     numGridColumns: getNumGridColumns(state),
+    allMediaItems: filteredMediaItems,
   };
 }
 

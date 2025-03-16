@@ -114,14 +114,9 @@ export interface PhotoStateOption {
   label: string;
 }
 
-export type FilteredMediaItemPickerPropertyName = "uniqueId" | "fileName";
-export const FilteredMediaItemPickerPropertyNamesArray: FilteredMediaItemPickerPropertyName[] = ["uniqueId", "fileName"];
+export type FilteredMediaItemPickerPropertyName = "googleMediaItemId" | "fileName" | "albumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPickerPropertyNamesArray: FilteredMediaItemPickerPropertyName[] = ["googleMediaItemId", "fileName", "albumId", "filePath", "productUrl", "baseUrl", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPickerPropertyName>;
 
 export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = FilteredMediaItemPickerPropertyNamesArray;
-
-export interface FilteredMediaItem {
-  uniqueId: string;
-  fileName: string;
-}

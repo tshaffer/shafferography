@@ -30,7 +30,6 @@ export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };
 
-
 const selectAllMediaItems = (state: any): MediaItem[] =>
   state.mediaItemsState.mediaItems || [];
 
@@ -54,15 +53,15 @@ export const getFilteredMediaItems = createSelector(
 
     // Otherwise, recompute the filtered items
     const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
-      const filteredItem: Partial<FilteredMediaItemPicker> = {};
+      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>; // Allow dynamic keys
     
       for (const key of FILTERED_MEDIA_ITEM_KEYS) {
-        filteredItem[key] = item[key]; // Copy only selected properties
+        filteredItem[key] = item[key as keyof MediaItem]; // Explicitly cast `key`
       }
     
-      return filteredItem as FilteredMediaItemPicker;
+      return filteredItem as FilteredMediaItemPicker; // Cast back to the correct type
     });
-
+        
     console.log("getFilteredMediaItems recomputed");
     console.log(newFilteredItems);
 

@@ -5,13 +5,13 @@ import '../styles/TedTagger.css';
 import LoupeViewController from './LoupeViewController';
 import SurveyView from './SurveyView';
 import { getAppInitialized, getFilteredMediaItems, getMediaItems, getPhotoLayout } from '../selectors';
-import { PhotoLayout, MediaItem } from '../types';
+import { PhotoLayout, MediaItem, FilteredMediaItemPickerPropertyName } from '../types';
 import GridViewContainer from './GridViewContainer';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
   photoLayout: PhotoLayout;
-  allMediaItems: Pick<MediaItem, 'uniqueId' | 'fileName'>[]; // Match filtered type
+  allMediaItems: Pick<MediaItem, FilteredMediaItemPickerPropertyName>[]; // Match filtered type
 }
 
   // const PhotosContainer = (props: PhotosContainerProps) => {

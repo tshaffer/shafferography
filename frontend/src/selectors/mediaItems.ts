@@ -100,10 +100,40 @@ getFilteredMediaItems.lastResult = [] as Pick<
 */
 
 // Select raw media items from the state
+// const selectAllMediaItems = (state: any): MediaItem[] =>
+//   state.mediaItemsState.mediaItems || [];
+
+// const lastResult: Pick<MediaItem, "uniqueId" | "fileName">[] = [];
+
+// // Memoized selector that only recalculates if uniqueId or fileName changes
+// export const xgetFilteredMediaItems = createSelector(
+//   [selectAllMediaItems],
+//   (mediaItems: MediaItem[]): Pick<MediaItem, "uniqueId" | "fileName">[] => {
+//     const newFilteredItems = mediaItems.map(({ uniqueId, fileName }) => ({
+//       uniqueId,
+//       fileName,
+//     }));
+    
+//     if (
+//       lastResult.length === newFilteredItems.length &&
+//       lastResult.every((item, index) =>
+//         item.uniqueId === newFilteredItems[index].uniqueId &&
+//         item.fileName === newFilteredItems[index].fileName
+//       )
+//     ) {
+//       return lastResult; // Return previous array reference to prevent re-renders
+//     }
+
+//     lastResult.length = 0; // Clear old array
+//     lastResult.push(...newFilteredItems); // Update array reference
+//     return lastResult;
+//   }
+// );
+
+
+// Select raw media items from the state
 const selectAllMediaItems = (state: any): MediaItem[] =>
   state.mediaItemsState.mediaItems || [];
-
-const lastResult: Pick<MediaItem, "uniqueId" | "fileName">[] = [];
 
 // Memoized selector that only recalculates if uniqueId or fileName changes
 export const getFilteredMediaItems = createSelector(
@@ -114,18 +144,8 @@ export const getFilteredMediaItems = createSelector(
       fileName,
     }));
 
-    if (
-      lastResult.length === newFilteredItems.length &&
-      lastResult.every((item, index) =>
-        item.uniqueId === newFilteredItems[index].uniqueId &&
-        item.fileName === newFilteredItems[index].fileName
-      )
-    ) {
-      return lastResult; // Return previous array reference to prevent re-renders
-    }
-
-    lastResult.length = 0; // Clear old array
-    lastResult.push(...newFilteredItems); // Update array reference
-    return lastResult;
+    console.log("getFilteredMediaItems recomputed:", newFilteredItems);
+    
+    return newFilteredItems;
   }
 );

@@ -14,9 +14,9 @@ export interface PhotosContainerProps {
   allMediaItems: Pick<MediaItem, 'uniqueId' | 'fileName'>[]; // Match filtered type
 }
 
-const PhotosContainer = React.memo((props: PhotosContainerProps) => {
+// const PhotosContainer = React.memo((props: PhotosContainerProps) => {
+  const PhotosContainer = (props: PhotosContainerProps) => {
 
-// const PhotosContainer = (props: PhotosContainerProps) => {
   const prevProps = useRef<PhotosContainerProps | null>(null);
 
   useEffect(() => {
@@ -77,16 +77,21 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
   };
 
   return (
-    <div>
+    <div key={JSON.stringify(props.allMediaItems)}>
       {renderPhotoDisplay()}
     </div>
   );
-});
+// });
+};
 
 function mapStateToProps(state: any) {
+  const filteredMediaItems = getFilteredMediaItems(state);
+  
+  console.log("mapStateToProps - allMediaItems:", filteredMediaItems);
+
   return {
     appInitialized: getAppInitialized(state),
-    allMediaItems: getFilteredMediaItems(state), // Use optimized selector
+    allMediaItems: filteredMediaItems, // Use optimized selector
     photoLayout: getPhotoLayout(state),
   };
 }

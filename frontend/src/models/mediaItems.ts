@@ -193,15 +193,25 @@ export const mediaItemsStateReducer = (
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
-      const newMediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
-      for (const updatedItem of action.payload.mediaItems) {
-        newMediaItemsMap.set(updatedItem.uniqueId, updatedItem);
+      // Create a Set of updated item IDs
+      const updatedIds = new Set(action.payload.mediaItems.map(item => item.uniqueId));
+
+      // Only keep items that are either updated or newly added
+      const newMediaItems = action.payload.mediaItems.concat(
+        state.mediaItems.filter(item => !updatedIds.has(item.uniqueId))
+      );
+
+      // If the array hasn't changed, return the existing state to avoid unnecessary re-renders
+      if (newMediaItems.length === state.mediaItems.length &&
+        newMediaItems.every((item, index) => item === state.mediaItems[index])) {
+        return state;
       }
+
       return {
         ...state,
-        mediaItems: Array.from(newMediaItemsMap.values()) // Convert back to array
+        mediaItems: newMediaItems
       };
-    } 
+    }
     case REPLACE_MEDIA_ITEMS: {
       return {
         ...state,

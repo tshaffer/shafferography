@@ -183,6 +183,10 @@ const initialState: MediaItemsState =
   loupeViewMediaItemIds: [],
 };
 
+//       console.log('new mediaItems:', Array.from(newMediaItemsMap.values()));
+// console.log('mediaItemsStateReducer: UPDATE_MEDIA_ITEMS');
+// console.log('payload', action.payload.mediaItems);
+
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
   action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
@@ -197,7 +201,8 @@ export const mediaItemsStateReducer = (
         ...state,
         mediaItems: Array.from(newMediaItemsMap.values()) // Convert back to array
       };
-    } case REPLACE_MEDIA_ITEMS: {
+    } 
+    case REPLACE_MEDIA_ITEMS: {
       return {
         ...state,
         mediaItems: action.payload.mediaItems

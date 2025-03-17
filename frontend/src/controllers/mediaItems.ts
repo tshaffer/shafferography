@@ -97,26 +97,43 @@ export const loadMediaItems = (): any => {
 
 const replaceMediaItems = (mediaItemEntitiesFromServer: ServerMediaItem[]): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
+
     const state: TedTaggerState = getState();
     const currentMediaItems: MediaItem[] = getMediaItems(state) || []; // Get current media items
     const currentMediaItemsMap = new Map(currentMediaItems.map((mediaItem: MediaItem) => [mediaItem.uniqueId, mediaItem]));
 
-    const mediaItems: MediaItem[] = [];
 
-    let hasChanges = false;
-
-    for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-      const mediaItem: MediaItem = cloneDeep(mediaItemEntityFromServer) as MediaItem;
-      
-      const existingItem = currentMediaItemsMap.get(mediaItem.uniqueId);
-
-      if (!existingItem || !isEqual(existingItem, mediaItem)) {
-        hasChanges = true;
-        mediaItems.push(mediaItem); // Add only changed or new items
-      }
+    if (currentMediaItems && currentMediaItems.length > 0 && mediaItemEntitiesFromServer && mediaItemEntitiesFromServer.length > 0) {
+      console.log('currentMediaItems[0].photoState', currentMediaItems[0].photoState);
+      console.log('mediaItemEntitiesFromServer[0].photoState', mediaItemEntitiesFromServer[0].photoState);
     }
 
-    if (hasChanges) {
+    console.log('currentMediaItems.length', currentMediaItems.length);
+    console.log('mediaItemEntitiesFromServer.length', mediaItemEntitiesFromServer.length);
+
+    const mediaItems: MediaItem[] = [];
+    let mediaItemChanges = false;
+
+    if (currentMediaItems.length === mediaItemEntitiesFromServer.length) {
+      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
+        const mediaItem: MediaItem = cloneDeep(mediaItemEntityFromServer) as MediaItem;
+
+        const existingItem = currentMediaItemsMap.get(mediaItem.uniqueId);
+
+        if (!existingItem || !isEqual(existingItem, mediaItem)) {
+          mediaItemChanges = true;
+          mediaItems.push(mediaItem); // Add only changed or new items
+        }
+      }
+
+      if (mediaItemChanges) {
+        dispatch(updateMediaItemsRedux(mediaItems)); // Dispatch only if there are changes
+      }
+    }
+    else {
+      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
+        mediaItems.push(cloneDeep(mediaItemEntityFromServer) as MediaItem); // Add only changed or new items
+      }
       dispatch(updateMediaItemsRedux(mediaItems)); // Dispatch only if there are changes
     }
   };
@@ -201,6 +218,7 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
 
     const setPhotoStateBody = { mediaItemIds, photoState };
 
+    console.log('setPhotoState invoked axios.post');
     return axios.post(
       path,
       setPhotoStateBody

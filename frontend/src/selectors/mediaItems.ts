@@ -30,13 +30,16 @@ export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };
 
-const selectAllMediaItems = (state: any): MediaItem[] =>
-  state.mediaItemsState.mediaItems || [];
+// const selectAllMediaItems = (state: any): MediaItem[] =>
+//   state.mediaItemsState.mediaItems || [];
+
+const selectAllMediaItems = (state: TedTaggerState): MediaItem[] =>
+  [...state.mediaItemsState.mediaItems]; // Ensures a new array reference
 
 // Persistent cache for memoization
 let previousMediaItems: FilteredMediaItemPicker[] = [];
 
-const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
+const old_mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
   if (
     previousMediaItems.every((mediaItem, index) =>
       FILTERED_MEDIA_ITEM_KEYS.every(
@@ -52,7 +55,7 @@ const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], medi
   }
 }
 
-export const getFilteredMediaItems = createSelector(
+export const old_getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
 
@@ -69,17 +72,81 @@ export const getFilteredMediaItems = createSelector(
     // Otherwise, recompute the filtered items
     const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
       const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>; // Allow dynamic keys
-    
+
       for (const key of FILTERED_MEDIA_ITEM_KEYS) {
         filteredItem[key] = item[key as keyof MediaItem]; // Explicitly cast `key`
       }
-    
+
       return filteredItem as FilteredMediaItemPicker; // Cast back to the correct type
     });
-        
+
     console.log("getFilteredMediaItems recomputed");
     console.log(newFilteredItems);
 
+    previousMediaItems = newFilteredItems; // Update cache
+    return newFilteredItems;
+  }
+);
+
+
+const not_as_old_mediaItemUnchanged = (previousMediaItem: FilteredMediaItemPicker, mediaItem: MediaItem): boolean => {
+  return FILTERED_MEDIA_ITEM_KEYS.every(
+    (mediaItemProperty) => previousMediaItem[mediaItemProperty] === mediaItem[mediaItemProperty as keyof MediaItem]
+  );
+}
+
+const visibilityOfMediaItemChanged = (previousMediaItem: FilteredMediaItemPicker, mediaItem: MediaItem): boolean => {
+  if (previousMediaItem['photoState'] === mediaItem['photoState']) {
+    return false;
+  };
+  return true;
+}
+
+const mediaItemUnchanged = (previousMediaItem: FilteredMediaItemPicker, mediaItem: MediaItem): boolean => {
+  return previousMediaItem['photoState'] === mediaItem['photoState'];
+}
+
+const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
+  if (
+    previousMediaItems.every((mediaItem, index) =>
+      mediaItemUnchanged(mediaItem, mediaItems[index])
+    )
+  ) {
+    // console.log("getFilteredMediaItems unchanged");
+    return true; // Return previous reference if unchanged
+  } else {
+    // console.log("getFilteredMediaItems changed");
+    return false;
+  }
+}
+
+export const getFilteredMediaItems = createSelector(
+  [selectAllMediaItems],
+  (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
+
+    console.log("getFilteredMediaItems called");
+
+    // If length is the same, no other property changes effect visibility
+    if (previousMediaItems.length === mediaItems.length) {
+      // console.log('length is the same');
+      return previousMediaItems; // Return previous reference if unchanged
+    }
+
+    // Otherwise, recompute the filtered items
+    const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
+      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>; // Allow dynamic keys
+
+      for (const key of FILTERED_MEDIA_ITEM_KEYS) {
+        filteredItem[key] = item[key as keyof MediaItem]; // Explicitly cast `key`
+      }
+
+      return filteredItem as FilteredMediaItemPicker; // Cast back to the correct type
+    });
+
+    // console.log("getFilteredMediaItems recomputed");
+    // console.log(newFilteredItems);
+
+    console.log('previousMediaItems updated');
     previousMediaItems = newFilteredItems; // Update cache
     return newFilteredItems;
   }

@@ -108,9 +108,10 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 };
 
 function mapStateToProps(state: any, ownProps: any) {
+  console.log("GridView.tsx#mapStateToProps - numMediaItems:", state.mediaItemsState.mediaItems.length);
   const filteredMediaItems: FilteredMediaItemPicker[] = getFilteredMediaItems(state);
-  console.log('filteredMediaItems', filteredMediaItems);
-  
+  // console.log('filteredMediaItems', filteredMediaItems);
+
   return {
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),

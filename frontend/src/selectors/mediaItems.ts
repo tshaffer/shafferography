@@ -3,7 +3,6 @@ import { createSelector } from 'reselect';
 import {
   FILTERED_MEDIA_ITEM_KEYS,
   FilteredMediaItemPicker,
-  FilteredMediaItemPickerPropertyNamesArray,
   MediaItem,
   TedTaggerState
 } from '../types';
@@ -40,7 +39,7 @@ let previousMediaItems: FilteredMediaItemPicker[] = [];
 const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
   if (
     previousMediaItems.every((mediaItem, index) =>
-      FilteredMediaItemPickerPropertyNamesArray.every(
+      FILTERED_MEDIA_ITEM_KEYS.every(
         (mediaItemProperty) => mediaItem[mediaItemProperty] === mediaItems[index][mediaItemProperty as keyof MediaItem]
       )
     )

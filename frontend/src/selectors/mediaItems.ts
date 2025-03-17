@@ -38,11 +38,7 @@ const selectAllMediaItems = (state: any): MediaItem[] =>
 let previousMediaItems: FilteredMediaItemPicker[] = [];
 
 const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
-  if (previousMediaItems.length !== mediaItems.length) {
-    return false;
-  }
   if (
-    previousMediaItems.length === mediaItems.length &&
     previousMediaItems.every((mediaItem, index) =>
       FilteredMediaItemPickerPropertyNamesArray.every(
         (mediaItemProperty) => mediaItem[mediaItemProperty] === mediaItems[index][mediaItemProperty as keyof MediaItem]
@@ -68,7 +64,6 @@ export const getFilteredMediaItems = createSelector(
       previousMediaItems.length === mediaItems.length &&
       mediaItemsUnchanged(previousMediaItems, mediaItems)
     ) {
-      console.log("getFilteredMediaItems unchanged");
       return previousMediaItems; // Return previous reference if unchanged
     }
 

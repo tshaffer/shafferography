@@ -103,8 +103,6 @@ const GridRow = (props: GridRowProps) => {
   const gridCells = getGridCells();
   const metadataHeight: number = displayMetadata ? 60 : 0;
   const heightAttribute = `${props.rowHeight + metadataHeight + bordersSize}px`;
-
-  // console.log('GridRow rendering');
   
   return (
     <div style={{ height: heightAttribute, backgroundColor: 'white' }}>

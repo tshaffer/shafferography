@@ -74,8 +74,6 @@ const GridCell = (props: GridCellProps) => {
     }
   };
 
-  // console.log('GridCell rendering');
-
   return (
     <div
       style={{

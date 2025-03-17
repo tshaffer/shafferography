@@ -29,12 +29,6 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
         changedProps.photoLayout = props.photoLayout;
       }
       if (prevProps.current.allMediaItems !== props.allMediaItems) {
-        // console.log("Previous allMediaItems:", prevProps.current.allMediaItems);
-        // console.log("New allMediaItems:", props.allMediaItems);
-        // console.log(
-        //   "Shallow comparison:",
-        //   prevProps.current.allMediaItems === props.allMediaItems
-        // );
         changedProps.allMediaItems = props.allMediaItems;
       }
   
@@ -75,8 +69,6 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
     }
   };
 
-  // console.log("re-render PhotosContainer: allMediaItems:", props.allMediaItems);
-
   return (
     <div key={JSON.stringify(props.allMediaItems)}>
       {renderPhotoDisplay()}
@@ -85,15 +77,10 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
 });
 // };
 
-function mapStateToProps(state: any) {
-  console.log("PhotosContainer.tsx#mapStateToProps - numMediaItems:", state.mediaItemsState.mediaItems.length);
-  const filteredMediaItems = getFilteredMediaItems(state);
-  
-  // console.log("mapStateToProps - allMediaItems:", filteredMediaItems);
-
+function mapStateToProps(state: any) { 
   return {
     appInitialized: getAppInitialized(state),
-    allMediaItems: filteredMediaItems, // Use optimized selector
+    allMediaItems: getFilteredMediaItems(state),
     photoLayout: getPhotoLayout(state),
   };
 }

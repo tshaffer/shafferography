@@ -90,8 +90,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   const getItemSize = (index: number) => rowHeights[index];
 
-  // console.log('GridView rerender');
-
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>
       <List
@@ -107,15 +105,11 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   );
 };
 
-function mapStateToProps(state: any, ownProps: any) {
-  console.log("GridView.tsx#mapStateToProps - numMediaItems:", state.mediaItemsState.mediaItems.length);
-  const filteredMediaItems: FilteredMediaItemPicker[] = getFilteredMediaItems(state);
-  // console.log('filteredMediaItems', filteredMediaItems);
-
+function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),
-    allMediaItems: filteredMediaItems,
+    allMediaItems: getFilteredMediaItems(state),
   };
 }
 

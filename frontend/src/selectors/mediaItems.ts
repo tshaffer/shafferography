@@ -3,6 +3,7 @@ import { createSelector } from 'reselect';
 import {
   FILTERED_MEDIA_ITEM_KEYS,
   FilteredMediaItemPicker,
+  FilteredMediaItemPickerPropertyNamesArray,
   MediaItem,
   TedTaggerState
 } from '../types';
@@ -34,21 +35,41 @@ const selectAllMediaItems = (state: any): MediaItem[] =>
   state.mediaItemsState.mediaItems || [];
 
 // Persistent cache for memoization
-let previousFilteredItems: FilteredMediaItemPicker[] = [];
+let previousMediaItems: FilteredMediaItemPicker[] = [];
+
+const mediaItemsUnchanged = (previousMediaItems: FilteredMediaItemPicker[], mediaItems: MediaItem[]): boolean => {
+  if (previousMediaItems.length !== mediaItems.length) {
+    return false;
+  }
+  if (
+    previousMediaItems.length === mediaItems.length &&
+    previousMediaItems.every((mediaItem, index) =>
+      FilteredMediaItemPickerPropertyNamesArray.every(
+        (mediaItemProperty) => mediaItem[mediaItemProperty] === mediaItems[index][mediaItemProperty as keyof MediaItem]
+      )
+    )
+  ) {
+    console.log("getFilteredMediaItems unchanged");
+    return true; // Return previous reference if unchanged
+  } else {
+    console.log("getFilteredMediaItems changed");
+    return false;
+  }
+}
 
 export const getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
+
+    console.log("getFilteredMediaItems called");
+
     // If length is the same, check if items have actually changed
     if (
-      previousFilteredItems.length === mediaItems.length &&
-      previousFilteredItems.every((item, index) =>
-        (Object.keys({} as FilteredMediaItemPicker) as (keyof FilteredMediaItemPicker)[]).every(
-          (key) => item[key] === mediaItems[index][key as keyof MediaItem]
-        )
-      )
+      previousMediaItems.length === mediaItems.length &&
+      mediaItemsUnchanged(previousMediaItems, mediaItems)
     ) {
-      return previousFilteredItems; // Return previous reference if unchanged
+      console.log("getFilteredMediaItems unchanged");
+      return previousMediaItems; // Return previous reference if unchanged
     }
 
     // Otherwise, recompute the filtered items
@@ -65,7 +86,7 @@ export const getFilteredMediaItems = createSelector(
     console.log("getFilteredMediaItems recomputed");
     console.log(newFilteredItems);
 
-    previousFilteredItems = newFilteredItems; // Update cache
+    previousMediaItems = newFilteredItems; // Update cache
     return newFilteredItems;
   }
 );

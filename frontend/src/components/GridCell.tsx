@@ -74,16 +74,7 @@ const GridCell = (props: GridCellProps) => {
     }
   };
 
-  // if (photoUrl === '/images/9/d/75056a4e-af65-4279-bccf-eb83b341209d.jpg') {
-  //   photoUrl = 'http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg';
-  // } else if (photoUrl === '/images/1/5/e785172d-a495-43d5-9b16-7b25f40e4315.jpg') {
-  //   photoUrl = 'http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img484.jpg';
-  // } else{
-  //   debugger
-  // }
-  // console.log('GridCell: ', photoUrl);
-
-  console.log('GridCell rendering');
+  // console.log('GridCell rendering');
 
   return (
     <div

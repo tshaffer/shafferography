@@ -19,8 +19,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
 }) => {
 
-  // console.log('GridView rerender');
-
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
   const listRef = React.useRef<List>(null);
@@ -92,7 +90,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   const getItemSize = (index: number) => rowHeights[index];
 
-  console.log('GridView rerender');
+  // console.log('GridView rerender');
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>

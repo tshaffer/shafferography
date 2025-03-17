@@ -20,13 +20,26 @@ import {
   getDisplayedPhotoSetIds,
   getDisplayedPhotoStates,
   getMatchRule,
+  getMediaItemIds,
   getMediaItems,
   getSearchRules,
+  getSelectedMediaItemIds,
 } from '../selectors';
+import { deselectMediaItems } from './selectMediaItem';
 
+
+const deselectHiddenMediaItems = (): any => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    const updatedState = getState();
+    const selectedMediaItemIds: string[] = getSelectedMediaItemIds(updatedState);
+    const mediaItemIds: string[] = getMediaItemIds(updatedState);
+    const selectedHiddenMediaItemsIds = selectedMediaItemIds.filter(id => !new Set(mediaItemIds).has(id));
+    dispatch(deselectMediaItems(selectedHiddenMediaItemsIds));
+  };
+}
 
 export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoStates: PhotoState[]): any => {
-  return (dispatch: TedTaggerDispatch) => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
 
     let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
     path += '?photoSetIds=' + photoSetIds.join(',');
@@ -35,6 +48,7 @@ export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoState
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
         dispatch(replaceMediaItems(mediaItemsResponse.data));
+        dispatch(deselectHiddenMediaItems());
       });
   }
 };

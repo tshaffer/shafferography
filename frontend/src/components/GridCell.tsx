@@ -28,7 +28,7 @@ export interface GridCellProps extends GridCellPropsFromParent {
 
 const GridCell = (props: GridCellProps) => {
 
-  // console.log(`Rendering GridCell for: ${props.mediaItem.fileName}`);
+  // console.log('GridCell:', props);
 
   const [hovered, setHovered] = React.useState(false);
   const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);

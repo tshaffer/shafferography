@@ -9,7 +9,6 @@ const PhotoSetSchema = new Schema<IPhotoSet>({
   photoSetName: { type: String, required: true, unique: true },
 });
 
-
 // ✅ Ensure connection is initialized before defining the model
 let PhotoSetModel: Model<IPhotoSet>;
 

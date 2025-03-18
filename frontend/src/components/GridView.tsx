@@ -19,6 +19,8 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
 }) => {
 
+  // console.log('GridView:', props);
+
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
   const listRef = React.useRef<List>(null);
@@ -43,7 +45,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     const gridRows: GridRowData[] = [];
     let mediaItemIndex = 0;
 
-    while (mediaItemIndex < props.allMediaItems.length - 1) {
+    while (mediaItemIndex <= props.allMediaItems.length - 1) {
       const gridRowData: GridRowData = getGridRowHeight(
         gridWidth,
         targetHeight,

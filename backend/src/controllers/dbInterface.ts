@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil } from 'lodash';
+import mongoose from "mongoose";
 import {
   getKeywordModel,
   getKeywordNodeModel,
@@ -18,12 +19,14 @@ import {
   KeywordData,
   User,
   PhotoSet,
+  UndecidedGroup,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
 import { PhotoSetModel } from '../models';
 import { IPhotoSet } from '../models';
+import { getUndecidedGroupModel } from '../models/UndecidedGroup';
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
   const mediaItemModel = getMediaitemModel();
@@ -74,19 +77,84 @@ export const getMediaItemsToDisplayFromDb = async (
   return mediaItems;
 }
 
-export const getMediaItemsByViewSpecFromDb = async (
+export const old_getMediaItemsByViewSpecFromDb = async (
   photoSetIds: string[],
   photoStates: PhotoState[],
+  undecidedGroupIds: string[],
 ): Promise<MediaItem[]> => {
   const mediaItemModel = getMediaitemModel();
 
+  const baseConditions: any[] = [
+    { photoSetId: { $in: photoSetIds } },
+    { photoState: { $in: photoStates } },
+  ];
+
+  // Handle special case for filtering by undecidedGroupId
+  if (photoStates.includes(PhotoState.Undecided)) {
+    if (undecidedGroupIds.length > 0) {
+      baseConditions.push({
+        $or: [
+          { photoState: { $ne: PhotoState.Undecided } },
+          {
+            $and: [
+              { photoState: PhotoState.Undecided },
+              { undecidedGroupId: { $in: undecidedGroupIds } },
+            ],
+          },
+        ],
+      });
+    }
+    // else: no need to restrict further — include all Undecided photos
+  }
+
   const query = mediaItemModel
-    .find({
-      $and: [
-        { photoSetId: { $in: photoSetIds } },
-        { photoState: { $in: photoStates } },
-      ],
-    })
+    .find({ $and: baseConditions })
+    .sort({ creationTime: -1 });
+
+  const documents: any = await query.exec();
+  return documents.map((document: any) => {
+    const mediaItem: MediaItem = document.toObject() as MediaItem;
+    mediaItem.uniqueId = document.uniqueId.toString();
+    return mediaItem;
+  });
+};
+
+export const getMediaItemsByViewSpecFromDb = async (
+  photoSetIds: string[],
+  photoStates: PhotoState[],
+  groupUndecidedPhotos: boolean,
+  undecidedGroupIds: string[],
+): Promise<MediaItem[]> => {
+  const mediaItemModel = getMediaitemModel();
+
+  const baseConditions: any[] = [
+    { photoSetId: { $in: photoSetIds } },
+    { photoState: { $in: photoStates } },
+  ];
+
+  // Only modify behavior for PhotoState.Undecided
+  if (photoStates.includes(PhotoState.Undecided)) {
+    if (groupUndecidedPhotos) {
+      // When grouping Undecided photos, filter such that:
+      // - Items not having PhotoState.Undecided are returned as-is.
+      // - Items with PhotoState.Undecided must have an undecidedGroupId in the provided array.
+      baseConditions.push({
+        $or: [
+          { photoState: { $ne: PhotoState.Undecided } },
+          {
+            $and: [
+              { photoState: PhotoState.Undecided },
+              { undecidedGroupId: { $in: undecidedGroupIds } },
+            ],
+          },
+        ],
+      });
+    }
+    // If groupUndecidedPhotos is false, then all media items with PhotoState.Undecided are returned.
+  }
+
+  const query = mediaItemModel
+    .find({ $and: baseConditions })
     .sort({ creationTime: -1 });
 
   const documents: any = await query.exec();
@@ -525,6 +593,102 @@ export const getPhotoSetById = async (photoSetId: string): Promise<PhotoSet> => 
     return photoSet[0];
   } catch (error) {
     console.error('Error retrieving photo set:', error);
+    throw error;
+  }
+};
+
+export const getAllUndecidedGroupsFromDb = async (): Promise<UndecidedGroup[]> => {
+  try {
+    const undecidedGroupModel = getUndecidedGroupModel();
+    const undecidedGroupDocuments = await undecidedGroupModel.find().lean().exec();
+    const undecidedGroups: UndecidedGroup[] = undecidedGroupDocuments.map((undecidedGroupDocument: any) => {
+      const ud: UndecidedGroup = {
+        id: undecidedGroupDocument._id.toString(), // Ensure `id` is returned as a string
+        name: undecidedGroupDocument.name,
+        albumIds: undecidedGroupDocument.albumIds,
+        createdAt: undecidedGroupDocument.createdAt,
+      }
+      return ud;
+    });
+    return undecidedGroups;
+  } catch (error) {
+    console.error('Error retrieving undecided groups:', error);
+    throw error;
+  }
+};
+
+export const addUndecidedGroupToDb = async (albumIds: string[], name: string): Promise<UndecidedGroup> => {
+  try {
+    const undecidedGroupModel = getUndecidedGroupModel();
+
+    // Ensure group name is unique within at least one of the provided albumIds
+    const existingGroup = await undecidedGroupModel.findOne({
+      name,
+      albumIds: { $in: albumIds } // Checks for overlap between provided albumIds and existing ones
+    });
+
+    if (existingGroup) {
+      throw new Error('Group name must be unique within each album');
+    }
+
+    const createdAt: string = new Date().toISOString();
+
+    // Create the new group using Mongoose's model method
+    const newGroupDoc = await undecidedGroupModel.create({ albumIds, name, createdAt });
+
+    return {
+      id: newGroupDoc._id.toString(), // Convert MongoDB ObjectId to string
+      name,
+      albumIds,
+      createdAt
+    };
+  } catch (error) {
+    console.error('Error adding undecided group:', error);
+    throw error;
+  }
+};
+
+export const assignMediaItemsToUndecidedGroupDb = async (undecidedGroupId: string, mediaItemIds: string[]): Promise<void> => {
+  try {
+    const mediaItemModel = getMediaitemModel(); // Get MediaItems collection model
+
+    // Ensure undecidedGroupId is a valid ObjectId before querying
+    if (!mongoose.Types.ObjectId.isValid(undecidedGroupId)) {
+      throw new Error(`Invalid undecidedGroupId: ${undecidedGroupId}`);
+    }
+
+    // Update MediaItems by setting the undecidedGroupId
+    await mediaItemModel.updateMany(
+      { uniqueId: { $in: mediaItemIds } }, // Match media items by uniqueId
+      { $set: { undecidedGroupId } } // Assign the group ID to these media items
+    );
+
+  } catch (error) {
+    console.error('Error assigning media items to undecided group:', error);
+    throw error;
+  }
+};
+
+export const deleteUndecidedGroupFromDb = async (undecidedGroupId: string): Promise<void> => {
+  try {
+    // Validate the provided undecidedGroupId
+    if (!mongoose.Types.ObjectId.isValid(undecidedGroupId)) {
+      throw new Error(`Invalid undecidedGroupId: ${undecidedGroupId}`);
+    }
+
+    // Remove the reference to the undecided group from all media items.
+    const mediaItemModel = getMediaitemModel();
+    await mediaItemModel.updateMany(
+      { undecidedGroupId },
+      { $unset: { undecidedGroupId: "" } }
+    );
+
+    // Delete the undecided group document itself.
+    const undecidedGroupModel = getUndecidedGroupModel();
+    await undecidedGroupModel.deleteOne({ _id: undecidedGroupId });
+
+  } catch (error) {
+    console.error('Error deleting undecided group:', error);
     throw error;
   }
 };

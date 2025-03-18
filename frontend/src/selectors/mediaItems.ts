@@ -30,6 +30,16 @@ export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };
 
+// export const getMediaItemsByUndecidedGroupId = (state: TedTaggerState, undecidedGroupId: string): MediaItem[] => {
+//   return state.mediaItemsState.mediaItems.filter((mediaItem: MediaItem) => mediaItem.undecidedGroupId === undecidedGroupId);
+// };
+
+export const getMediaItemIdsByUndecidedGroupId = (state: TedTaggerState, undecidedGroupId: string): string[] => {
+  return state.mediaItemsState.mediaItems
+    .filter((mediaItem: MediaItem) => mediaItem.undecidedGroupId === undecidedGroupId)
+    .map((mediaItem: MediaItem) => mediaItem.uniqueId);
+};
+
 const selectAllMediaItems = (state: TedTaggerState): MediaItem[] =>
   [...state.mediaItemsState.mediaItems]; // Ensures a new array reference
 

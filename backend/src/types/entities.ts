@@ -29,6 +29,7 @@ export interface MediaItem {
   keywordNodeIds: string[],
   photoState: PhotoState,
   photoSetId: string;
+  undecidedGroupId?: string;
 }
 
 export interface DateRangeSpecification {
@@ -99,4 +100,11 @@ export interface FileToImport {
   type: string;
   lastModified: number;
   lastModifiedDate: string;
+}
+
+export interface UndecidedGroup {
+  id: string;
+  name: string;
+  albumIds: string[];
+  createdAt: string;
 }

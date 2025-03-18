@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, PhotoSet } from './entities';
+import { GoogleUserProfile, MediaItem, PhotoSet, UndecidedGroup } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -18,6 +18,7 @@ export interface TedTaggerState {
   searchUIState: SearchUIState;
   selectionsState: SelectedMediaItemsState;
   photoSetsState: PhotoSetsState;
+  undecidedGroupsState: UndecidedGroupsState;
 }
 
 export interface AppState {
@@ -72,6 +73,10 @@ export interface PhotoSetsState {
   photoSets: PhotoSet[];
 }
 
+export interface UndecidedGroupsState {
+  undecidedGroups: UndecidedGroup[];
+}
+
 export interface PhotoViewSpec {
   photoLayout: PhotoLayout;
   numGridColumns: number;
@@ -83,4 +88,6 @@ export interface PhotoViewSpec {
   mediaItemZoomFactorById: StringToNumberLUT;
   displayedPhotoSetIds: string[];
   displayedPhotoStates: PhotoState[];
+  groupUndecidedPhotos: boolean;
+  displayedUndecidedGroupIds: string[];
 }

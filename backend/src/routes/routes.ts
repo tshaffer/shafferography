@@ -19,7 +19,12 @@ import {
   getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
   getMediaItemsByViewSpec,
+  assignMediaItemsToUndecidedGroup,
+  deleteUndecidedGroup,
+  getUndecidedGroups,
 } from '../controllers';
+import { fetchUndecidedGroupsForAlbums } from '../controllers';
+import { addUndecidedGroup } from '../controllers/';
 
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
@@ -46,5 +51,11 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 
   app.post('/api/v1/setPhotoState', setPhotoStateEndpoint);
+
+  app.get('/api/v1/undecidedGroups', getUndecidedGroups);
+  app.post('/api/v1/undecidedGroup', addUndecidedGroup);
+  app.put('/api/v1/undecidedGroup/undecided-group', assignMediaItemsToUndecidedGroup);
+  app.get('/api/v1/undecidedGroups/:albumId', fetchUndecidedGroupsForAlbums);
+  app.delete('/api/v1/undecidedGroups/:groupId', deleteUndecidedGroup);
 };
 

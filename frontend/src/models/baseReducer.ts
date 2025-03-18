@@ -10,6 +10,7 @@ import { keywordsStateReducer } from './keywords';
 import { searchUIStateReducer } from './searchUI';
 import { photoViewSpecReducer } from './photoViewSpec';
 import { photoSetsStateReducer } from './photoSets';
+import { undecidedGroupsStateReducer } from './undecidedGroups';
 
 // -----------------------------------------------------------------------
 // Reducers
@@ -22,6 +23,7 @@ export const rootReducer = combineReducers<TedTaggerState>({
   searchUIState: searchUIStateReducer,
   photoViewSpec: photoViewSpecReducer,
   photoSetsState: photoSetsStateReducer,
+  undecidedGroupsState: undecidedGroupsStateReducer,
 });
 
 // -----------------------------------------------------------------------

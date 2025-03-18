@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadMediaItemsByViewSpecParams, loadPhotoSets, reloadMediaItemsByViewSpec } from "../controllers";
+import { loadMediaItems, loadPhotoSets, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setDisplayedPhotoSetIds, setDisplayedPhotoStates, setGoogleUserProfile } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
@@ -48,9 +48,9 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
-  onLoadMediaItemsByViewSpecParams: (photoSetIds: string[], photoStates: PhotoState[]) => any;
   onLoadMediaItems: () => any;
   onLoadPhotoSets: () => any;
+  onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
   onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
@@ -61,7 +61,7 @@ const AppShell = (props: AppShellProps) => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
   // Save the access token, expiration, and Google ID in localStorage
@@ -253,9 +253,11 @@ const AppShell = (props: AppShellProps) => {
     props.onLoadPhotoSets()
       .then(function () {
         return initializeDisplayedPhotoStates()
-      }).then(function (displayedPhotoStates: PhotoState[]) {
+      }).then(function () {
         return initializeDisplayedPhotoSetIds()
-      }).then(function (displayedPhotoSetIds: string[]) {
+      }).then(function () {
+        return props.onLoadUndecidedGroups();
+      }).then(function () {
         return props.onReloadMediaItemsByViewSpec();
       }).then(function () {
         return props.onSetAppInitialized();
@@ -321,9 +323,9 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
-    onLoadMediaItemsByViewSpecParams: loadMediaItemsByViewSpecParams,
     onLoadMediaItems: loadMediaItems,
     onLoadPhotoSets: loadPhotoSets,
+    onLoadUndecidedGroups: loadUndecidedGroups,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
     onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,

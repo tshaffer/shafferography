@@ -1,4 +1,5 @@
-import { TedTaggerState, PhotoViewSpec, PhotoLayout, PhotoState } from '../types';
+import { TedTaggerState, PhotoViewSpec, PhotoLayout, PhotoState, UndecidedGroup } from '../types';
+import { getUndecidedGroup } from './undecidedGroups';
 
 export const getPhotoViewSpec = (state: TedTaggerState): PhotoViewSpec => {
   return state.photoViewSpec;
@@ -42,4 +43,22 @@ export const getDisplayedPhotoSetIds = (state: TedTaggerState): string[] => {
 
 export const getDisplayedPhotoStates = (state: TedTaggerState): PhotoState[] => {
   return state.photoViewSpec.displayedPhotoStates;
+};
+
+export const getDisplayedUndecidedGroupIds = (state: TedTaggerState): string[] => {
+  return state.photoViewSpec.displayedUndecidedGroupIds;
+}
+
+export const getDisplayedUndecidedGroups = (state: TedTaggerState): UndecidedGroup[] => {
+  const displayedUndecidedGroups: UndecidedGroup[] = [];
+  for (const displayedUndecidedGroupId of state.photoViewSpec.displayedUndecidedGroupIds) {
+    const undecidedGroup: UndecidedGroup = getUndecidedGroup(state, displayedUndecidedGroupId)!;
+    displayedUndecidedGroups.push(undecidedGroup);
+  }
+  return displayedUndecidedGroups;
+}
+
+
+export const getGroupUndecidedPhotos = (state: TedTaggerState): boolean => {
+  return state.photoViewSpec.groupUndecidedPhotos;
 };

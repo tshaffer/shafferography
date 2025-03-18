@@ -25,6 +25,8 @@ export interface GridRowProps extends GridRowPropsFromParent {
 
 const GridRow = (props: GridRowProps) => {
 
+  // console.log('GridRow:', props);
+
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const allMediaItems = useSelector(getMediaItems, shallowEqual);
   const displayMetadata = useSelector(getDisplayMetadata);

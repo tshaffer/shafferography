@@ -1,16 +1,16 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import {
   List,
   ListItem,
   ListItemText,
   Checkbox,
   Box,
-  FormControl,
-  MenuItem,
-  Select,
+  Button,
+  ButtonGroup,
+  IconButton,
 } from "@mui/material";
-import CheckBoxOutlinedIcon from "@mui/icons-material/CheckBoxOutlined";
-import KeyboardArrowDownIcon from "@mui/icons-material/KeyboardArrowDown"; // Correct dropdown arrow
+import DeleteIcon from '@mui/icons-material/Delete';
+import { photoStateOptions } from "../constants";
 
 interface CheckboxListSelectorProps<T> {
   label: string;
@@ -18,16 +18,23 @@ interface CheckboxListSelectorProps<T> {
   selectedItems: T[];
   getItemLabel: (item: T) => string;
   onChange: (selected: T[]) => void;
+  onDeleteItem?: (item: T) => void;
+  showSelectAll?: boolean;
+  showDeleteItem?: boolean;
 }
 
 function CheckboxListSelector<T>({
   label,
   items,
   selectedItems,
+  showSelectAll = true,
+  showDeleteItem = false,
   getItemLabel,
   onChange,
+  onDeleteItem = () => { console.log('onDeleteItem not implemented'); },
 }: CheckboxListSelectorProps<T>) {
-  const [tempSelected, setTempSelected] = useState<T[]>(selectedItems);
+
+  const [tempSelected, setTempSelected] = useState<T[]>(selectedItems ?? []);
 
   useEffect(() => {
     setTempSelected(selectedItems);
@@ -37,46 +44,49 @@ function CheckboxListSelector<T>({
     const newSelected = tempSelected.includes(item)
       ? tempSelected.filter((i) => i !== item)
       : [...tempSelected, item];
-
     setTempSelected(newSelected);
     onChange(newSelected);
   };
 
-  const handleSelectAllOrNoneChange = (event: any) => {
-    const value = event.target.value;
-    if (value === "all") {
+  const handleSelectAllOrNoneChange = (selectAll: boolean) => {
+    if (selectAll) {
       setTempSelected(items);
       onChange(items);
-    } else if (value === "none") {
+    } else {
       setTempSelected([]);
       onChange([]);
     }
   };
 
+  const handleDelete = (item: T) => {
+    console.log('handleDelete:', item);
+    onDeleteItem(item);
+  };
+
   return (
-    <Box>
-      <List dense>
-        {/* Selection dropdown with checkbox icon */}
-        <ListItem sx={{ paddingY: 0.2, paddingLeft: '10px', maxWidth: '92px' }}>
-          <FormControl fullWidth>
-            <Select
-              displayEmpty
-              value={tempSelected.length === items.length ? "all" : tempSelected.length === 0 ? "none" : ""}
-              onChange={handleSelectAllOrNoneChange}
-              variant="standard"
-              IconComponent={KeyboardArrowDownIcon} // Ensures only one arrow is rendered
-              renderValue={() => (
-                <Box display="flex" alignItems="center">
-                  <CheckBoxOutlinedIcon sx={{ marginRight: "8px" }} />
-                </Box>
-              )}
-            >
-              <MenuItem value="all">All</MenuItem>
-              <MenuItem value="none">None</MenuItem>
-            </Select>
-          </FormControl>
-        </ListItem>
-        {/* Individual checkboxes */}
+    <Box id='checkboxListSelectorBox'>
+      <List id='checkboxListSelectorList' dense>
+        {showSelectAll && (
+          <ListItem sx={{ paddingY: 0.2, paddingLeft: '10px' }}>
+            <ButtonGroup size="small" sx={{ mb: 1 }}>
+              <Button
+                variant="outlined"
+                disabled={tempSelected.length === photoStateOptions.length}
+                onClick={() => handleSelectAllOrNoneChange(true)}
+              >
+                Select All
+              </Button>
+              <Button
+                variant="outlined"
+                disabled={tempSelected.length === 0}
+                onClick={() => handleSelectAllOrNoneChange(false)} // Select all
+              >
+                Deselect All
+              </Button>
+            </ButtonGroup>
+          </ListItem>
+        )}
+
         {items.map((item) => (
           <ListItem
             key={getItemLabel(item)}
@@ -86,6 +96,18 @@ function CheckboxListSelector<T>({
           >
             <Checkbox checked={tempSelected.includes(item)} />
             <ListItemText primary={getItemLabel(item)} />
+            {showDeleteItem && (
+              <IconButton
+                edge="end"
+                sx={{ marginLeft: 'auto' }}
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent the ListItem onClick from firing.
+                  handleDelete(item);
+                }}
+              >
+                <DeleteIcon />
+              </IconButton>
+            )}
           </ListItem>
         ))}
       </List>

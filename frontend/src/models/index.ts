@@ -7,4 +7,5 @@ export * from './keywords';
 export * from './searchUI';
 export * from './photoViewSpec';
 export * from './photoSets';
+export * from './undecidedGroups';
 

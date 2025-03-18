@@ -40,8 +40,11 @@ export const getMediaItemsByViewSpec = async (request: Request, response: Respon
   const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
   const photoSetIdsAsStr: string = request.query.photoSetIds as string;
   const photoSetIds: string[] = photoSetIdsAsStr.split(',');
+  const groupUndecidedPhotos: boolean = request.query.groupUndecidedPhotos === 'true';
+  const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
+  const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
   console.log('getMediaItemsByViewSpec', photoStates, photoSetIds);
-  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, photoStates);
+  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
   response.json(mediaItems);
 }
 

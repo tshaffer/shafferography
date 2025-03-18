@@ -31,6 +31,7 @@ export interface ServerMediaItem {
   people?: ServerPerson[],
   keywordNodeIds: string[],
   photoState: PhotoState,
+  undecidedGroupId?: string;
 }
 
 export interface MediaItem {
@@ -51,6 +52,7 @@ export interface MediaItem {
   people?: string[],
   keywordNodeIds: string[],
   photoState: PhotoState,
+  undecidedGroupId?: string;
 }
 
 export interface Keyword {
@@ -120,3 +122,10 @@ export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = [
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 
 export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = FilteredMediaItemPropertyNames;
+
+export interface UndecidedGroup {
+  id: string;
+  name: string;
+  albumIds: string[];
+  createdAt: string;
+}

@@ -19,11 +19,14 @@ import { cloneDeep } from 'lodash';
 import {
   getDisplayedPhotoSetIds,
   getDisplayedPhotoStates,
+  getDisplayedUndecidedGroupIds,
+  getGroupUndecidedPhotos,
   getMatchRule,
   getMediaItemIds,
   getMediaItems,
   getSearchRules,
   getSelectedMediaItemIds,
+  getUndecidedGroupIds,
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
 
@@ -38,12 +41,14 @@ const deselectHiddenMediaItems = (): any => {
   };
 }
 
-export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoStates: PhotoState[]): any => {
+const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoStates: PhotoState[], groupUndecidedPhotos: boolean, undecidedGroupIds: string[]): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
     path += '?photoSetIds=' + photoSetIds.join(',');
     path += '&photoStates=' + JSON.stringify(photoStates);
+    path += '&groupUndecidedPhotos=' + JSON.stringify(groupUndecidedPhotos);
+    path += '&undecidedGroupIds=' + undecidedGroupIds.join(',');
 
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
@@ -55,20 +60,26 @@ export const loadMediaItemsByViewSpecParams = (photoSetIds: string[], photoState
 
 export const reloadMediaItemsByViewSpec = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
+    console.log('reloadMediaItemsByViewSpec');
     const state: TedTaggerState = getState();
     const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
+    const groupUndecidedPhotos: boolean = getGroupUndecidedPhotos(state);
+    const undecidedGroupIds: string[] = getDisplayedUndecidedGroupIds(state);
     dispatch(clearMediaItems());
-    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates));
+    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates, groupUndecidedPhotos, undecidedGroupIds));
   }
 };
 
 export const loadAndReplaceMediaItemsByViewSpec = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
+    console.log('loadAndReplaceMediaItemsByViewSpec');
     const state: TedTaggerState = getState();
     const photoSetIds: string[] = getDisplayedPhotoSetIds(state);
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
-    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates));
+    const groupUndecidedPhotos: boolean = getGroupUndecidedPhotos(state);
+    const undecidedGroupIds: string[] = getUndecidedGroupIds(state);
+    dispatch(loadMediaItemsByViewSpecParams(photoSetIds, photoStates, groupUndecidedPhotos, undecidedGroupIds));
   }
 };
 

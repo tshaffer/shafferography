@@ -21,9 +21,15 @@ export const REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID = 'REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID'
 
 export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
 
+export const REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS = 'REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS';
+
 // ------------------------------------
 // Actions
 // ------------------------------------
+
+interface MediaItemIdsPayload {
+  mediaItemIds: string[];
+}
 
 interface SetPhotoStatePayload {
   mediaItemIds: string[];
@@ -73,10 +79,6 @@ export const addMediaItems = (
   };
 };
 
-interface DeleteMediaItemIdsPayload {
-  mediaItemIds: string[];
-}
-
 export const deleteMediaItemsRedux = (
   mediaItemIds: string[],
 ) => {
@@ -88,6 +90,16 @@ export const deleteMediaItemsRedux = (
   };
 };
 
+export const removeUndecidedGroupIdFromMediaItems = (
+  mediaItemIds: string[],
+): any => {
+  return {
+    type: 'REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS',
+    payload: {
+      mediaItemIds
+    }
+  };
+};
 export const clearMediaItems = (): TedTaggerAction<any> => ({
   type: 'CLEAR_MEDIA_ITEMS',
   payload: {},
@@ -124,7 +136,6 @@ export const removeKeywordFromMediaItemIdsRedux = (
   };
 };
 
-
 interface AddKeywordToMediaItemsPayload {
   mediaItem: MediaItem[];
   keywordNodeId: string;
@@ -142,10 +153,6 @@ export const addKeywordToMediaItemsRedux = (
     }
   };
 };
-
-interface SetLoupeViewMediaItemIdsPayload {
-  mediaItemIds: string[];
-}
 
 export const setLoupeViewMediaItemIds = (
   mediaItemIds: string[],
@@ -173,6 +180,8 @@ export const removeLoupeViewMediaItemId = (
   };
 };
 
+// unsetUndecidedGroupFromMediaItems
+
 // ------------------------------------
 // Reducer
 // ------------------------------------
@@ -185,12 +194,12 @@ const initialState: MediaItemsState =
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & DeleteMediaItemIdsPayload & SetLoupeViewMediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
+  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
       const newMediaItems = cloneDeep(action.payload.mediaItems);
-      
+
       // If the array hasn't changed, return the existing state to avoid unnecessary re-renders
       if (newMediaItems.length === state.mediaItems.length &&
         newMediaItems.every((item, index) => item === state.mediaItems[index])) {
@@ -254,6 +263,16 @@ export const mediaItemsStateReducer = (
         }
       });
       return newState;
+    }
+    case REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS: {
+      return {
+        ...state,
+        mediaItems: state.mediaItems.map((mediaItem) =>
+          action.payload.mediaItemIds.includes(mediaItem.uniqueId)
+            ? { ...mediaItem, undecidedGroupId: undefined }
+            : mediaItem
+        ),
+      };
     }
     case REMOVE_KEYWORD_FROM_MEDIA_ITEM_IDS: {
       const newState = cloneDeep(state) as MediaItemsState;

@@ -26,12 +26,13 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
-import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reloadMediaItemsByViewSpec, setPhotoState } from '../controllers';
+import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getDisplayedPhotoSetIds, getPhotoSets, getDisplayedPhotoStates } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoSet, PhotoState } from '../types';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
+import SetUndecidedGroup from './SetUndecidedGroup';
 
 const drawerWidth = 240;
 
@@ -69,10 +70,7 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   photoLayout: PhotoLayout;
   numGridColumns: number;
   selectedMediaItemsCount: number;
-  displayedPhotoSetIds: string[];
-  displayedPhotoStates: string[];
-  photoSets: PhotoSet[];
-
+  mediaItems: MediaItem[];
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
@@ -93,6 +91,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
   const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -101,6 +100,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
       return 0;
     }
   }
+
+  const handleCloseSpecifyUndecidedGroupUI = () => {
+    setUndecidedGroupAnchorEl(null);
+  };
 
   const handleCloseImportFromDriveDialog = () => {
     setShowImportFromDriveDialog(false);
@@ -275,6 +278,62 @@ const TopNavigationBar: React.FC<any> = (props) => {
     );
   }
 
+  const showSpecifyUndecidedGroupUI = (event: React.MouseEvent<HTMLElement>) => {
+    setUndecidedGroupAnchorEl(event.currentTarget);
+  };
+
+  const renderSetPhotoStateUI = () => {
+
+    return (
+      <React.Fragment>
+        <Tooltip title="Set Unreviewed">
+          <span>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)}>
+              <MoreHoriz />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Set Undecided">
+          <span>
+            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI}>
+              <HelpOutline />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <SetUndecidedGroup
+          open={Boolean(undecidedGroupAnchorEl)}
+          undecidedGroupEl={undecidedGroupAnchorEl}
+          onHandleSetPhotoState={handleSetPhotoState}
+          onClose={handleCloseSpecifyUndecidedGroupUI}
+        />
+
+        <Tooltip title="Set Ready for Upload">
+          <span>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)}>
+              <CloudUpload />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <Tooltip title="Set Uploaded">
+          <span>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)}>
+              <CloudDone />
+            </IconButton>
+          </span>
+        </Tooltip>
+        <Tooltip title="Delete Selected Photos">
+          <span>
+            <IconButton color="inherit" onClick={handleDeletePhotos}>
+              <DeleteIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </React.Fragment>
+    );
+  };
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -338,62 +397,10 @@ const TopNavigationBar: React.FC<any> = (props) => {
               <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
             </span>
           </Tooltip>
+
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
-          <Tooltip title="Set Unreviewed">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={() => handleSetPhotoState(PhotoState.Unreviewed)}
-                disabled={props.selectedMediaItemsCount === 0}
-              >
-                <MoreHoriz />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Set Undecided">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={() => handleSetPhotoState(PhotoState.Undecided)}
-                disabled={props.selectedMediaItemsCount === 0}
-              >
-                <HelpOutline />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Set Ready for Upload">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)}
-                disabled={props.selectedMediaItemsCount === 0}
-              >
-                <CloudUpload />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Set Uploaded">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={() => handleSetPhotoState(PhotoState.Uploaded)}
-                disabled={props.selectedMediaItemsCount === 0}
-              >
-                <CloudDone />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Delete Selected Photos">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={handleDeletePhotos}
-                disabled={props.selectedMediaItemsCount === 0}
-              >
-                <DeleteIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
+
+          {renderSetPhotoStateUI()}
 
           {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
@@ -461,9 +468,6 @@ function mapStateToProps(state: any): any {
     photoLayout: getPhotoLayout(state),
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
-    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
-    displayedPhotoStates: getDisplayedPhotoStates(state),
-    photoSets: getPhotoSets(state),
     mediaItems: getMediaItems(state),
   };
 }

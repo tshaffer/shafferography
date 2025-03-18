@@ -4,5 +4,6 @@ export * from './googlePhotos';
 export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
-export * from './peopleMerger'
-export * from './photoImporter'
+export * from './peopleMerger';
+export * from './photoImporter';
+export * from './undecidedGroups'

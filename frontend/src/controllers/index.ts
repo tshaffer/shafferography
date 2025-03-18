@@ -6,3 +6,4 @@ export * from './surveyView';
 export * from './authenticate';
 export * from './photoSets';
 export * from './googleUploader';
+export * from './undecidedGroups';

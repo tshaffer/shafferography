@@ -8,6 +8,7 @@ import {
   Button,
   ButtonGroup,
   IconButton,
+  ListItemButton,
 } from "@mui/material";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { photoStateOptions } from "../constants";
@@ -88,9 +89,8 @@ function CheckboxListSelector<T>({
         )}
 
         {items.map((item) => (
-          <ListItem
+          <ListItemButton
             key={getItemLabel(item)}
-            button
             onClick={() => toggleSelection(item)}
             sx={{ paddingLeft: '5px', paddingY: 0.2 }} // Reduced paddingY here
           >
@@ -108,7 +108,7 @@ function CheckboxListSelector<T>({
                 <DeleteIcon />
               </IconButton>
             )}
-          </ListItem>
+          </ListItemButton>
         ))}
       </List>
     </Box>

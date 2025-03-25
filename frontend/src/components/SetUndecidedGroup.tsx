@@ -7,8 +7,8 @@ import { TextField, Button, Collapse, List, ListItem, ListItemText, Popover, Lis
 
 import { addUndecidedGroup, assignMediaItemsToUndecidedGroup } from '../controllers';
 import { TedTaggerDispatch } from '../models';
-import { getSelectedMediaItemIds, getDisplayedPhotoSetIds, getPhotoSets, getUndecidedGroups } from '../selectors';
-import { PhotoSet, PhotoState, UndecidedGroup } from '../types';
+import { getSelectedMediaItemIds, getDisplayedAlbumIds, getAlbums, getUndecidedGroups } from '../selectors';
+import { Album, PhotoState, UndecidedGroup } from '../types';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 export interface SetUndecidedGroupPropsFromParent {
@@ -20,10 +20,10 @@ export interface SetUndecidedGroupPropsFromParent {
 
 export interface SetUndecidedGroupProps {
   selectedMediaItemIds: string[];
-  displayedPhotoSetIds: string[];
-  photoSets: PhotoSet[];
+  displayedAlbumIds: string[];
+  albums: Album[];
   undecidedGroups: UndecidedGroup[];
-  onAddUndecidedGroup: (photoSetIds: string[], undecidedGroupName: string) => any;
+  onAddUndecidedGroup: (albumIds: string[], undecidedGroupName: string) => any;
   onAssignMediaItemsToUndecidedGroup: (undecidedGroupId: string, mediaItemIds: string[]) => any;
 }
 
@@ -35,20 +35,20 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
 
   React.useEffect(() => {
     if (props.open) {
-      setUndecidedGroupName(`${getUndecidedGroupName(props.displayedPhotoSetIds)}-${props.undecidedGroups.length}`); // Auto-incremented default name
+      setUndecidedGroupName(`${getUndecidedGroupName(props.displayedAlbumIds)}-${props.undecidedGroups.length}`); // Auto-incremented default name
     }
   }, [props.open]);
 
 
-  const getPhotoSetById = (photoSetId: string): PhotoSet | undefined => {
-    return props.photoSets.find((photoSet: PhotoSet) => photoSet.photoSetId === photoSetId);
+  const getAlbumById = (albumId: string): Album | undefined => {
+    return props.albums.find((album: Album) => album.albumId === albumId);
   }
 
-  const getUndecidedGroupName = (photoSetIds: string[]): string => {
-    const names = photoSetIds
-      .map(id => getPhotoSetById(id))
-      .filter((photoSet): photoSet is PhotoSet => photoSet !== undefined)
-      .map(photoSet => photoSet.photoSetName);
+  const getUndecidedGroupName = (albumIds: string[]): string => {
+    const names = albumIds
+      .map(id => getAlbumById(id))
+      .filter((album): album is Album => album !== undefined)
+      .map(album => album.albumName);
 
     return `${names.join('_')}`;
   };
@@ -68,7 +68,7 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
   // Create undecidedGroup named: UndecidedGroup-4
   const handleCreateUndecidedGroup = (undecidedGroupName: string) => {
     console.log(`Create undecidedGroup named: ${undecidedGroupName}`);
-    props.onAddUndecidedGroup(props.displayedPhotoSetIds, undecidedGroupName)
+    props.onAddUndecidedGroup(props.displayedAlbumIds, undecidedGroupName)
       .then((undecidedGroup: UndecidedGroup) => {
         props.onAssignMediaItemsToUndecidedGroup(undecidedGroup.id, props.selectedMediaItemIds);
         setLastUndecidedGroup(undecidedGroup);
@@ -93,7 +93,7 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
       borderColor: 'divider',
     },
   };
-  
+
   const renderSpecifyUndecidedGroupUI = () => {
     return (
       <Popover
@@ -107,7 +107,7 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
           <ListItemButton onClick={() => handleSetUndecided(null)} sx={buttonStyle}>
             <ListItemText primary="Mark as Undecided (No Group)" />
           </ListItemButton>
-  
+
           {/* Create New Group with Name Input */}
           <ListItem>
             <TextField
@@ -122,20 +122,20 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
               Create
             </Button>
           </ListItem>
-  
+
           {/* Add to Last Undecided Group */}
           {lastUndecidedGroup && (
             <ListItemButton onClick={() => handleSetUndecided(lastUndecidedGroup)} sx={buttonStyle}>
               <ListItemText primary={`Add to Last Group: ${lastUndecidedGroup.name}`} />
             </ListItemButton>
           )}
-  
+
           {/* Expandable Other Groups */}
           <ListItemButton onClick={() => setShowOtherAlbums(!showOtherAlbums)} sx={buttonStyle}>
             <ListItemText primary="Add to Existing Group from Another Album" />
             {showOtherAlbums ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
-  
+
           <Collapse in={showOtherAlbums} timeout="auto" unmountOnExit>
             <List component="div" disablePadding>
               {props.undecidedGroups.map((undecidedGroup: UndecidedGroup) => (
@@ -153,7 +153,7 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
       </Popover>
     );
   };
-  
+
   return (
     <div>
       {renderSpecifyUndecidedGroupUI()}
@@ -164,8 +164,8 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
 function mapStateToProps(state: any): any {
   return {
     selectedMediaItemIds: getSelectedMediaItemIds(state),
-    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
-    photoSets: getPhotoSets(state),
+    displayedAlbumIds: getDisplayedAlbumIds(state),
+    albums: getAlbums(state),
     undecidedGroups: getUndecidedGroups(state),
   };
 }

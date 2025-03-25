@@ -9,7 +9,7 @@ import { selectedMediaItemsStateReducer } from './selectedMediaItems';
 import { keywordsStateReducer } from './keywords';
 import { searchUIStateReducer } from './searchUI';
 import { photoViewSpecReducer } from './photoViewSpec';
-import { photoSetsStateReducer } from './photoSets';
+import { albumsStateReducer } from './albums';
 import { undecidedGroupsStateReducer } from './undecidedGroups';
 
 // -----------------------------------------------------------------------
@@ -22,7 +22,7 @@ export const rootReducer = combineReducers<TedTaggerState>({
   keywordsState: keywordsStateReducer,
   searchUIState: searchUIStateReducer,
   photoViewSpec: photoViewSpecReducer,
-  photoSetsState: photoSetsStateReducer,
+  albumsState: albumsStateReducer,
   undecidedGroupsState: undecidedGroupsStateReducer,
 });
 

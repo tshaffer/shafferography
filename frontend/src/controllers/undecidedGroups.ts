@@ -34,12 +34,12 @@ export const assignMediaItemsToUndecidedGroup = (undecidedGroupId: string, media
   };
 }
 
-export const addUndecidedGroup = (photoSetIds: string[], undecidedGroupName: string): TedTaggerAnyPromiseThunkAction => {
+export const addUndecidedGroup = (albumIds: string[], undecidedGroupName: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     const path = serverUrl + apiUrlFragment + 'undecidedGroup';
 
-    const undecidedGroupBody: Partial<UndecidedGroup> = { albumIds: photoSetIds, name: undecidedGroupName };
+    const undecidedGroupBody: Partial<UndecidedGroup> = { albumIds, name: undecidedGroupName };
     return axios.post(path, undecidedGroupBody)
       .then((response: any) => {
         const undecidedGroup: UndecidedGroup = response.data;

@@ -14,9 +14,9 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { PhotoSet, PhotoState, UndecidedGroup } from "../types";
-import { setDisplayedPhotoSetIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedPhotoSetIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getPhotoSets, getUndecidedGroups } from "../selectors";
+import { Album, PhotoState, UndecidedGroup } from "../types";
+import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
+import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
 
 const drawerWidth = 240;
@@ -36,16 +36,16 @@ export interface SidebarPropsFromParent {
 }
 
 export interface SidebarProps extends SidebarPropsFromParent {
-  displayedPhotoSetIds: string[];
+  displayedAlbumIds: string[];
   displayedPhotoStates: string[];
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];
   displayedUndecidedGroups: UndecidedGroup[];
-  photoSets: PhotoSet[];
+  albums: Album[];
   undecidedGroups: UndecidedGroup[];
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
-  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => void;
+  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
   onSetGroupUndecidedPhotos: (groupUndecidedPhotos: boolean) => void;
   onSetDisplayedUndecidedGroupIds: (displayedUndecidedGroupIds: string[]) => void;
@@ -62,15 +62,15 @@ const Sidebar: React.FC<any> = (props: any) => {
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
-  const getPhotoSetById = (photoSetId: string): PhotoSet | undefined => {
-    return props.photoSets.find((photoSet: PhotoSet) => photoSet.photoSetId === photoSetId);
+  const getAlbumById = (albumId: string): Album | undefined => {
+    return props.albums.find((album: Album) => album.albumId === albumId);
   }
 
-  const getUndecidedGroupName = (photoSetIds: string[]): string => {
-    const names = photoSetIds
-      .map(id => getPhotoSetById(id))
-      .filter((photoSet): photoSet is PhotoSet => photoSet !== undefined)
-      .map(photoSet => photoSet.photoSetName);
+  const getUndecidedGroupName = (albumIds: string[]): string => {
+    const names = albumIds
+      .map(id => getAlbumById(id))
+      .filter((album): album is Album => album !== undefined)
+      .map(album => album.albumName);
 
     return `${names.join('_')}`;
   };
@@ -114,10 +114,10 @@ const Sidebar: React.FC<any> = (props: any) => {
     setShowRetrievePeopleDialog(false);
   };
 
-  const handlePhotoSetChange = (selectedPhotoSetIds: string[]) => {
-    props.onSetDisplayedPhotoSetIds(selectedPhotoSetIds);
+  const handleAlbumChange = (selectedAlbumIds: string[]) => {
+    props.onSetDisplayedAlbumIds(selectedAlbumIds);
     props.onReloadMediaItemsByViewSpec();
-    localStorage.setItem('displayedPhotoSetIds', selectedPhotoSetIds.join(','));
+    localStorage.setItem('displayedAlbumIds', selectedAlbumIds.join(','));
   };
 
   const handlePhotoStatesToViewChange = (selectedPhotoStates: PhotoState[]) => {
@@ -143,21 +143,21 @@ const Sidebar: React.FC<any> = (props: any) => {
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 
-  const renderPhotoSetsToDisplayChooser = () => {
+  const renderAlbumsToDisplayChooser = () => {
     return (
       <React.Fragment>
-        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Photo Sets</Typography>
+        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Albums</Typography>
         <Box>
-          {props.photoSets.length === 0 ? (
-            <Typography variant="body2">No Photo Sets Available</Typography>
+          {props.albums.length === 0 ? (
+            <Typography variant="body2">No Albums Available</Typography>
           ) : (
             <Box>
               <CheckboxListSelector
-                label="Select Photo Sets"
-                items={props.photoSets}
-                selectedItems={props.photoSets.filter((set: PhotoSet) => props.displayedPhotoSetIds.includes(set.photoSetId))}
-                getItemLabel={(item: PhotoSet) => item.photoSetName}
-                onChange={(selected) => handlePhotoSetChange(selected.map((set: PhotoSet) => set.photoSetId))}
+                label="Select Albums"
+                items={props.albums}
+                selectedItems={props.albums.filter((set: Album) => props.displayedAlbumIds.includes(set.albumId))}
+                getItemLabel={(item: Album) => item.albumName}
+                onChange={(selected) => handleAlbumChange(selected.map((set: Album) => set.albumId))}
               />
             </Box>
           )}
@@ -183,7 +183,7 @@ const Sidebar: React.FC<any> = (props: any) => {
     //   { label: "Deleted", value: PhotoState.Deleted, icon: <DeleteIcon /> },
     //   { label: "Undecided", value: PhotoState.Undecided, icon: <HelpOutlineIcon /> },
     // ];
-    
+
     // Currently selected photo states
     const selectedPhotoStates = photoStateOptions.filter((set) =>
       props.displayedPhotoStates.includes(set.value)
@@ -273,8 +273,8 @@ const Sidebar: React.FC<any> = (props: any) => {
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Photo Set Selection */}
-          {renderPhotoSetsToDisplayChooser()}
+          {/* Album Selection */}
+          {renderAlbumsToDisplayChooser()}
 
           {/* Photo State Selection */}
           {renderPhotoStatesToDisplayChooser()}
@@ -299,18 +299,18 @@ function mapStateToProps(state: any): any {
   return {
     undecidedGroups: getUndecidedGroups(state),
     groupUndecidedPhotos: getGroupUndecidedPhotos(state),
-    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
+    displayedAlbumIds: getDisplayedAlbumIds(state),
     displayedPhotoStates: getDisplayedPhotoStates(state),
     displayedUndecidedGroups: getDisplayedUndecidedGroups(state),
     displayedUndecidedGroupIds: getDisplayedUndecidedGroupIds(state),
-    photoSets: getPhotoSets(state),
+    albums: getAlbums(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetPhotoState: setPhotoState,
-    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
     onSetDisplayedPhotoStates: setDisplayedPhotoStates,
     onSetGroupUndecidedPhotos: setGroupUndecidedPhotos,
     onSetDisplayedUndecidedGroupIds: setDisplayedUndecidedGroupIds,

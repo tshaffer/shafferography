@@ -17,7 +17,7 @@ interface MediaItemDifferences {
 }
 
 interface GoogleUploadSpec {
-  albumId: string;
+  googleAlbumId: string;
   mediaItemDifferences: MediaItemDifferences;
 };
 
@@ -100,7 +100,7 @@ const postGoogleRequest = async (googleAccessToken: string, url: string, fileNam
     });
 }
 
-const createGoogleAlbum = async (googleAccessToken: string, albumName: string): Promise<CreateGoogleAlbumResponse> => {
+const createGoogleAlbum = async (googleAccessToken: string, googleAlbumName: string): Promise<CreateGoogleAlbumResponse> => {
 
   const url = GooglePhotoAPIs.albums;
 
@@ -111,7 +111,7 @@ const createGoogleAlbum = async (googleAccessToken: string, albumName: string): 
 
   const data = {
     album: {
-      title: albumName,
+      title: googleAlbumName,
     },
   };
 
@@ -135,15 +135,15 @@ const createGoogleAlbum = async (googleAccessToken: string, albumName: string): 
 
 const addMediaItemsToAlbum = async (
   googleAccessToken: string,
-  albumId: string,
+  googleAlbumId: string,
   mediaItemIds: string[]
 ): Promise<any> => {
 
   if (mediaItemIds.length === 0) {
     return;
   }
-  
-  const url = `https://photoslibrary.googleapis.com/v1/albums/${albumId}:batchAddMediaItems`;
+
+  const url = `https://photoslibrary.googleapis.com/v1/albums/${googleAlbumId}:batchAddMediaItems`;
 
   try {
     const response = await axios.post(
@@ -176,11 +176,11 @@ const addMediaItemsToAlbum = async (
 
 const removeMediaItemFromAlbum = async (
   googleAccessToken: string,
-  albumId: string,
+  googleAlbumId: string,
   mediaItemIds: string[]
 ): Promise<any> => {
 
-  const url = `https://photoslibrary.googleapis.com/v1/albums/${albumId}:batchRemoveMediaItems`;
+  const url = `https://photoslibrary.googleapis.com/v1/albums/${googleAlbumId}:batchRemoveMediaItems`;
 
   try {
     const response = await axios.post(
@@ -232,11 +232,11 @@ const processingStatuses: UploadStatus = {};
 export const uploadToGoogleEndpoint = async (request: Request, response: TypedResponse<CreateMediaItemsResponse>, next: any) => {
 
   const googleAccessToken = request.body.googleAccessToken;
-  const albumName = request.body.albumName;
+  const googleAlbumName = request.body.googleAlbumName;
   const mediaItemIdsInAlbum: string[] = request.body.mediaItemIds;
   console.log('uploadToGoogleEndpoint: ');
   console.log('googleAccessToken: ', googleAccessToken);
-  console.log('albumName: ', albumName);
+  console.log('googleAlbumName: ', googleAlbumName);
   console.log('mediaItemIdsInAlbum: ', mediaItemIdsInAlbum);
 
   console.log('uploadToGoogle: ');
@@ -250,10 +250,10 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
     );
 
     // check for existence of specified album on Google
-    const googleUploadSpec: GoogleUploadSpec = await getGoogleUploadSpec(googleAccessToken, albumName, mediaItemsInAlbum);
+    const googleUploadSpec: GoogleUploadSpec = await getGoogleUploadSpec(googleAccessToken, googleAlbumName, mediaItemsInAlbum);
     console.log('googleUploadSpec: ', googleUploadSpec);
 
-    const existingAlbumId = googleUploadSpec.albumId;
+    const existingAlbumId = googleUploadSpec.googleAlbumId;
     const mediaItemDifferences = googleUploadSpec.mediaItemDifferences;
 
     const mediaItemsToUpload = mediaItemDifferences.mediaItemsToUpload;
@@ -320,17 +320,17 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
     //    Not supported by google photos api
 
     // Create Album
-    let albumId = '';
+    let googleAlbumId = '';
     if (existingAlbumId === '') {
-      const googleAlbumResponse: CreateGoogleAlbumResponse = await createGoogleAlbum(googleAccessToken, albumName);
+      const googleAlbumResponse: CreateGoogleAlbumResponse = await createGoogleAlbum(googleAccessToken, googleAlbumName);
       console.log('googleAlbumResponse: ', googleAlbumResponse);
-      albumId = googleAlbumResponse.id;
+      googleAlbumId = googleAlbumResponse.id;
     } else {
-      albumId = existingAlbumId;
+      googleAlbumId = existingAlbumId;
     }
 
     // Add Media Items to Album
-    await addMediaItemsToAlbum(googleAccessToken, albumId, createdMediaItemIds);
+    await addMediaItemsToAlbum(googleAccessToken, googleAlbumId, createdMediaItemIds);
     console.log('successful uploadToGoogle: ');
 
     if (mediaItemsToUpload.length !== createdMediaItems.length) {
@@ -340,7 +340,7 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
     // Remove Media Items from Album
     if (googleMediaItemIdsToRemove.length > 0) {
       console.log('removing media items from album');
-      await removeMediaItemFromAlbum(googleAccessToken, albumId, googleMediaItemIdsToRemove);
+      await removeMediaItemFromAlbum(googleAccessToken, googleAlbumId, googleMediaItemIdsToRemove);
     }
 
     // Update Media Items in DB
@@ -348,8 +348,8 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
       const mediaItemId = mediaItemsToUploadIds[i];
       const createdMediaItem = createdMediaItems[i];
       const updates: Partial<MediaItem> = {
-        albumId,
-        albumName,
+        googleAlbumId: googleAlbumId,
+        googleAlbumName: googleAlbumName,
         googleMediaItemId: createdMediaItem.id,
         baseUrl: createdMediaItem.baseUrl,
       };
@@ -369,32 +369,32 @@ export const getPerFileUploadToGoogleStatus = async (req: Request, res: Response
   res.json(processingStatuses[uploadId] || { files: [] });
 }
 
-const getGoogleUploadSpec = async (googleAccessToken: string, albumName: string, mediaItems: MediaItem[]): Promise<GoogleUploadSpec> => {
+const getGoogleUploadSpec = async (googleAccessToken: string, googleAlbumName: string, mediaItems: MediaItem[]): Promise<GoogleUploadSpec> => {
 
-  let albumId: string = '';
+  let googleAlbumId: string = '';
 
   // ensure that all media items that are in an album are in the same album
   for (const mediaItem of mediaItems) {
-    if (mediaItem.albumId) {
-      if (albumId && albumId !== mediaItem.albumId) {
+    if (mediaItem.googleAlbumId) {
+      if (googleAlbumId && googleAlbumId !== mediaItem.googleAlbumId) {
         throw new Error('Media items are in different albums');
       }
-      albumId = mediaItem.albumId;
+      googleAlbumId = mediaItem.googleAlbumId;
     }
   }
 
-  // if none of the mediaItems have an albumId, check if the album exists
-  if (albumId === '') {
-    const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(googleAccessToken, albumName);
+  // if none of the mediaItems have a googleAlbumId, check if the album exists
+  if (googleAlbumId === '') {
+    const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(googleAccessToken, googleAlbumName);
     if (googleAlbums.length > 1) {
       throw new Error('Multiple google albums with the same name already exist');
     } else if (googleAlbums.length === 1) {
       // album with the same name already exists - use it
-      albumId = googleAlbums[0].id;
+      googleAlbumId = googleAlbums[0].id;
     } else {
       // album with the same name does not exist - create it
       const googleUploadSpec: GoogleUploadSpec = {
-        albumId: '',
+        googleAlbumId: '',
         mediaItemDifferences: {
           mediaItemsToUpload: mediaItems,
           googleMediaItemIdsToRemove: [],
@@ -405,8 +405,8 @@ const getGoogleUploadSpec = async (googleAccessToken: string, albumName: string,
     }
   } else {
     // mediaItems are already in an album; find it.
-    const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(googleAccessToken, albumName);
-    const matchingGoogleAlbums: GoogleAlbum[] = googleAlbums.filter((googleAlbum) => googleAlbum.id === albumId);
+    const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(googleAccessToken, googleAlbumName);
+    const matchingGoogleAlbums: GoogleAlbum[] = googleAlbums.filter((googleAlbum) => googleAlbum.id === googleAlbumId);
     if (matchingGoogleAlbums.length === 0) {
       throw new Error('Media items are in an album that does not exist');
     } else if (matchingGoogleAlbums.length > 1) {
@@ -414,14 +414,14 @@ const getGoogleUploadSpec = async (googleAccessToken: string, albumName: string,
     }
   }
 
-  // assert that albumId !== ''
+  // assert that googleAlbumId !== ''
 
   // get media items in existing album
   //  https://developers.google.com/photos/library/guides/list#listing-album-contents
-  const googleMediaItems: GoogleMediaItem[] = await getAlbumMediaItemsFromGoogle(googleAccessToken, albumId);
+  const googleMediaItems: GoogleMediaItem[] = await getAlbumMediaItemsFromGoogle(googleAccessToken, googleAlbumId);
 
   const googleUploadSpec: GoogleUploadSpec = {
-    albumId,
+    googleAlbumId: googleAlbumId,
     mediaItemDifferences: getMediaItemDifferences(mediaItems, googleMediaItems),
   };
 

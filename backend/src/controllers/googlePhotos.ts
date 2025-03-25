@@ -3,7 +3,7 @@ import { Request } from 'express';
 import { GoogleAlbum, GoogleMediaItem } from "../types";
 import { isArray, isNil } from 'lodash';
 import { getGoogleRequest, postGoogleRequest } from './googleUtils';
-import { getAlbumNamesWherePeopleNotRetrieved } from './dbInterface';
+import { getGoogleAlbumNamesWherePeopleNotRetrieved } from './dbInterface';
 import { TypedResponse } from '../types';
 
 export const GooglePhotoAPIs = {
@@ -19,8 +19,8 @@ export const GooglePhotoAPIs = {
 
 export const getAlbumNamesWherePeopleNotRetrievedEndpoint = async (request: Request, response: TypedResponse<string[]>, next: any) => {
   try {
-    const albumNames = await getAlbumNamesWherePeopleNotRetrieved();
-    response.status(200).json(albumNames); 
+    const albumNames = await getGoogleAlbumNamesWherePeopleNotRetrieved();
+    response.status(200).json(albumNames);
   } catch (error) {
     response.status(500).json({ message: error.message });
   }
@@ -70,13 +70,13 @@ export const getAlbumMediaItemsFromGoogle = async (googleAccessToken: string, al
   return googleMediaItems;
 }
 
-export const getGoogleAlbumsByName = async (googleAccessToken: string, albumName: string): Promise<GoogleAlbum[]> => {
+export const getGoogleAlbumsByName = async (googleAccessToken: string, googleAlbumName: string): Promise<GoogleAlbum[]> => {
   const googleAlbums: GoogleAlbum[] = await getAllGoogleAlbums(googleAccessToken);
-  const matchingGoogleAlbums: GoogleAlbum[] = googleAlbums.filter((googleAlbum) => googleAlbum.title === albumName);
+  const matchingGoogleAlbums: GoogleAlbum[] = googleAlbums.filter((googleAlbum) => googleAlbum.title === googleAlbumName);
   return matchingGoogleAlbums;
 }
 
-export const getAllGoogleAlbums = async (googleAccessToken: string, nextPageToken: any = null): Promise<GoogleAlbum[]> => {
+const getAllGoogleAlbums = async (googleAccessToken: string, nextPageToken: any = null): Promise<GoogleAlbum[]> => {
 
   const googleAlbums: GoogleAlbum[] = [];
 

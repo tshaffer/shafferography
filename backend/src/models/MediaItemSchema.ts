@@ -7,8 +7,8 @@ const MediaitemSchema = new Schema(
     uniqueId: { type: String, required: true, unique: true },  
     googleMediaItemId: { type: String, required: true }, 
     fileName: { type: String, required: true }, 
-    albumId: { type: String, required: true }, 
-    albumName: { type: String, required: true }, 
+    googleAlbumId: { type: String, required: true }, 
+    googleAlbumName: { type: String, required: true }, 
     filePath: { type: String, default: '' }, 
     productUrl: { type: String }, 
     baseUrl: { type: String }, 
@@ -29,7 +29,7 @@ const MediaitemSchema = new Schema(
     people: [{ name: String, default: '' }], 
     keywordNodeIds: [String], 
     photoState: { type: String, required: true }, 
-    photoSetId: { type: String, required: true }, 
+    albumId: { type: String, required: true }, 
     undecidedGroupId: { type: String },
   }
 );

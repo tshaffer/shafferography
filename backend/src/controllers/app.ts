@@ -14,8 +14,8 @@ import {
   getMediaItemsToDisplayFromDbUsingSearchSpec,
   updateKeywordNodeDb,
   updateMediaItemsFieldsInDb,
-  getAllPhotoSetsFromDb,
-  addPhotoSetToDb,
+  getAllAlbumsFromDb,
+  addAlbumToDb,
   getMediaItemsByViewSpecFromDb
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
@@ -25,7 +25,7 @@ import {
 } from '../utilities';
 import { MatchRule, PhotoState } from 'enums';
 import path from 'path';
-import { IPhotoSet } from '../models';
+import { IAlbum } from '../models';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
 
@@ -38,13 +38,13 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const getMediaItemsByViewSpec = async (request: Request, response: Response) => {
   const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
-  const photoSetIdsAsStr: string = request.query.photoSetIds as string;
-  const photoSetIds: string[] = photoSetIdsAsStr.split(',');
+  const albumIdsAsStr: string = request.query.albumIds as string;
+  const albumIds: string[] = albumIdsAsStr.split(',');
   const groupUndecidedPhotos: boolean = request.query.groupUndecidedPhotos === 'true';
   const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
   const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
-  console.log('getMediaItemsByViewSpec', photoStates, photoSetIds);
-  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(photoSetIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
+  console.log('getMediaItemsByViewSpec', photoStates, albumIds);
+  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(albumIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
   response.json(mediaItems);
 }
 
@@ -235,13 +235,13 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
   }
 }
 
-export const getPhotoSets = async (request: Request, response: Response, next: any) => {
-  const photoSets: any = await getAllPhotoSetsFromDb();
-  response.json(photoSets);
+export const getAlbums = async (request: Request, response: Response, next: any) => {
+  const albums: any = await getAllAlbumsFromDb();
+  response.json(albums);
 };
 
-export const addPhotoSet = async (request: Request, response: Response, next: any) => {
-  const newPhotoSet: IPhotoSet = await addPhotoSetToDb(request.body);
-  response.json(newPhotoSet);
+export const addAlbum = async (request: Request, response: Response, next: any) => {
+  const newAlbum: IAlbum = await addAlbumToDb(request.body);
+  response.json(newAlbum);
 }
 

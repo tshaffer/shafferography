@@ -12,11 +12,11 @@ import { Button, DialogActions, DialogContent, IconButton, Stack, Typography, Al
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
 
-import { getAppInitialized, getDisplayedPhotoSetIds, getPhotoSets } from '../selectors';
-import { apiUrlFragment, FileToImport, PhotoSet, serverUrl } from '../types';
-import { setDisplayedPhotoSetIds, TedTaggerDispatch } from '../models';
+import { getAppInitialized, getDisplayedAlbumIds, getAlbums } from '../selectors';
+import { apiUrlFragment, FileToImport, Album, serverUrl } from '../types';
+import { setDisplayedAlbumIds, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
-import { addPhotoSet, reloadMediaItemsByViewSpec } from '../controllers';
+import { addAlbum, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 
 export interface ImportFromDriveDialogPropsFromParent {
@@ -26,18 +26,18 @@ export interface ImportFromDriveDialogPropsFromParent {
 
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
-  displayedPhotoSetIds: string[];
-  photoSets: PhotoSet[];
-  onAddPhotoSet: (photoSet: PhotoSet) => any;
-  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
+  displayedAlbumIds: string[];
+  albums: Album[];
+  onAddAlbum: (album: Album) => any;
+  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
   onReloadMediaItemsByViewSpec: () => void;
 }
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
-  const [newPhotoSetName, setNewPhotoSetName] = React.useState<string>('');
-  const [lastAddedPhotoSetId, setLastAddedPhotoSetId] = React.useState<string | null>(null);
+  const [newAlbumName, setNewAlbumName] = React.useState<string>('');
+  const [lastAddedAlbumId, setLastAddedAlbumId] = React.useState<string | null>(null);
   const [progress, setProgress] = React.useState(0);
 
   const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
@@ -45,36 +45,36 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
-  const localPhotoSetIdRef = React.useRef<string>(props.displayedPhotoSetIds[0]);
+  const localAlbumIdRef = React.useRef<string>(props.displayedAlbumIds[0]);
 
-  const updateLocalPhotoSetId = (newId: string) => {
-    localPhotoSetIdRef.current = newId;
-    console.log("Updated localPhotoSetId (ref):", localPhotoSetIdRef.current);
+  const updateLocalAlbumId = (newId: string) => {
+    localAlbumIdRef.current = newId;
+    console.log("Updated localAlbumId (ref):", localAlbumIdRef.current);
   };
 
   React.useEffect(() => {
     if (props.open) {
-      updateLocalPhotoSetId(props.displayedPhotoSetIds[0]);
+      updateLocalAlbumId(props.displayedAlbumIds[0]);
       setProgress(0);
-      setIsAddingNew(props.photoSets.length === 0);
+      setIsAddingNew(props.albums.length === 0);
       setFileProgress({});
       setFileStatuses({});
       setProcessingComplete(false);
       // setBaseDirectory('');
       setSelectedFiles(null);
-      setNewPhotoSetName('');
+      setNewAlbumName('');
     }
   }, [props.open]);
 
   // ✅ Ensure the selection is only overridden when no selection exists
   // React.useEffect(() => {
-  //   if (lastAddedPhotoSetId) {
-  //     props.onSetPhotoSetId(lastAddedPhotoSetId);
-  //     setLastAddedPhotoSetId(null); // Reset tracking
-  //   } else if (!props.photoSetId && props.photoSets.length > 0) {
-  //     props.onSetPhotoSetId(props.photoSets[0].photoSetId); // Default to first available photoSet
+  //   if (lastAddedAlbumId) {
+  //     props.onSetAlbumId(lastAddedAlbumId);
+  //     setLastAddedAlbumId(null); // Reset tracking
+  //   } else if (!props.albumId && props.albums.length > 0) {
+  //     props.onSetAlbumId(props.albums[0].albumId); // Default to first available album
   //   }
-  // }, [props.photoSets, lastAddedPhotoSetId, props.photoSetId]);
+  // }, [props.albums, lastAddedAlbumId, props.albumId]);
 
   if (!props.appInitialized || !props.open) {
     return null;
@@ -90,23 +90,23 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const createPhotoSet = async (): Promise<PhotoSet | undefined> => {
+  const createAlbum = async (): Promise<Album | undefined> => {
 
-    if (!newPhotoSetName.trim()) return Promise.resolve(undefined);
+    if (!newAlbumName.trim()) return Promise.resolve(undefined);
 
-    const newPhotoSet: PhotoSet = {
-      photoSetId: uuidv4(),
-      photoSetName: newPhotoSetName,
+    const newAlbum: Album = {
+      albumId: uuidv4(),
+      albumName: newAlbumName,
     };
 
-    return props.onAddPhotoSet(newPhotoSet).then(() => {
-      console.log('Photo Set added: ', newPhotoSet);
-      updateLocalPhotoSetId(newPhotoSet.photoSetId);
-      setLastAddedPhotoSetId(newPhotoSet.photoSetId);
-      setNewPhotoSetName("");
+    return props.onAddAlbum(newAlbum).then(() => {
+      console.log('Album added: ', newAlbum);
+      updateLocalAlbumId(newAlbum.albumId);
+      setLastAddedAlbumId(newAlbum.albumId);
+      setNewAlbumName("");
       setIsAddingNew(false);
 
-      return Promise.resolve(newPhotoSet);
+      return Promise.resolve(newAlbum);
     });
   };
 
@@ -129,8 +129,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           if (Object.values(updatedStatuses).every((status) => status === "completed")) {
             clearInterval(interval);
             console.log("All files processed!");
-            props.onSetDisplayedPhotoSetIds([localPhotoSetIdRef.current]);
-            localStorage.setItem('displayedPhotoSetIds', localPhotoSetIdRef.current);
+            props.onSetDisplayedAlbumIds([localAlbumIdRef.current]);
+            localStorage.setItem('displayedAlbumIds', localAlbumIdRef.current);
             props.onReloadMediaItemsByViewSpec();
             setProcessingComplete(true);
             resolve();
@@ -142,7 +142,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     });
   };
 
-  const handleImportFromDrive = async (baseDirectory: string, photoSetId: string, selectedFiles: FileList) => {
+  const handleImportFromDrive = async (baseDirectory: string, albumId: string, selectedFiles: FileList) => {
 
     setFileProgress({});
     setFileStatuses({});
@@ -167,7 +167,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
     const uploadBody = {
       baseDirectory,
-      photoSetId,
+      albumId,
       files,
     };
 
@@ -199,15 +199,15 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
   const handleImport = async () => {
     if (selectedFiles && (baseDirectory !== '')) {
-      let photoSetId = localPhotoSetIdRef.current;
+      let albumId = localAlbumIdRef.current;
       if (isAddingNew) {
-        const newPhotoSet: PhotoSet | undefined = await createPhotoSet();
-        if (!newPhotoSet) return;
-        photoSetId = newPhotoSet.photoSetId;
+        const newAlbum: Album | undefined = await createAlbum();
+        if (!newAlbum) return;
+        albumId = newAlbum.albumId;
       }
 
-      console.log('import files: ', baseDirectory, photoSetId, selectedFiles);
-      await handleImportFromDrive(baseDirectory, photoSetId, selectedFiles);
+      console.log('import files: ', baseDirectory, albumId, selectedFiles);
+      await handleImportFromDrive(baseDirectory, albumId, selectedFiles);
     }
   };
 
@@ -225,31 +225,31 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
             {isAddingNew ? (
               <Box display="flex" gap={1} alignItems="center">
                 <TextField
-                  label="New Photo Set Name"
-                  value={newPhotoSetName}
-                  onChange={(e) => setNewPhotoSetName(e.target.value)}
+                  label="New Album Name"
+                  value={newAlbumName}
+                  onChange={(e) => setNewAlbumName(e.target.value)}
                   fullWidth
                   autoFocus
                 />
-                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.photoSets.length === 0 && newPhotoSetName.trim() === ''}>
+                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albums.length === 0 && newAlbumName.trim() === ''}>
                   <CloseIcon />
                 </IconButton>
               </Box>
             ) : (
               <TextField
                 select
-                label="Choose a Photo Set"
-                value={localPhotoSetIdRef.current}
-                onChange={(e) => updateLocalPhotoSetId(e.target.value)}
+                label="Choose an Album"
+                value={localAlbumIdRef.current}
+                onChange={(e) => updateLocalAlbumId(e.target.value)}
                 fullWidth
               >
-                <MenuItem onClick={() => setIsAddingNew(true)} key={'newPhotoSet'} value={''}>
+                <MenuItem onClick={() => setIsAddingNew(true)} key={'newAlbum'} value={''}>
                   <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
-                  Add New Photo Set
+                  Add New Album
                 </MenuItem>
-                {props.photoSets.map((set) => (
-                  <MenuItem key={set.photoSetId} value={set.photoSetId}>
-                    {set.photoSetName}
+                {props.albums.map((set) => (
+                  <MenuItem key={set.albumId} value={set.albumId}>
+                    {set.albumName}
                   </MenuItem>
                 ))}
               </TextField>
@@ -286,7 +286,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
       <DialogActions>
         <Button onClick={handleClose}>Close</Button>
-        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newPhotoSetName.trim())}>
+        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newAlbumName.trim())}>
           Import
         </Button>
       </DialogActions>
@@ -297,15 +297,15 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
-    displayedPhotoSetIds: getDisplayedPhotoSetIds(state),
-    photoSets: getPhotoSets(state),
+    displayedAlbumIds: getDisplayedAlbumIds(state),
+    albums: getAlbums(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
-    onAddPhotoSet: addPhotoSet,
-    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onAddAlbum: addAlbum,
+    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
   }, dispatch);
 };

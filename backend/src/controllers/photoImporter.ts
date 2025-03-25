@@ -2,26 +2,26 @@ import { Request, Response } from 'express';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { FileToImport, GeoData, GoogleAlbum, MediaItem, PhotoSet, PhotoState } from '../types';
+import { FileToImport, GeoData, GoogleAlbum, MediaItem, Album, PhotoState } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
-import { addMediaItemToMediaItemsDBTable, getPhotoSetById } from './dbInterface';
+import { addMediaItemToMediaItemsDBTable, getAlbumById } from './dbInterface';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
 import { getGoogleAlbumsByName } from './googlePhotos';
 
-async function buildLocalStorageMediaItems(baseDirectory: string, photoSetId: string, fileNames: string[], albumName: string, albumId: string): Promise<MediaItem[]> {
+async function buildLocalStorageMediaItems(baseDirectory: string, albumId: string, fileNames: string[], googleAlbumName: string, googleAlbumId: string): Promise<MediaItem[]> {
 
   const mediaItems: MediaItem[] = await Promise.all(fileNames.map(async (fileName) => {
-    const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, photoSetId, fileName, albumName, albumId);
+    const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumId, fileName, googleAlbumName, googleAlbumId);
     return mediaItem;
   }));
 
   return mediaItems;
 }
 
-async function buildLocalStorageMediaItem(baseDirectory: string, photoSetId: string, fileName: string, albumName: string, albumId: string): Promise<MediaItem> {
+async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string, fileName: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
 
   const filePath = path.join(baseDirectory, fileName);
   console.log('filePath:', filePath);
@@ -36,8 +36,8 @@ async function buildLocalStorageMediaItem(baseDirectory: string, photoSetId: str
     uniqueId: uuidv4(),
     googleMediaItemId: '',
     fileName,
-    albumId,
-    albumName,
+    googleAlbumId,
+    googleAlbumName,
     filePath,
     productUrl: `http://localhost:8080/shafferographyMedia/${relativePath}`,
     baseUrl: null,
@@ -54,7 +54,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, photoSetId: str
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
     photoState: PhotoState.Unreviewed,
-    photoSetId,
+    albumId: albumId,
   }
 
   return mediaItem;
@@ -99,12 +99,12 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     const importId = uuidv4();
 
     const baseDirectory: string = request.body.baseDirectory;
-    const photoSetId: string = request.body.photoSetId;
+    const albumId: string = request.body.albumId;
     const files: FileToImport[] = request.body.files;
     const fileNames: string[] = files.map((file) => file.name);
 
     console.log('baseDirectory:', baseDirectory);
-    console.log('photoSetId:', photoSetId);
+    console.log('albumId:', albumId);
     console.log('files:', files);
 
     const importFromTakeout: boolean = isImportFromTakeout(baseDirectory);
@@ -140,18 +140,18 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
       }
     }
 
-    let albumName: string = '';
-    let albumId: string = '';
+    let googleAlbumName: string = '';
+    let googleAlbumId: string = '';
     if (importFromTakeout) {
-      const photoSet: PhotoSet = await getPhotoSetById(photoSetId);
-      albumName = photoSet.photoSetName;
-      const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(request.body.googleAccessToken, albumName);
+      const album: Album = await getAlbumById(albumId);
+      googleAlbumName = album.albumName;
+      const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(request.body.googleAccessToken, googleAlbumName);
       if (googleAlbums.length > 0) {
-        albumId = googleAlbums[0].id;
+        googleAlbumId = googleAlbums[0].id;
       }
     }
 
-    const localStorageMediaItems: MediaItem[] = await buildLocalStorageMediaItems(baseDirectory, photoSetId, updatedFileNames, albumName, albumId);
+    const localStorageMediaItems: MediaItem[] = await buildLocalStorageMediaItems(baseDirectory, albumId, updatedFileNames, googleAlbumName, googleAlbumId);
 
     // skip step that checks for image file existence in db
 
@@ -159,7 +159,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     await addMediaItemsFromLocalStorage(localStorageMediaItems);
 
     if (importFromTakeout) {
-      await mergePeople(BASE_MEDIA_PATH, albumName);
+      await mergePeople(BASE_MEDIA_PATH, googleAlbumName);
     }
 
     console.log('localStorageMediaItems:', localStorageMediaItems.length);

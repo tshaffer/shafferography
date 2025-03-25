@@ -12,8 +12,8 @@ export interface MediaItem {
   uniqueId: string;
   googleMediaItemId: string,
   fileName: string,
-  albumId: string;
-  albumName: string;
+  googleAlbumId: string;
+  googleAlbumName: string;
   filePath?: string,
   productUrl?: string,
   baseUrl?: string,
@@ -28,7 +28,7 @@ export interface MediaItem {
   peopleRetrievedFromGoogle: boolean,
   keywordNodeIds: string[],
   photoState: PhotoState,
-  photoSetId: string;
+  albumId: string;
   undecidedGroupId?: string;
 }
 
@@ -89,9 +89,9 @@ export interface UserWithToken extends User {
   accessToken: string;
 }
 
-export interface PhotoSet {
-  photoSetId: string;
-  photoSetName: string;
+export interface Album {
+  albumId: string;
+  albumName: string;
 }
 
 export interface FileToImport {

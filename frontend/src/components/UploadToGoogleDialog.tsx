@@ -25,7 +25,7 @@ export interface UploadToGoogleDialogProps extends UploadToGoogleDialogPropsFrom
 
 const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
 
-  const [albumName, setAlbumName] = React.useState('');
+  const [googleAlbumName, setGoogleAlbumName] = React.useState('');
   const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
   const [fileStatuses, setFileStatuses] = React.useState<Record<string, "uploading" | "processing" | "completed">>({});
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
@@ -109,7 +109,7 @@ const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
 
     const uploadToGoogleBody = {
       googleAccessToken,
-      albumName,
+      googleAlbumName,
       mediaItemIds: props.mediaItemIds,
     };
 
@@ -140,7 +140,7 @@ const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
   };
 
   const handleUploadToGoogle = async (): Promise<void> => {
-    if (albumName !== '') {
+    if (googleAlbumName !== '') {
       try {
         const response = await uploadToGoogle();
         // if (response.ok) {
@@ -179,8 +179,8 @@ const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
             <TextField
               style={{ paddingBottom: '8px' }}
               label="Album Name"
-              value={albumName}
-              onChange={(event) => setAlbumName(event.target.value)}
+              value={googleAlbumName}
+              onChange={(event) => setGoogleAlbumName(event.target.value)}
             />
             {Object.keys(fileProgress).map((fileName) => (
               <Stack key={fileName} direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem', padding: '4px 0' }}>

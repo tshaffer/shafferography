@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadPhotoSets, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setDisplayedPhotoSetIds, setDisplayedPhotoStates, setGoogleUserProfile } from "../models";
+import { loadMediaItems, loadAlbums, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
+import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumIds, setDisplayedPhotoStates, setGoogleUserProfile } from "../models";
 import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
@@ -49,11 +49,11 @@ export interface AppShellProps {
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
   onLoadMediaItems: () => any;
-  onLoadPhotoSets: () => any;
+  onLoadAlbums: () => any;
   onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
-  onSetDisplayedPhotoSetIds: (displayedPhotoSetIds: string[]) => any;
+  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => any;
 }
 
@@ -226,14 +226,14 @@ const AppShell = (props: AppShellProps) => {
 
   React.useEffect(() => {
 
-    const initializeDisplayedPhotoSetIds = async (): Promise<string[]> => {
-      let displayedPhotoSetIds: string[] = [];
-      const displayedPhotoSetsStr: string | null = localStorage.getItem('displayedPhotoSetIds');
-      if (displayedPhotoSetsStr) {
-        displayedPhotoSetIds = displayedPhotoSetsStr.split(',');
-        props.onSetDisplayedPhotoSetIds(displayedPhotoSetIds);
+    const initializeDisplayedAlbumIds = async (): Promise<string[]> => {
+      let displayedAlbumIds: string[] = [];
+      const displayedAlbumsStr: string | null = localStorage.getItem('displayedAlbumIds');
+      if (displayedAlbumsStr) {
+        displayedAlbumIds = displayedAlbumsStr.split(',');
+        props.onSetDisplayedAlbumIds(displayedAlbumIds);
       }
-      return displayedPhotoSetIds;
+      return displayedAlbumIds;
     }
 
     const initializeDisplayedPhotoStates = async (): Promise<PhotoState[]> => {
@@ -250,11 +250,11 @@ const AppShell = (props: AppShellProps) => {
       return displayedPhotoStates;
     };
 
-    props.onLoadPhotoSets()
+    props.onLoadAlbums()
       .then(function () {
         return initializeDisplayedPhotoStates()
       }).then(function () {
-        return initializeDisplayedPhotoSetIds()
+        return initializeDisplayedAlbumIds()
       }).then(function () {
         return props.onLoadUndecidedGroups();
       }).then(function () {
@@ -324,11 +324,11 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onLoadMediaItems: loadMediaItems,
-    onLoadPhotoSets: loadPhotoSets,
+    onLoadAlbums: loadAlbums,
     onLoadUndecidedGroups: loadUndecidedGroups,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
-    onSetDisplayedPhotoSetIds: setDisplayedPhotoSetIds,
+    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
     onSetDisplayedPhotoStates: setDisplayedPhotoStates,
   }, dispatch);
 };

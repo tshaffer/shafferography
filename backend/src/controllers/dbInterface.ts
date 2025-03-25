@@ -18,14 +18,14 @@ import {
   DateSearchRule,
   KeywordData,
   User,
-  PhotoSet,
+  Album,
   UndecidedGroup,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
-import { PhotoSetModel } from '../models';
-import { IPhotoSet } from '../models';
+import { AlbumModel } from '../models';
+import { IAlbum } from '../models';
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
@@ -65,7 +65,6 @@ export const getMediaItemsToDisplayFromDb = async (
   const mediaItemModel = getMediaitemModel();
 
   const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
-  //   const query = mediaItemModel.find(querySpec).limit(8).sort( { creationTime: -1 });
 
   const documents: any = await query.exec();
   const mediaItems: MediaItem[] = [];
@@ -77,50 +76,8 @@ export const getMediaItemsToDisplayFromDb = async (
   return mediaItems;
 }
 
-export const old_getMediaItemsByViewSpecFromDb = async (
-  photoSetIds: string[],
-  photoStates: PhotoState[],
-  undecidedGroupIds: string[],
-): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
-
-  const baseConditions: any[] = [
-    { photoSetId: { $in: photoSetIds } },
-    { photoState: { $in: photoStates } },
-  ];
-
-  // Handle special case for filtering by undecidedGroupId
-  if (photoStates.includes(PhotoState.Undecided)) {
-    if (undecidedGroupIds.length > 0) {
-      baseConditions.push({
-        $or: [
-          { photoState: { $ne: PhotoState.Undecided } },
-          {
-            $and: [
-              { photoState: PhotoState.Undecided },
-              { undecidedGroupId: { $in: undecidedGroupIds } },
-            ],
-          },
-        ],
-      });
-    }
-    // else: no need to restrict further — include all Undecided photos
-  }
-
-  const query = mediaItemModel
-    .find({ $and: baseConditions })
-    .sort({ creationTime: -1 });
-
-  const documents: any = await query.exec();
-  return documents.map((document: any) => {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    return mediaItem;
-  });
-};
-
 export const getMediaItemsByViewSpecFromDb = async (
-  photoSetIds: string[],
+  albumIds: string[],
   photoStates: PhotoState[],
   groupUndecidedPhotos: boolean,
   undecidedGroupIds: string[],
@@ -128,7 +85,7 @@ export const getMediaItemsByViewSpecFromDb = async (
   const mediaItemModel = getMediaitemModel();
 
   const baseConditions: any[] = [
-    { photoSetId: { $in: photoSetIds } },
+    { albumId: { $in: albumIds } },
     { photoState: { $in: photoStates } },
   ];
 
@@ -522,42 +479,28 @@ export const addMediaItemToMediaItemsDBTable = async (mediaItem: MediaItem): Pro
   return addMediaItemToDb(mediaItemModel, mediaItem);
 };
 
-export const getAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {
+export const getGoogleAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {
   const mediaItemModel = getMediaitemModel();
 
   try {
     // Query the collection to find distinct album names
-    const albumNames = await mediaItemModel.distinct('albumName', {
+    const googleAlbumNames = await mediaItemModel.distinct('googleAlbumName', {
       peopleRetrievedFromGoogle: false,
-      albumName: { $ne: '' }, // Exclude empty strings at the query level
+      googleAlbumName: { $ne: '' }, // Exclude empty strings at the query level
     });
 
-    return albumNames; // Returns an array of album names
+    return googleAlbumNames; // Returns an array of album names
   } catch (error) {
     console.error('Error retrieving albums:', error);
     throw error;
   }
 };
 
-export const getMediaItemsInAlbumFromDb = async (albumId: string): Promise<MediaItem[]> => {
-
+export const getMediaItemsInNamedAlbumFromDb = async (googleAlbumName: string): Promise<MediaItem[]> => {
   const mediaItemModel = getMediaitemModel();
 
   const mediaItems: MediaItem[] = [];
-  const documents: any = await (mediaItemModel as any).find({ albumId }).exec();
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    mediaItems.push(mediaItem);
-  }
-  return mediaItems;
-}
-
-export const getMediaItemsInNamedAlbumFromDb = async (albumName: string): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
-
-  const mediaItems: MediaItem[] = [];
-  const documents: any = await (mediaItemModel as any).find({ albumName }).exec();
+  const documents: any = await (mediaItemModel as any).find({ googleAlbumName }).exec();
   for (const document of documents) {
     const mediaItem: MediaItem = document.toObject() as MediaItem;
     mediaItems.push(mediaItem);
@@ -565,32 +508,32 @@ export const getMediaItemsInNamedAlbumFromDb = async (albumName: string): Promis
   return mediaItems;
 }
 
-export const getAllPhotoSetsFromDb = async (): Promise<IPhotoSet[]> => {
+export const getAllAlbumsFromDb = async (): Promise<IAlbum[]> => {
   try {
-    const photoSets = await PhotoSetModel.find().exec();
-    return photoSets;
+    const albums = await AlbumModel.find().exec();
+    return albums;
   } catch (error) {
     console.error('Error retrieving photo sets:', error);
     throw error;
   }
 };
 
-export const addPhotoSetToDb = async (photoSet: Required<PhotoSet>): Promise<IPhotoSet> => {
+export const addAlbumToDb = async (album: Required<Album>): Promise<IAlbum> => {
   try {
-    const newPhotoSet = new PhotoSetModel(photoSet);
-    await newPhotoSet.save();
-    return newPhotoSet;
+    const newAlbum = new AlbumModel(album);
+    await newAlbum.save();
+    return newAlbum;
   } catch (error) {
-    console.error('Error adding photo set:', error);
+    console.error('Error adding album:', error);
     throw error;
   }
 };
 
-export const getPhotoSetById = async (photoSetId: string): Promise<PhotoSet> => {
+export const getAlbumById = async (albumId: string): Promise<Album> => {
   try {
-    const querySpec = { photoSetId };
-    const photoSet = await PhotoSetModel.find(querySpec).exec();
-    return photoSet[0];
+    const querySpec = { albumId };
+    const album = await AlbumModel.find(querySpec).exec();
+    return album[0];
   } catch (error) {
     console.error('Error retrieving photo set:', error);
     throw error;

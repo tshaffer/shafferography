@@ -12,7 +12,7 @@ export const SET_SURVEY_MODE_ZOOM_FACTOR = 'SET_SURVEY_MODE_ZOOM_FACTOR';
 export const SET_SCROLL_POSITION = 'SET_SCROLL_POSITION';
 export const SET_FULL_SCREEN_MODE = 'SET_FULL_SCREEN_MODE';
 export const SET_MEDIA_ITEM_ZOOM_FACTOR = 'SET_MEDIA_ITEM_ZOOM_FACTOR';
-export const SET_DISPLAYED_PHOTOSET_IDS = 'SET_DISPLAYED_PHOTOSET_IDS';
+export const SET_DISPLAYED_ALBUM_IDS = 'SET_DISPLAYED_ALBUM_IDS';
 export const SET_DISPLAYED_REVIEW_LEVELS = 'SET_DISPLAYED_REVIEW_LEVELS';
 export const SET_GROUP_UNDECIDED_PHOTOS = 'SET_GROUP_UNDECIDED_PHOTOS';
 export const SET_DISPLAYED_UNDECIDED_GROUP_IDS = 'SET_DISPLAYED_UNDECIDED_GROUP_IDS';
@@ -127,15 +127,15 @@ export const setMediaItemZoomFactor = (mediaItemId: string, zoomFactor: number):
   };
 };
 
-interface SetDisplayedPhotoSetIdsPayload {
-  displayedPhotoSetIds: string[],
+interface SetDisplayedAlbumIdsPayload {
+  displayedAlbumIds: string[],
 }
 
-export const setDisplayedPhotoSetIds = (displayedPhotoSetIds: string[]): any => {
+export const setDisplayedAlbumIds = (displayedAlbumIds: string[]): any => {
   return {
-    type: SET_DISPLAYED_PHOTOSET_IDS,
+    type: SET_DISPLAYED_ALBUM_IDS,
     payload: {
-      displayedPhotoSetIds,
+      displayedAlbumIds,
     },
   };
 };
@@ -194,7 +194,7 @@ const initialState: PhotoViewSpec = {
   scrollPosition: 0,
   fullScreenMode: false,
   mediaItemZoomFactorById: {},
-  displayedPhotoSetIds: [],
+  displayedAlbumIds: [],
   displayedPhotoStates: [PhotoState.ReadyForUpload, PhotoState.Unreviewed, PhotoState.Undecided, PhotoState.Uploaded],
   groupUndecidedPhotos: false,
   displayedUndecidedGroupIds: [],
@@ -202,7 +202,7 @@ const initialState: PhotoViewSpec = {
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedPhotoSetIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
+  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -220,10 +220,10 @@ export const photoViewSpecReducer = (
         ...state,
         loupeViewMediaItemId: action.payload.loupeViewMediaItemId,
       };
-    case SET_DISPLAYED_PHOTOSET_IDS:
+    case SET_DISPLAYED_ALBUM_IDS:
       return {
         ...state,
-        displayedPhotoSetIds: action.payload.displayedPhotoSetIds,
+        displayedAlbumIds: action.payload.displayedAlbumIds,
       };
     case SET_DISPLAYED_REVIEW_LEVELS:
       return {

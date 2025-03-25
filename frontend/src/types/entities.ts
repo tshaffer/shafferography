@@ -17,7 +17,7 @@ export interface ServerMediaItem {
   uniqueId: string;
   googleMediaItemId: string,
   fileName: string,
-  albumId: string;
+  googleAlbumId: string;
   filePath?: string,
   productUrl?: string,
   baseUrl?: string,
@@ -38,7 +38,7 @@ export interface MediaItem {
   uniqueId: string;
   googleMediaItemId: string,
   fileName: string,
-  albumId: string;
+  googleAlbumId: string;
   filePath?: string,
   productUrl?: string,
   baseUrl?: string,
@@ -98,9 +98,9 @@ export interface GoogleUserProfile {
   name: string;
 }
 
-export interface PhotoSet {
-  photoSetId: string;
-  photoSetName: string;
+export interface Album {
+  albumId: string;
+  albumName: string;
 }
 
 export interface FileToImport {
@@ -116,8 +116,8 @@ export interface PhotoStateOption {
   label: string;
 }
 
-export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "albumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "albumId", "filePath", "productUrl", "baseUrl", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
+export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "productUrl", "baseUrl", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

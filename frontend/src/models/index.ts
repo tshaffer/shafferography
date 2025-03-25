@@ -6,6 +6,6 @@ export * from './selectedMediaItems';
 export * from './keywords';
 export * from './searchUI';
 export * from './photoViewSpec';
-export * from './photoSets';
+export * from './albums';
 export * from './undecidedGroups';
 

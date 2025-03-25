@@ -8,7 +8,7 @@ import { TextField, Button, Collapse, List, ListItem, ListItemText, Popover, Lis
 import { addUndecidedGroup, assignMediaItemsToUndecidedGroup } from '../controllers';
 import { TedTaggerDispatch } from '../models';
 import { getSelectedMediaItemIds, getDisplayedAlbumIds, getAlbums, getUndecidedGroups } from '../selectors';
-import { Album, PhotoState, UndecidedGroup } from '../types';
+import { Album, PhotoState, TedTaggerState, UndecidedGroup } from '../types';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 export interface SetUndecidedGroupPropsFromParent {
@@ -18,7 +18,7 @@ export interface SetUndecidedGroupPropsFromParent {
   onClose: () => void;
 }
 
-export interface SetUndecidedGroupProps {
+export interface SetUndecidedGroupDerivedStateProps {
   selectedMediaItemIds: string[];
   displayedAlbumIds: string[];
   albums: Album[];
@@ -27,7 +27,18 @@ export interface SetUndecidedGroupProps {
   onAssignMediaItemsToUndecidedGroup: (undecidedGroupId: string, mediaItemIds: string[]) => any;
 }
 
-const SetUndecidedGroup: React.FC<any> = (props) => {
+export interface SetUndecidedGroupDerivedActionCreatorProps {
+  selectedMediaItemIds: string[];
+  displayedAlbumIds: string[];
+  albums: Album[];
+  undecidedGroups: UndecidedGroup[];
+  onAddUndecidedGroup: (albumIds: string[], undecidedGroupName: string) => any;
+  onAssignMediaItemsToUndecidedGroup: (undecidedGroupId: string, mediaItemIds: string[]) => any;
+}
+
+export interface SetUndecidedGroupAllProps extends SetUndecidedGroupDerivedStateProps, SetUndecidedGroupDerivedActionCreatorProps, SetUndecidedGroupPropsFromParent {}
+
+const SetUndecidedGroup: React.FC<any> = (props: SetUndecidedGroupAllProps) => {
 
   const [undecidedGroupName, setUndecidedGroupName] = useState("");
   const [lastUndecidedGroup, setLastUndecidedGroup] = useState<UndecidedGroup | null>(null);
@@ -161,7 +172,7 @@ const SetUndecidedGroup: React.FC<any> = (props) => {
   );
 }
 
-function mapStateToProps(state: any): any {
+function mapStateToProps(state: TedTaggerState): Partial<SetUndecidedGroupDerivedStateProps> {
   return {
     selectedMediaItemIds: getSelectedMediaItemIds(state),
     displayedAlbumIds: getDisplayedAlbumIds(state),

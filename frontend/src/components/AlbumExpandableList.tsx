@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 
 import ExpandableGroup from './ExpandableGroup';
 import CheckboxListSelector from './CheckboxListSelector'; // Import your existing CheckboxListSelector component
-import { UndecidedGroup } from '../types';
+import { TedTaggerState, UndecidedGroup } from '../types';
 import { TedTaggerDispatch } from '../models';
 import { getDisplayedUndecidedGroups } from '../selectors';
 
@@ -14,11 +14,13 @@ export interface AlbumExpandableListPropsFromParent {
   onDeleteUndecidedGroup: (undecidedGroup: UndecidedGroup) => void;
 }
 
-export interface AlbumExpandableListProps extends AlbumExpandableListPropsFromParent {
+export interface AlbumExpandableListDerivedProps  {
   displayedUndecidedGroups: UndecidedGroup[];
 }
 
-const AlbumExpandableList = (props: AlbumExpandableListProps) => {
+export interface AlbumExpandableListAllProps extends AlbumExpandableListDerivedProps, AlbumExpandableListPropsFromParent {}
+
+const AlbumExpandableList: React.FC<AlbumExpandableListAllProps> = (props: AlbumExpandableListAllProps) => {
 
   const renderExpandableGroup = (undecidedGroupNamePrefix: string, undecidedGroupsInAlbum: UndecidedGroup[]): JSX.Element => {
     return (
@@ -59,7 +61,7 @@ const AlbumExpandableList = (props: AlbumExpandableListProps) => {
   );
 };
 
-function mapStateToProps(state: any): any {
+function mapStateToProps(state: TedTaggerState): AlbumExpandableListDerivedProps {
   return {
     displayedUndecidedGroups: getDisplayedUndecidedGroups(state),
   };

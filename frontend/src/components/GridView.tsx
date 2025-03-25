@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { VariableSizeList as List } from 'react-window';
+import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
@@ -23,7 +23,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
-  const listRef = React.useRef<List>(null);
+  const listRef = React.useRef<VariableSizeList>(null);
 
   React.useEffect(() => {
     const updateGridWidth = () => {
@@ -91,18 +91,19 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   );
 
   const getItemSize = (index: number) => rowHeights[index];
+  const listHeight = window.innerHeight - 112;
 
   return (
-    <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }}>
-      <List
+    <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
+      <VariableSizeList
         itemSize={getItemSize}
         ref={listRef}
-        height={window.innerHeight}
+        height={listHeight}
         itemCount={gridRows.length}
         width="100%"
       >
         {renderRow}
-      </List>
+      </VariableSizeList>
     </div>
   );
 };

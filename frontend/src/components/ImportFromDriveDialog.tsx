@@ -43,6 +43,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
   const [fileStatuses, setFileStatuses] = React.useState<Record<string, "uploading" | "processing" | "completed">>({});
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
+  const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
   const localAlbumIdRef = React.useRef<string>(props.displayedAlbumIds[0]);
@@ -63,22 +64,9 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       // setBaseDirectory('');
       setSelectedFiles(null);
       setNewAlbumName('');
+      setErrorMessage(null);
     }
   }, [props.open]);
-
-  // ✅ Ensure the selection is only overridden when no selection exists
-  // React.useEffect(() => {
-  //   if (lastAddedAlbumId) {
-  //     props.onSetAlbumId(lastAddedAlbumId);
-  //     setLastAddedAlbumId(null); // Reset tracking
-  //   } else if (!props.albumId && props.albums.length > 0) {
-  //     props.onSetAlbumId(props.albums[0].albumId); // Default to first available album
-  //   }
-  // }, [props.albums, lastAddedAlbumId, props.albumId]);
-
-  if (!props.appInitialized || !props.open) {
-    return null;
-  }
 
   const handleClose = () => {
     props.onClose();
@@ -91,7 +79,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   };
 
   const createAlbum = async (): Promise<Album | undefined> => {
-
     if (!newAlbumName.trim()) return Promise.resolve(undefined);
 
     const newAlbum: Album = {
@@ -142,8 +129,30 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     });
   };
 
-  const handleImportFromDrive = async (baseDirectory: string, albumId: string, selectedFiles: FileList) => {
+  const albumExists = (albumName: string): boolean => {
+    return props.albums.some((album) => album.albumName === albumName);
+  };
 
+  const handleImport = async () => {
+    if (selectedFiles && (baseDirectory !== '')) {
+      let albumId = localAlbumIdRef.current;
+      if (isAddingNew) {
+        if (albumExists(newAlbumName)) {
+          // Instead of logging an error, set an error message to display in a modal dialog.
+          setErrorMessage('Album already exists');
+          return;
+        }
+        const newAlbum: Album | undefined = await createAlbum();
+        if (!newAlbum) return;
+        albumId = newAlbum.albumId;
+      }
+
+      console.log('import files: ', baseDirectory, albumId, selectedFiles);
+      await handleImportFromDrive(baseDirectory, albumId, selectedFiles);
+    }
+  };
+
+  const handleImportFromDrive = async (baseDirectory: string, albumId: string, selectedFiles: FileList) => {
     setFileProgress({});
     setFileStatuses({});
     setProcessingComplete(false);
@@ -197,100 +206,101 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const handleImport = async () => {
-    if (selectedFiles && (baseDirectory !== '')) {
-      let albumId = localAlbumIdRef.current;
-      if (isAddingNew) {
-        const newAlbum: Album | undefined = await createAlbum();
-        if (!newAlbum) return;
-        albumId = newAlbum.albumId;
-      }
-
-      console.log('import files: ', baseDirectory, albumId, selectedFiles);
-      await handleImportFromDrive(baseDirectory, albumId, selectedFiles);
-    }
-  };
-
   return (
-    <Dialog onClose={handleClose} open={props.open} maxWidth="md" fullWidth>
-      <DialogTitle>Import Photos</DialogTitle>
-      <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }} sx={{ width: '100%', minWidth: '500px' }}>
-        {processingComplete && (
-          <Alert severity="success" sx={{ mb: 2, fontSize: '1.2rem', textAlign: 'center' }}>
-            Processing Complete!
-          </Alert>
-        )}
-        <Box component="form" noValidate autoComplete="off">
-          <Box>
-            {isAddingNew ? (
-              <Box display="flex" gap={1} alignItems="center">
+    <>
+      <Dialog onClose={handleClose} open={props.open} maxWidth="md" fullWidth>
+        <DialogTitle>Import Photos</DialogTitle>
+        <DialogContent style={{ paddingTop: '6px', paddingBottom: '0px' }} sx={{ width: '100%', minWidth: '500px' }}>
+          {processingComplete && (
+            <Alert severity="success" sx={{ mb: 2, fontSize: '1.2rem', textAlign: 'center' }}>
+              Processing Complete!
+            </Alert>
+          )}
+          <Box component="form" noValidate autoComplete="off">
+            <Box>
+              {isAddingNew ? (
+                <Box display="flex" gap={1} alignItems="center">
+                  <TextField
+                    label="New Album Name"
+                    value={newAlbumName}
+                    onChange={(e) => setNewAlbumName(e.target.value)}
+                    fullWidth
+                    autoFocus
+                  />
+                  <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albums.length === 0 && newAlbumName.trim() === ''}>
+                    <CloseIcon />
+                  </IconButton>
+                </Box>
+              ) : (
                 <TextField
-                  label="New Album Name"
-                  value={newAlbumName}
-                  onChange={(e) => setNewAlbumName(e.target.value)}
+                  select
+                  label="Choose an Album"
+                  value={localAlbumIdRef.current}
+                  onChange={(e) => updateLocalAlbumId(e.target.value)}
                   fullWidth
-                  autoFocus
-                />
-                <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albums.length === 0 && newAlbumName.trim() === ''}>
-                  <CloseIcon />
-                </IconButton>
-              </Box>
-            ) : (
-              <TextField
-                select
-                label="Choose an Album"
-                value={localAlbumIdRef.current}
-                onChange={(e) => updateLocalAlbumId(e.target.value)}
-                fullWidth
-              >
-                <MenuItem onClick={() => setIsAddingNew(true)} key={'newAlbum'} value={''}>
-                  <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
-                  Add New Album
-                </MenuItem>
-                {props.albums.map((set) => (
-                  <MenuItem key={set.albumId} value={set.albumId}>
-                    {set.albumName}
+                >
+                  <MenuItem onClick={() => setIsAddingNew(true)} key={'newAlbum'} value={''}>
+                    <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
+                    Add New Album
                   </MenuItem>
-                ))}
-              </TextField>
-            )}
+                  {props.albums.map((set) => (
+                    <MenuItem key={set.albumId} value={set.albumId}>
+                      {set.albumName}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              )}
+            </Box>
+
+            {/* File Upload Section */}
+            <Stack sx={{ marginTop: '16px', width: '100%', minWidth: '500px' }}>
+              <TextField
+                label="Base Directory"
+                value={baseDirectory}
+                onChange={(e) => setBaseDirectory(e.target.value)}
+                fullWidth
+                sx={{ paddingBottom: '8px' }}
+              />
+              <input
+                type="file"
+                accept=".jpg,.heic,image/jpeg,image/heic"
+                onChange={handleImportFilesSelect}
+                id="importFilesInput"
+                name="file"
+                multiple
+                style={{ marginTop: '1rem' }}
+              />
+              {Object.keys(fileProgress).map((fileName) => (
+                <Stack key={fileName} direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem', padding: '4px 0' }}>
+                  <Typography>{fileName}</Typography>
+                  <Typography>{fileStatuses[fileName] === "processing" ? "Processing..." : "✅ Done"}</Typography>
+                </Stack>
+              ))}
+            </Stack>
           </Box>
+        </DialogContent>
 
-          {/* File Upload Section */}
-          <Stack sx={{ marginTop: '16px', width: '100%', minWidth: '500px' }}>
-            <TextField
-              label="Base Directory"
-              value={baseDirectory}
-              onChange={(e) => setBaseDirectory(e.target.value)}
-              fullWidth
-              sx={{ paddingBottom: '8px' }}
-            />
-            <input
-              type="file"
-              accept=".jpg,.heic,image/jpeg,image/heic"
-              onChange={handleImportFilesSelect}
-              id="importFilesInput"
-              name="file"
-              multiple
-              style={{ marginTop: '1rem' }}
-            />
-            {Object.keys(fileProgress).map((fileName) => (
-              <Stack key={fileName} direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem', padding: '4px 0' }}>
-                <Typography>{fileName}</Typography>
-                <Typography>{fileStatuses[fileName] === "processing" ? "Processing..." : "✅ Done"}</Typography>
-              </Stack>
-            ))}
-          </Stack>
-        </Box>
-      </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Close</Button>
+          <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newAlbumName.trim())}>
+            Import
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      <DialogActions>
-        <Button onClick={handleClose}>Close</Button>
-        <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newAlbumName.trim())}>
-          Import
-        </Button>
-      </DialogActions>
-    </Dialog>
+      {/* Error Modal Dialog */}
+      {errorMessage && (
+        <Dialog open={true} onClose={() => setErrorMessage(null)}>
+          <DialogTitle>Error</DialogTitle>
+          <DialogContent>
+            <Alert severity="error">{errorMessage}</Alert>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setErrorMessage(null)}>Close</Button>
+          </DialogActions>
+        </Dialog>
+      )}
+    </>
   );
 };
 

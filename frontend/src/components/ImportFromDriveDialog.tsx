@@ -145,8 +145,11 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
         const newAlbum: Album | undefined = await createAlbum();
         if (!newAlbum) return;
         albumId = newAlbum.albumId;
+      } else if (!albumId) {
+        // Instead of logging an error, set an error message to display in a modal dialog.
+        setErrorMessage('No album selected');
+        return;
       }
-
       console.log('import files: ', baseDirectory, albumId, selectedFiles);
       await handleImportFromDrive(baseDirectory, albumId, selectedFiles);
     }

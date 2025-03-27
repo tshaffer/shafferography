@@ -33,6 +33,9 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   onReloadMediaItemsByViewSpec: () => void;
 }
 
+type FileStatus = "uploading" | "processing" | "completed" | "conversion failed";
+type FileStatuses = Record<string, FileStatus>;
+
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
@@ -41,7 +44,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [progress, setProgress] = React.useState(0);
 
   const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
-  const [fileStatuses, setFileStatuses] = React.useState<Record<string, "uploading" | "processing" | "completed">>({});
+  const [fileStatuses, setFileStatuses] = React.useState<FileStatuses>({});
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
@@ -105,15 +108,15 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
           if (!response.data || response.data.files.length === 0) return;
 
-          const updatedStatuses: Record<string, "uploading" | "processing" | "completed"> = {};
+          const updatedStatuses: FileStatuses = {};
 
           response.data.files.forEach((file: { filename: string; status: string }) => {
-            updatedStatuses[file.filename] = file.status as "uploading" | "processing" | "completed";
+            updatedStatuses[file.filename] = file.status as FileStatus;
           });
 
           setFileStatuses(updatedStatuses);
 
-          if (Object.values(updatedStatuses).every((status) => status === "completed")) {
+          if (Object.values(updatedStatuses).every((status) => ((status === "completed") || (status === "conversion failed")))) {
             clearInterval(interval);
             console.log("All files processed!");
             props.onSetDisplayedAlbumIds([localAlbumIdRef.current]);
@@ -209,6 +212,21 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
+  const getFileStatusLabel = (status: FileStatus): string => {
+    switch (status) {
+      case "uploading":
+        return "Uploading...";
+      case "processing":
+        return "Processing...";
+      case "completed":
+        return "✅ Done"; 
+        case "conversion failed":
+        return "❌ Conversion Failed";
+      default:
+        return "Unknown Status";
+    }
+  };
+
   return (
     <>
       <Dialog onClose={handleClose} open={props.open} maxWidth="md" fullWidth>
@@ -276,7 +294,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               {Object.keys(fileProgress).map((fileName) => (
                 <Stack key={fileName} direction="row" justifyContent="space-between" sx={{ fontSize: '0.9rem', padding: '4px 0' }}>
                   <Typography>{fileName}</Typography>
-                  <Typography>{fileStatuses[fileName] === "processing" ? "Processing..." : "✅ Done"}</Typography>
+                  <Typography>{getFileStatusLabel(fileStatuses[fileName])}</Typography>
                 </Stack>
               ))}
             </Stack>

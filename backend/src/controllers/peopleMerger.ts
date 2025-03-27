@@ -3,7 +3,6 @@ import { Keyword, KeywordData, KeywordNode, MediaItem, StringToStringLUT } from 
 import { isNil } from 'lodash';
 import { getJsonFromFile } from '../utilities';
 import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb, getMediaItemsInNamedAlbumFromDb, updateMediaItemFieldsInDb } from './dbInterface';
-import { BASE_MEDIA_PATH } from '../config';
 import { getTakeoutMetaDataFilePath } from './app';
 
 export const mergePeople = async (baseDirectory: string, albumName: string) => {

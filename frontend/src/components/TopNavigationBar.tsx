@@ -288,7 +288,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
       <React.Fragment>
         <Tooltip title="Set Unreviewed">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)} disabled={props.selectedMediaItemsCount === 0}>
               <MoreHoriz />
             </IconButton>
           </span>
@@ -296,7 +296,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
         <Tooltip title="Set Undecided">
           <span>
-            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI}>
+            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI} disabled={props.selectedMediaItemsCount === 0}>
               <HelpOutline />
             </IconButton>
           </span>
@@ -311,21 +311,21 @@ const TopNavigationBar: React.FC<any> = (props) => {
 
         <Tooltip title="Set Ready for Upload">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)} disabled={props.selectedMediaItemsCount === 0}>
               <CloudUpload />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Set Uploaded">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)} disabled={props.selectedMediaItemsCount === 0}>
               <CloudDone />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Delete Selected Photos">
           <span>
-            <IconButton color="inherit" onClick={handleDeletePhotos}>
+            <IconButton color="inherit" onClick={handleDeletePhotos} disabled={props.selectedMediaItemsCount === 0}>
               <DeleteIcon />
             </IconButton>
           </span>

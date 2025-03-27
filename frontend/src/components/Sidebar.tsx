@@ -158,6 +158,7 @@ const Sidebar: React.FC<any> = (props: any) => {
                 selectedItems={props.albums.filter((set: Album) => props.displayedAlbumIds.includes(set.albumId))}
                 getItemLabel={(item: Album) => item.albumName}
                 onChange={(selected) => handleAlbumChange(selected.map((set: Album) => set.albumId))}
+                maxHeight={350}
               />
             </Box>
           )}

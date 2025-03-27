@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import {
   List,
-  ListItem,
   ListItemText,
   Checkbox,
   Box,
@@ -22,6 +21,7 @@ interface CheckboxListSelectorProps<T> {
   onDeleteItem?: (item: T) => void;
   showSelectAll?: boolean;
   showDeleteItem?: boolean;
+  maxHeight?: number; // New property for scrolling support
 }
 
 function CheckboxListSelector<T>({
@@ -30,6 +30,7 @@ function CheckboxListSelector<T>({
   selectedItems,
   showSelectAll = true,
   showDeleteItem = false,
+  maxHeight,
   getItemLabel,
   onChange,
   onDeleteItem = () => { console.log('onDeleteItem not implemented'); },
@@ -66,33 +67,36 @@ function CheckboxListSelector<T>({
 
   return (
     <Box id='checkboxListSelectorBox'>
-      <List id='checkboxListSelectorList' dense>
-        {showSelectAll && (
-          <ListItem sx={{ paddingY: 0.2, paddingLeft: '10px' }}>
-            <ButtonGroup size="small" sx={{ mb: 1 }}>
-              <Button
-                variant="outlined"
-                disabled={tempSelected.length === photoStateOptions.length}
-                onClick={() => handleSelectAllOrNoneChange(true)}
-              >
-                Select All
-              </Button>
-              <Button
-                variant="outlined"
-                disabled={tempSelected.length === 0}
-                onClick={() => handleSelectAllOrNoneChange(false)} // Select all
-              >
-                Deselect All
-              </Button>
-            </ButtonGroup>
-          </ListItem>
-        )}
-
+      {showSelectAll && (
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '10px', marginBottom: 1 }}>
+          <ButtonGroup size="small">
+            <Button
+              variant="outlined"
+              disabled={tempSelected.length === photoStateOptions.length}
+              onClick={() => handleSelectAllOrNoneChange(true)}
+            >
+              Select All
+            </Button>
+            <Button
+              variant="outlined"
+              disabled={tempSelected.length === 0}
+              onClick={() => handleSelectAllOrNoneChange(false)}
+            >
+              Deselect All
+            </Button>
+          </ButtonGroup>
+        </Box>
+      )}
+      <List
+        id='checkboxListSelectorList'
+        dense
+        sx={maxHeight ? { maxHeight: maxHeight, overflowY: 'auto' } : {}}
+      >
         {items.map((item) => (
           <ListItemButton
             key={getItemLabel(item)}
             onClick={() => toggleSelection(item)}
-            sx={{ paddingLeft: '5px', paddingY: 0.2 }} // Reduced paddingY here
+            sx={{ paddingLeft: '5px', paddingY: 0.2 }}
           >
             <Checkbox checked={tempSelected.includes(item)} />
             <ListItemText primary={getItemLabel(item)} />
@@ -101,7 +105,7 @@ function CheckboxListSelector<T>({
                 edge="end"
                 sx={{ marginLeft: 'auto' }}
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent the ListItem onClick from firing.
+                  e.stopPropagation();
                   handleDelete(item);
                 }}
               >

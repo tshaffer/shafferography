@@ -257,29 +257,56 @@ const Sidebar: React.FC<any> = (props: any) => {
           </IconButton>
         </DrawerHeader>
         <Divider />
-        <List>
 
-          <ListItemButton onClick={() => setShowRetrievePeopleDialog(true)}>
-            <ListItemText primary="Retrieve Albums without People" />
+        <List
+          dense
+          sx={{ '& .MuiListItemButton-root': { py: 0 }, '& .MuiCheckbox-root': { py: 0.25 } }}
+        >
+          <ListItemButton
+            onClick={() => setShowRetrievePeopleDialog(true)}
+            sx={{
+              mx: 1,
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderRadius: 1,
+              color: 'primary.main', // sets the text color for the button
+              '&:hover': {
+                borderColor: 'primary.dark',
+                color: 'primary.dark'
+              }
+            }}
+          >
+            <ListItemText
+              primary="Albums without People"
+              primaryTypographyProps={{ sx: { fontSize: '16px', color: 'inherit' } }}
+            />
           </ListItemButton>
 
-          <ListItemButton onClick={() => setShowMergePeopleDialog(true)}>
-            <ListItemText primary="Merge People" />
+          <ListItemButton
+            onClick={() => setShowMergePeopleDialog(true)}
+            sx={{
+              mx: 1,
+              border: '1px solid',
+              borderColor: 'primary.main',
+              borderRadius: 1, // Optional: adds rounded corners
+              color: 'primary.main', // sets the text color for the button
+              '&:hover': {
+                borderColor: 'primary.dark',
+                color: 'primary.dark'
+              }
+            }}
+          >
+            <ListItemText
+              primary="Merge People"
+              primaryTypographyProps={{ sx: { fontSize: '16px' } }}
+            />
           </ListItemButton>
-          {/* <Divider sx={{ my: 2 }} />
-          <Typography variant="subtitle1">Keywords</Typography>
-          <ListItem button>
-            <ListItemText primary="+ Add Keyword" />
-          </ListItem> */}
 
           <Divider sx={{ my: 2 }} />
 
-          {/* Album Selection */}
           {renderAlbumsToDisplayChooser()}
 
-          {/* Photo State Selection */}
           {renderPhotoStatesToDisplayChooser()}
-
         </List>
 
       </Drawer>

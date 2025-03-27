@@ -68,7 +68,7 @@ function CheckboxListSelector<T>({
   return (
     <Box id='checkboxListSelectorBox'>
       {showSelectAll && (
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '10px', marginBottom: 1 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '10px', marginBottom: 0, marginTop: 1 }}>
           <ButtonGroup size="small">
             <Button
               variant="outlined"

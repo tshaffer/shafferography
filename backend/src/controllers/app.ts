@@ -16,12 +16,14 @@ import {
   updateMediaItemsFieldsInDb,
   getAllAlbumsFromDb,
   addAlbumToDb,
-  getMediaItemsByViewSpecFromDb
+  getMediaItemsByViewSpecFromDb,
+  getMediaItemCountByAlbumFromDb,
+  getMediaItemCountByPhotoStateFromDb,
+  getMediaItemCountByUndecidedGroupPerAlbumFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, SearchRule, SearchSpec } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT } from '../types';
 import {
   deleteDirectory,
-  fsDeleteFiles
 } from '../utilities';
 import { MatchRule, PhotoState } from 'enums';
 import path from 'path';
@@ -245,3 +247,30 @@ export const addAlbum = async (request: Request, response: Response, next: any) 
   response.json(newAlbum);
 }
 
+export const getMediaItemCountByAlbum = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByAlbumFromDb();
+  response.json(counts);
+};
+
+export const getMediaItemCountByPhotoState = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByPhotoStateFromDb();
+  response.json(counts);
+};
+
+export const getMediaItemCountByUndecidedGroupPerAlbum = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByUndecidedGroupPerAlbumFromDb();
+  response.json(counts);
+};
+
+export const getMediaItemCounts = async (request: Request, response: Response, next: any) => {
+  const mediaItemCountByAlbum: StringToNumberLUT = await getMediaItemCountByAlbumFromDb();
+  const mediaItemCountByPhotoState: StringToNumberLUT = await getMediaItemCountByPhotoStateFromDb();
+  const mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[] = await getMediaItemCountByUndecidedGroupPerAlbumFromDb();
+  response.json(
+    {
+      mediaItemCountByAlbum,
+      mediaItemCountByPhotoState,
+      mediaItemCountByUndecidedGroupPerAlbum
+    } as MediaItemCounts
+  );
+};

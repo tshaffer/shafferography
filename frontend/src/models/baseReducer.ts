@@ -11,6 +11,7 @@ import { searchUIStateReducer } from './searchUI';
 import { photoViewSpecReducer } from './photoViewSpec';
 import { albumsStateReducer } from './albums';
 import { undecidedGroupsStateReducer } from './undecidedGroups';
+import { mediaItemsCountStateReducer } from './mediaItemsCount';
 
 // -----------------------------------------------------------------------
 // Reducers
@@ -24,6 +25,7 @@ export const rootReducer = combineReducers<TedTaggerState>({
   photoViewSpec: photoViewSpecReducer,
   albumsState: albumsStateReducer,
   undecidedGroupsState: undecidedGroupsStateReducer,
+  mediaItemsCountState: mediaItemsCountStateReducer,
 });
 
 // -----------------------------------------------------------------------

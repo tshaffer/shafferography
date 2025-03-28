@@ -15,9 +15,19 @@ export const targetHeights = [140, 160, 180, 220, 260, 400, 500, 600, 700, 800, 
 export const surveyRowHeights = [741, 350, 220];
 
 export const photoStateOptions: PhotoStateOption[] = [
-  { value: PhotoState.Unreviewed, label: "Unreviewed" },
-  { value: PhotoState.Undecided, label: "Undecided" },
-  { value: PhotoState.ReadyForUpload, label: "Ready for Upload" },
-  { value: PhotoState.Uploaded, label: "Uploaded" },
-  { value: PhotoState.Deleted, label: "Deleted" },
+  { label: "Unreviewed", value: PhotoState.Unreviewed, icon: "●" },
+  { label: "Ready for Upload", value: PhotoState.ReadyForUpload, icon: "☁" },
+  { label: "Uploaded", value: PhotoState.Uploaded, icon: "✅" },
+  { label: "Deleted", value: PhotoState.Deleted, icon: "🗑️" },
+  { label: "Undecided", value: PhotoState.Undecided, icon: "❓" },
 ];
+
+// Define photo states with icons
+// const photoStateOptions = [
+//   { label: "Unreviewed", value: PhotoState.Unreviewed, icon: <HourglassEmptyIcon /> },
+//   { label: "Ready for Upload", value: PhotoState.ReadyForUpload, icon: <CloudUploadIcon /> },
+//   { label: "Uploaded", value: PhotoState.Uploaded, icon: <CloudDoneIcon /> },
+//   { label: "Deleted", value: PhotoState.Deleted, icon: <DeleteIcon /> },
+//   { label: "Undecided", value: PhotoState.Undecided, icon: <HelpOutlineIcon /> },
+// ];
+

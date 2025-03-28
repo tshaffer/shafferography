@@ -10,6 +10,7 @@ import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';
 import RightPanel from './RightPanel';
+import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
 
 const drawerWidth = 240;
 
@@ -48,6 +49,7 @@ export interface AppShellProps {
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
+  onLoadMediaItemCounts: () => any;
   onLoadMediaItems: () => any;
   onLoadAlbums: () => any;
   onLoadUndecidedGroups: () => any;
@@ -258,6 +260,8 @@ const AppShell = (props: AppShellProps) => {
       }).then(function () {
         return props.onLoadUndecidedGroups();
       }).then(function () {
+        return props.onLoadMediaItemCounts();
+      }).then(function () {
         return props.onReloadMediaItemsByViewSpec();
       }).then(function () {
         return props.onSetAppInitialized();
@@ -323,6 +327,7 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+    onLoadMediaItemCounts: loadMediaItemCounts,
     onLoadMediaItems: loadMediaItems,
     onLoadAlbums: loadAlbums,
     onLoadUndecidedGroups: loadUndecidedGroups,

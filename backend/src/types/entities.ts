@@ -1,3 +1,4 @@
+import { StringToNumberLUT } from "baseTypes";
 import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState } from "enums";
 
 export interface GeoData {
@@ -108,3 +109,16 @@ export interface UndecidedGroup {
   albumIds: string[];
   createdAt: string;
 }
+
+export interface MediaItemCountByUndecidedGroupPerAlbum {
+  undecidedGroupId: string;
+  albumId: string;
+  count: number
+}
+
+export interface MediaItemCounts {
+  mediaItemCountByAlbum: StringToNumberLUT;
+  mediaItemCountByPhotoState: StringToNumberLUT;
+  mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[];
+}
+

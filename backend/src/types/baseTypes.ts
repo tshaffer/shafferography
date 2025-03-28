@@ -10,6 +10,10 @@ export type StringToStringLUT = {
   [key: string]: string;
 }
 
+export type StringToNumberLUT = {
+  [key: string]: number;
+}
+
 export interface FilePathToExifTags {
   [key: string]: Tags;
 }

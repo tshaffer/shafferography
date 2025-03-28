@@ -1,3 +1,4 @@
+import { StringToNumberLUT } from "./base";
 import { PhotoState } from "./enums";
 
 export interface GeoData {
@@ -114,6 +115,7 @@ export interface FileToImport {
 export interface PhotoStateOption {
   value: PhotoState;
   label: string;
+  icon?: any;
 }
 
 export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
@@ -129,3 +131,11 @@ export interface UndecidedGroup {
   albumIds: string[];
   createdAt: string;
 }
+
+export interface MediaItemCountByUndecidedGroupPerAlbum {
+  undecidedGroupId: string;
+  albumId: string;
+  count: number
+}
+
+

@@ -13,25 +13,27 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import { photoStateOptions } from "../constants";
 
 interface CheckboxListSelectorProps<T> {
-  label: string;
   items: T[];
   selectedItems: T[];
   getItemLabel: (item: T) => string;
+  getItemCount?: (item: T) => string;
   onChange: (selected: T[]) => void;
   onDeleteItem?: (item: T) => void;
+  showCount?: boolean;
   showSelectAll?: boolean;
   showDeleteItem?: boolean;
   maxHeight?: number; // New property for scrolling support
 }
 
 function CheckboxListSelector<T>({
-  label,
   items,
   selectedItems,
-  showSelectAll = true,
+  showCount = false,
   showDeleteItem = false,
+  showSelectAll = true,
   maxHeight,
   getItemLabel,
+  getItemCount,
   onChange,
   onDeleteItem = () => { console.log('onDeleteItem not implemented'); },
 }: CheckboxListSelectorProps<T>) {
@@ -100,6 +102,9 @@ function CheckboxListSelector<T>({
           >
             <Checkbox checked={tempSelected.includes(item)} />
             <ListItemText primary={getItemLabel(item)} />
+            {showCount && (
+              <span>({getItemCount!(item)})</span>
+            )}
             {showDeleteItem && (
               <IconButton
                 edge="end"

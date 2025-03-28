@@ -14,10 +14,12 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { Album, PhotoState, UndecidedGroup } from "../types";
+import { Album, PhotoState, PhotoStateOption, StringToNumberLUT, UndecidedGroup } from "../types";
 import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups } from "../selectors";
+import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoState } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
+import { isEmpty } from "lodash";
+import { photoStateOptions } from "../constants";
 
 const drawerWidth = 240;
 
@@ -43,6 +45,8 @@ export interface SidebarProps extends SidebarPropsFromParent {
   displayedUndecidedGroups: UndecidedGroup[];
   albums: Album[];
   undecidedGroups: UndecidedGroup[];
+  mediaItemCountByAlbum: StringToNumberLUT;
+  mediaItemCountByPhotoState: StringToNumberLUT;
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
   onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => void;
@@ -143,6 +147,23 @@ const Sidebar: React.FC<any> = (props: any) => {
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 
+  const getItemCountByAlbum = (item: Album): string => {
+    if (!props.mediaItemCountByAlbum || !props.mediaItemCountByAlbum[item.albumId]) {
+      return '0';
+    }
+    const count = props.mediaItemCountByAlbum[item.albumId];
+    return count ? count.toString() : '0';
+  };
+
+  const getItemCountByPhotoState = (item: PhotoStateOption): string => {
+    if (!props.mediaItemCountByPhotoState || !props.mediaItemCountByPhotoState[item.value]) {
+      return '0';
+    }
+    console.log('getItemCountByPhotoState', item);
+    const count = props.mediaItemCountByPhotoState[item.value];
+    return count ? count.toString() : '0';
+  };
+
   const renderAlbumsToDisplayChooser = () => {
     return (
       <React.Fragment>
@@ -153,12 +174,13 @@ const Sidebar: React.FC<any> = (props: any) => {
           ) : (
             <Box>
               <CheckboxListSelector
-                label="Select Albums"
                 items={props.albums}
                 selectedItems={props.albums.filter((set: Album) => props.displayedAlbumIds.includes(set.albumId))}
                 getItemLabel={(item: Album) => item.albumName}
                 onChange={(selected) => handleAlbumChange(selected.map((set: Album) => set.albumId))}
                 maxHeight={350}
+                showCount={true}
+                getItemCount={getItemCountByAlbum}
               />
             </Box>
           )}
@@ -168,22 +190,6 @@ const Sidebar: React.FC<any> = (props: any) => {
   };
 
   const renderPhotoStatesToDisplayChooser = () => {
-
-    // Define photo states with icons
-    const photoStateOptions = [
-      { label: "Unreviewed", value: PhotoState.Unreviewed, icon: "●" },
-      { label: "Ready for Upload", value: PhotoState.ReadyForUpload, icon: "☁" },
-      { label: "Uploaded", value: PhotoState.Uploaded, icon: "✅" },
-      { label: "Deleted", value: PhotoState.Deleted, icon: "🗑️" },
-      { label: "Undecided", value: PhotoState.Undecided, icon: "❓" },
-    ];
-    // const photoStateOptions = [
-    //   { label: "Unreviewed", value: PhotoState.Unreviewed, icon: <HourglassEmptyIcon /> },
-    //   { label: "Ready for Upload", value: PhotoState.ReadyForUpload, icon: <CloudUploadIcon /> },
-    //   { label: "Uploaded", value: PhotoState.Uploaded, icon: <CloudDoneIcon /> },
-    //   { label: "Deleted", value: PhotoState.Deleted, icon: <DeleteIcon /> },
-    //   { label: "Undecided", value: PhotoState.Undecided, icon: <HelpOutlineIcon /> },
-    // ];
 
     // Currently selected photo states
     const selectedPhotoStates = photoStateOptions.filter((set) =>
@@ -201,13 +207,14 @@ const Sidebar: React.FC<any> = (props: any) => {
         <Box sx={{ px: 0 }}>
 
           <CheckboxListSelector
-            label="Photo States"
             items={photoStateOptions}
             selectedItems={selectedPhotoStates}
             getItemLabel={(item) => `${item.icon} ${item.label}`} // Ensuring icons display correctly
             onChange={(photoStates) =>
               handlePhotoStatesToViewChange(photoStates.map((photoState) => photoState.value))
             }
+            showCount={true}
+            getItemCount={getItemCountByPhotoState}
           />
 
           {props.undecidedGroups && (props.undecidedGroups.length > 0) && props.displayedPhotoStates.includes(PhotoState.Undecided) && (<FormControlLabel
@@ -332,6 +339,8 @@ function mapStateToProps(state: any): any {
     displayedUndecidedGroups: getDisplayedUndecidedGroups(state),
     displayedUndecidedGroupIds: getDisplayedUndecidedGroupIds(state),
     albums: getAlbums(state),
+    mediaItemCountByAlbum: getMediaItemCountByAlbum(state),
+    mediaItemCountByPhotoState: getMediaItemCountByPhotoState(state),
   };
 }
 
@@ -348,5 +357,3 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(Sidebar) as React.FC<any>;
-
-// 67dea903a4b3f742c25fedd8

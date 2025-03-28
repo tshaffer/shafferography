@@ -20,6 +20,9 @@ import {
   User,
   Album,
   UndecidedGroup,
+  // MediaItemCounts,
+  MediaItemCountByUndecidedGroupPerAlbum,
+  StringToNumberLUT,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
@@ -635,3 +638,113 @@ export const deleteUndecidedGroupFromDb = async (undecidedGroupId: string): Prom
     throw error;
   }
 };
+
+export const getMediaItemCountByAlbumFromDb = async (): Promise<StringToNumberLUT> => {
+  const mediaItemModel = getMediaitemModel();
+  const counts = await mediaItemModel.aggregate([
+    {
+      $group: {
+        _id: "$albumId",
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        albumId: "$_id",
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  const mapping: StringToNumberLUT = {};
+  counts.forEach((entry: { albumId: string; count: number }) => {
+    mapping[entry.albumId] = entry.count;
+  });
+
+  return mapping;
+};
+
+export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNumberLUT> => {
+  const mediaItemModel = getMediaitemModel();
+  const counts = await mediaItemModel.aggregate([
+    {
+      $group: {
+        _id: "$photoState",
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        photoState: "$_id",
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  const mapping: StringToNumberLUT = {};
+  counts.forEach((entry: { photoState: string; count: number }) => {
+    mapping[entry.photoState] = entry.count;
+  });
+
+  return mapping;
+};
+
+export const getMediaItemCountByUndecidedGroupPerAlbumFromDb = async (): Promise<MediaItemCountByUndecidedGroupPerAlbum[]> => {
+  const undecidedGroupModel = getUndecidedGroupModel();
+  const result = await undecidedGroupModel.aggregate([
+    { $unwind: "$albumIds" },
+    {
+      $lookup: {
+        from: "mediaitems",
+        let: { albumId: "$albumIds", groupId: "$_id" },
+        pipeline: [
+          {
+            $match: {
+              $expr: {
+                $and: [
+                  { $eq: ["$albumId", "$$albumId"] },
+                  { $eq: ["$photoState", "undecided"] },
+                  { $eq: ["$undecidedGroupId", { $toString: "$$groupId" }] }
+                ]
+              }
+            }
+          }
+        ],
+        as: "mediaItems"
+      }
+    },
+    {
+      $project: {
+        _id: 0,
+        undecidedGroupId: { $toString: "$_id" },
+        albumId: "$albumIds",
+        count: { $size: "$mediaItems" }
+      }
+    }
+  ]);
+  return result;
+};
+
+// export const getMediaItemsCountsFromDb = async (): Promise<MediaItemCounts> => {
+//   const mediaItemModel = getMediaitemModel();
+//   const result = await mediaItemModel.aggregate([
+//     {
+//       $facet: {
+//         byPhotoState: [
+//           { $group: { _id: "$photoState", count: { $sum: 1 } } },
+//           { $project: { photoState: "$_id", count: 1, _id: 0 } }
+//         ],
+//         byAlbum: [
+//           { $group: { _id: "$albumId", count: { $sum: 1 } } },
+//           { $project: { albumId: "$_id", count: 1, _id: 0 } }
+//         ]
+//       }
+//     }
+//   ]);
+
+//   // Since the aggregation returns an array with a single document, return that document.
+//   return result[0];
+// };
+

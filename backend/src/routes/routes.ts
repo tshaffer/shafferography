@@ -22,6 +22,10 @@ import {
   assignMediaItemsToUndecidedGroup,
   deleteUndecidedGroup,
   getUndecidedGroups,
+  getMediaItemCountByAlbum,
+  getMediaItemCountByPhotoState,
+  getMediaItemCounts,
+  getMediaItemCountByUndecidedGroupPerAlbum,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -57,5 +61,11 @@ export const createRoutes = (app: express.Application) => {
   app.put('/api/v1/undecidedGroup/undecided-group', assignMediaItemsToUndecidedGroup);
   app.get('/api/v1/undecidedGroups/:albumId', fetchUndecidedGroupsForAlbums);
   app.delete('/api/v1/undecidedGroups/:groupId', deleteUndecidedGroup);
+
+  app.get('/api/v1/mediaItemCounts', getMediaItemCounts);
+  app.get('/api/v1/mediaItemCountByAlbum', getMediaItemCountByAlbum);
+  app.get('/api/v1/mediaItemCountByPhotoState', getMediaItemCountByPhotoState);
+  app.get('/api/v1/mediaItemCountByUndecidedGroupPerAlbum', getMediaItemCountByUndecidedGroupPerAlbum);
+
 };
 

@@ -26,14 +26,12 @@ const AlbumExpandableList: React.FC<AlbumExpandableListAllProps> = (props: Album
     return (
       <ExpandableGroup key={undecidedGroupNamePrefix} label={undecidedGroupNamePrefix}>
         <CheckboxListSelector
-          label={`Select groups in ${undecidedGroupNamePrefix}`}
           items={undecidedGroupsInAlbum}
           selectedItems={props.displayedUndecidedGroups ?? []}
           showSelectAll={false}
           showDeleteItem={true}
           getItemLabel={(undecidedGroup: UndecidedGroup) => undecidedGroup.name}
           onChange={props.onUndecidedGroupToggle}
-          // onDeleteItem={(item: UndecidedGroup) => console.log('onDeleteItem', item)}
           onDeleteItem={props.onDeleteUndecidedGroup}
         />
       </ExpandableGroup>

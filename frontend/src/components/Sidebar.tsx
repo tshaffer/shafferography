@@ -16,7 +16,7 @@ import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeople
 import CheckboxListSelector from "./CheckboxListSelector";
 import { Album, PhotoState, PhotoStateOption, StringToNumberLUT, UndecidedGroup } from "../types";
 import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoState } from "../selectors";
+import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoState, getMediaItemCountByAlbumFromState } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
 import { isEmpty } from "lodash";
 import { photoStateOptions } from "../constants";
@@ -151,6 +151,7 @@ const Sidebar: React.FC<any> = (props: any) => {
     if (!props.mediaItemCountByAlbum || !props.mediaItemCountByAlbum[item.albumId]) {
       return '0';
     }
+    console.log('getItemCountByAlbum');
     const count = props.mediaItemCountByAlbum[item.albumId];
     return count ? count.toString() : '0';
   };
@@ -159,7 +160,6 @@ const Sidebar: React.FC<any> = (props: any) => {
     if (!props.mediaItemCountByPhotoState || !props.mediaItemCountByPhotoState[item.value]) {
       return '0';
     }
-    console.log('getItemCountByPhotoState', item);
     const count = props.mediaItemCountByPhotoState[item.value];
     return count ? count.toString() : '0';
   };
@@ -339,7 +339,8 @@ function mapStateToProps(state: any): any {
     displayedUndecidedGroups: getDisplayedUndecidedGroups(state),
     displayedUndecidedGroupIds: getDisplayedUndecidedGroupIds(state),
     albums: getAlbums(state),
-    mediaItemCountByAlbum: getMediaItemCountByAlbum(state),
+    // mediaItemCountByAlbum: getMediaItemCountByAlbum(state),
+    mediaItemCountByAlbum: getMediaItemCountByAlbumFromState(state),
     mediaItemCountByPhotoState: getMediaItemCountByPhotoState(state),
   };
 }

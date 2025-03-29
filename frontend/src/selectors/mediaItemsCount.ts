@@ -14,3 +14,4 @@ export const getMediaItemCountByUndecidedGroupPerAlbum = (state: TedTaggerState)
   const mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[] = state.mediaItemsCountState.mediaItemCountByUndecidedGroupPerAlbum;
   return mediaItemCountByUndecidedGroupPerAlbum;
 }
+

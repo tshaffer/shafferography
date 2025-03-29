@@ -29,6 +29,7 @@ interface SetMediaItemCountByAlbumPayload {
 export const setMediaItemCountByAlbum = (
   mediaItemCountByAlbum: StringToNumberLUT,
 ): any => {
+  console.log('setMediaItemCountByAlbum', mediaItemCountByAlbum);
   return {
     type: SET_MEDIA_ITEM_COUNTS_BY_ALBUM,
     payload: {

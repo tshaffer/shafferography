@@ -32,6 +32,7 @@ export interface ServerMediaItem {
   people?: ServerPerson[],
   keywordNodeIds: string[],
   photoState: PhotoState,
+  albumId: string;
   undecidedGroupId?: string;
 }
 
@@ -53,6 +54,7 @@ export interface MediaItem {
   people?: string[],
   keywordNodeIds: string[],
   photoState: PhotoState,
+  albumId: string;
   undecidedGroupId?: string;
 }
 

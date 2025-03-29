@@ -50,16 +50,16 @@ interface SetMediaItemsPayload {
   mediaItems: MediaItem[];
 }
 
-export const replaceMediaItemsRedux = (
-  mediaItems: MediaItem[],
-): any => {
-  return {
-    type: REPLACE_MEDIA_ITEMS,
-    payload: {
-      mediaItems
-    }
-  };
-};
+// export const replaceMediaItemsRedux = (
+//   mediaItems: MediaItem[],
+// ): any => {
+//   return {
+//     type: REPLACE_MEDIA_ITEMS,
+//     payload: {
+//       mediaItems
+//     }
+//   };
+// };
 
 export const updateMediaItemsRedux = (mediaItems: MediaItem[]): any => {
   return {

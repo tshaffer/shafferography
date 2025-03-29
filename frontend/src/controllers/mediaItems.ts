@@ -29,6 +29,7 @@ import {
   getUndecidedGroupIds,
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
+import { loadMediaItemCounts } from './mediaItemCounts';
 
 
 const deselectHiddenMediaItems = (): any => {
@@ -237,6 +238,7 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
       setPhotoStateBody
     ).then((response) => {
       dispatch(setPhotoStateRedux(mediaItemIds, photoState));
+      dispatch(loadMediaItemCounts());
       return Promise.resolve();
     }).catch((error) => {
       console.log('error');

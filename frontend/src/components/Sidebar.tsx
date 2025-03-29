@@ -159,7 +159,6 @@ const Sidebar: React.FC<any> = (props: any) => {
     if (!props.mediaItemCountByPhotoState || !props.mediaItemCountByPhotoState[item.value]) {
       return '0';
     }
-    console.log('getItemCountByPhotoState', item);
     const count = props.mediaItemCountByPhotoState[item.value];
     return count ? count.toString() : '0';
   };

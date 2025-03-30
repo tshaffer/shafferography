@@ -18,6 +18,7 @@ import { setDisplayedAlbumIds, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
 import { addAlbum, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
+import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
 
 export interface ImportFromDriveDialogPropsFromParent {
   open: boolean;
@@ -31,6 +32,7 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   onAddAlbum: (album: Album) => any;
   onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
   onReloadMediaItemsByViewSpec: () => void;
+  onLoadMediaItemCounts: () => any;
 }
 
 type FileStatus = "uploading" | "processing" | "completed" | "conversion failed";
@@ -205,6 +207,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
       await checkProcessingComplete(response.data.importId);
 
+      props.onLoadMediaItemCounts();
+      
       console.log("Processing is fully complete!");
 
     } catch (error) {
@@ -219,8 +223,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       case "processing":
         return "Processing...";
       case "completed":
-        return "✅ Done"; 
-        case "conversion failed":
+        return "✅ Done";
+      case "conversion failed":
         return "❌ Conversion Failed";
       default:
         return "Unknown Status";
@@ -338,6 +342,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onAddAlbum: addAlbum,
     onSetDisplayedAlbumIds: setDisplayedAlbumIds,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+    onLoadMediaItemCounts: loadMediaItemCounts,
   }, dispatch);
 };
 

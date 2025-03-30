@@ -14,11 +14,10 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { Album, PhotoState, PhotoStateOption, StringToNumberLUT, UndecidedGroup } from "../types";
+import { Album, MediaItemCountByPhotoStateByAlbumId, PhotoState, PhotoStateOption, StringToNumberLUT, UndecidedGroup } from "../types";
 import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoState } from "../selectors";
+import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoStateByAlbumId } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
-import { isEmpty } from "lodash";
 import { photoStateOptions } from "../constants";
 
 const drawerWidth = 240;
@@ -46,7 +45,7 @@ export interface SidebarProps extends SidebarPropsFromParent {
   albums: Album[];
   undecidedGroups: UndecidedGroup[];
   mediaItemCountByAlbum: StringToNumberLUT;
-  mediaItemCountByPhotoState: StringToNumberLUT;
+  mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId;
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
   onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => void;
@@ -155,13 +154,13 @@ const Sidebar: React.FC<any> = (props: any) => {
     return count ? count.toString() : '0';
   };
 
-  const getItemCountByPhotoState = (item: PhotoStateOption): string => {
-    if (!props.mediaItemCountByPhotoState || !props.mediaItemCountByPhotoState[item.value]) {
-      return '0';
+  function getItemCountByPhotoStateByAlbumId(item: PhotoStateOption): string {
+    let itemCount = 0;
+    for (const albumId of props.displayedAlbumIds) {
+      itemCount += props.mediaItemCountByPhotoStateByAlbumId[albumId]?.[item.value] ?? 0;
     }
-    const count = props.mediaItemCountByPhotoState[item.value];
-    return count ? count.toString() : '0';
-  };
+    return itemCount.toString();
+  }
 
   const renderAlbumsToDisplayChooser = () => {
     return (
@@ -213,7 +212,7 @@ const Sidebar: React.FC<any> = (props: any) => {
               handlePhotoStatesToViewChange(photoStates.map((photoState) => photoState.value))
             }
             showCount={true}
-            getItemCount={getItemCountByPhotoState}
+            getItemCount={getItemCountByPhotoStateByAlbumId}
           />
 
           {props.undecidedGroups && (props.undecidedGroups.length > 0) && props.displayedPhotoStates.includes(PhotoState.Undecided) && (<FormControlLabel
@@ -339,7 +338,7 @@ function mapStateToProps(state: any): any {
     displayedUndecidedGroupIds: getDisplayedUndecidedGroupIds(state),
     albums: getAlbums(state),
     mediaItemCountByAlbum: getMediaItemCountByAlbum(state),
-    mediaItemCountByPhotoState: getMediaItemCountByPhotoState(state),
+    mediaItemCountByPhotoStateByAlbumId: getMediaItemCountByPhotoStateByAlbumId(state),
   };
 }
 

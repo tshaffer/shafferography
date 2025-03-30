@@ -14,7 +14,7 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { Album, MediaItemCountByPhotoStateByAlbumId, PhotoState, PhotoStateOption, StringToNumberLUT, UndecidedGroup } from "../types";
+import { Album, MediaItemCountByPhotoStateByAlbumId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
 import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
 import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoStateByAlbumId } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
@@ -36,7 +36,7 @@ export interface SidebarPropsFromParent {
   onClose: () => void;
 }
 
-export interface SidebarProps extends SidebarPropsFromParent {
+export interface SidebarDerivedStateProps  {
   displayedAlbumIds: string[];
   displayedPhotoStates: string[];
   groupUndecidedPhotos: boolean;
@@ -46,6 +46,9 @@ export interface SidebarProps extends SidebarPropsFromParent {
   undecidedGroups: UndecidedGroup[];
   mediaItemCountByAlbum: StringToNumberLUT;
   mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId;
+}
+
+export interface SidebarDerivedActionCreatorProps {
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
   onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => void;
@@ -54,8 +57,9 @@ export interface SidebarProps extends SidebarPropsFromParent {
   onSetDisplayedUndecidedGroupIds: (displayedUndecidedGroupIds: string[]) => void;
   onDeleteUndecidedGroup: (undecidedGroupId: string) => void;
 }
+export interface SidebarProps extends SidebarDerivedStateProps, SidebarDerivedActionCreatorProps, SidebarPropsFromParent {}
 
-const Sidebar: React.FC<any> = (props: any) => {
+const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
   const { open, onClose } = props;
 
@@ -328,7 +332,7 @@ const Sidebar: React.FC<any> = (props: any) => {
   );
 };
 
-function mapStateToProps(state: any): any {
+function mapStateToProps(state: TedTaggerState): SidebarDerivedStateProps {
   return {
     undecidedGroups: getUndecidedGroups(state),
     groupUndecidedPhotos: getGroupUndecidedPhotos(state),
@@ -354,4 +358,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(Sidebar) as React.FC<any>;
+export default connect(mapStateToProps, mapDispatchToProps)(Sidebar) as React.FC<SidebarPropsFromParent>;

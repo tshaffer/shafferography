@@ -19,7 +19,8 @@ import {
   getMediaItemsByViewSpecFromDb,
   getMediaItemCountByAlbumFromDb,
   getMediaItemCountByPhotoStateFromDb,
-  getMediaItemCountByUndecidedGroupPerAlbumFromDb
+  getMediaItemCountByUndecidedGroupPerAlbumFromDb,
+  getMediaItemCountByPhotoStateByAlbumIdFromDb
 } from './dbInterface';
 import { Keyword, KeywordData, KeywordNode, MediaItem, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT } from '../types';
 import {
@@ -254,6 +255,11 @@ export const getMediaItemCountByAlbum = async (request: Request, response: Respo
 
 export const getMediaItemCountByPhotoState = async (request: Request, response: Response, next: any) => {
   const counts: any = await getMediaItemCountByPhotoStateFromDb();
+  response.json(counts);
+};
+
+export const getMediaItemCountByPhotoStateByAlbumId = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByPhotoStateByAlbumIdFromDb();
   response.json(counts);
 };
 

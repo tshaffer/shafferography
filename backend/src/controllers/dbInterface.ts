@@ -691,6 +691,44 @@ export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNum
   return mapping;
 };
 
+export const getMediaItemCountByPhotoStateByAlbumIdFromDb = async (): Promise<Record<string, Record<string, number>>> => {
+  const mediaItemModel = getMediaitemModel();
+  
+  // Aggregate counts by albumId and photoState
+  const counts = await mediaItemModel.aggregate([
+    {
+      $group: {
+        _id: { albumId: "$albumId", photoState: "$photoState" },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        albumId: "$_id.albumId",
+        photoState: "$_id.photoState",
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  // Construct the nested lookup table:
+  // {
+  //   albumId1: { photoState1: count, photoState2: count, ... },
+  //   albumId2: { photoState1: count, photoState2: count, ... },
+  //   ...
+  // }
+  const mapping: Record<string, Record<string, number>> = {};
+  counts.forEach((entry: { albumId: string; photoState: string; count: number }) => {
+    if (!mapping[entry.albumId]) {
+      mapping[entry.albumId] = {};
+    }
+    mapping[entry.albumId][entry.photoState] = entry.count;
+  });
+
+  return mapping;
+};
+
 export const getMediaItemCountByUndecidedGroupPerAlbumFromDb = async (): Promise<MediaItemCountByUndecidedGroupPerAlbum[]> => {
   const undecidedGroupModel = getUndecidedGroupModel();
   const result = await undecidedGroupModel.aggregate([

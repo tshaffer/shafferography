@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum } from './entities';
+import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -96,5 +96,6 @@ export interface PhotoViewSpec {
 export interface MediaItemsCountState {
   mediaItemCountByAlbum: StringToNumberLUT;
   mediaItemCountByPhotoState: StringToNumberLUT;
+  mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId;
   mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[];
 }

@@ -132,6 +132,12 @@ export interface UndecidedGroup {
   createdAt: string;
 }
 
+export interface MediaItemCountByPhotoStateByAlbumId {
+  [albumId: string]: {
+    [photoState: string]: number;
+  };
+}
+
 export interface MediaItemCountByUndecidedGroupPerAlbum {
   undecidedGroupId: string;
   albumId: string;

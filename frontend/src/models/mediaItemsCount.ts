@@ -75,6 +75,7 @@ const initialState: MediaItemsCountState =
 {
   mediaItemCountByAlbum: {},
   mediaItemCountByPhotoState: {},
+  mediaItemCountByPhotoStateByAlbumId: {},
   mediaItemCountByUndecidedGroupPerAlbum: []
 };
 

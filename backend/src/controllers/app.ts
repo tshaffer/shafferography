@@ -22,7 +22,7 @@ import {
   getMediaItemCountByUndecidedGroupPerAlbumFromDb,
   getMediaItemCountByPhotoStateByAlbumIdFromDb
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, MediaItemCountByPhotoStateByAlbumId, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT } from '../types';
 import {
   deleteDirectory,
 } from '../utilities';
@@ -271,11 +271,13 @@ export const getMediaItemCountByUndecidedGroupPerAlbum = async (request: Request
 export const getMediaItemCounts = async (request: Request, response: Response, next: any) => {
   const mediaItemCountByAlbum: StringToNumberLUT = await getMediaItemCountByAlbumFromDb();
   const mediaItemCountByPhotoState: StringToNumberLUT = await getMediaItemCountByPhotoStateFromDb();
+  const mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId = await getMediaItemCountByPhotoStateByAlbumIdFromDb();
   const mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[] = await getMediaItemCountByUndecidedGroupPerAlbumFromDb();
   response.json(
     {
       mediaItemCountByAlbum,
       mediaItemCountByPhotoState,
+      mediaItemCountByPhotoStateByAlbumId,
       mediaItemCountByUndecidedGroupPerAlbum
     } as MediaItemCounts
   );

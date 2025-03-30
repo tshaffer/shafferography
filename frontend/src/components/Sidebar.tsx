@@ -36,7 +36,7 @@ export interface SidebarPropsFromParent {
   onClose: () => void;
 }
 
-export interface SidebarDerivedStateProps  {
+export interface SidebarDerivedStateProps {
   displayedAlbumIds: string[];
   displayedPhotoStates: string[];
   groupUndecidedPhotos: boolean;
@@ -57,7 +57,7 @@ export interface SidebarDerivedActionCreatorProps {
   onSetDisplayedUndecidedGroupIds: (displayedUndecidedGroupIds: string[]) => void;
   onDeleteUndecidedGroup: (undecidedGroupId: string) => void;
 }
-export interface SidebarProps extends SidebarDerivedStateProps, SidebarDerivedActionCreatorProps, SidebarPropsFromParent {}
+export interface SidebarProps extends SidebarDerivedStateProps, SidebarDerivedActionCreatorProps, SidebarPropsFromParent { }
 
 const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
@@ -147,6 +147,8 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
   const handleDeleteUndecidedGroup = (undecidedGroup: UndecidedGroup) => {
     console.log('Sidebar: handleDeleteUndecidedGroup', undecidedGroup);
+    const filteredGroupIds = props.displayedUndecidedGroupIds.filter((id) => id !== undecidedGroup.id);
+    props.onSetDisplayedUndecidedGroupIds(filteredGroupIds);
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 

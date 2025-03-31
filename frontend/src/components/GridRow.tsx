@@ -106,6 +106,15 @@ const GridRow = (props: GridRowProps) => {
   const metadataHeight: number = displayMetadata ? 60 : 0;
   const heightAttribute = `${props.rowHeight + metadataHeight + bordersSize}px`;
 
+  // console.log('GridRow: rendering');
+
+  // const divElement = document.getElementById('centerColumn') as HTMLDivElement | null;
+  // if (divElement) {
+  //   const scrollPosition: number = divElement.scrollTop;
+  //   console.log('scrollPosition:', scrollPosition);
+  //   // props.onSetScrollPosition(scrollPosition);
+  // }
+
   return (
     <div style={{ height: heightAttribute, backgroundColor: 'white' }}>
       {gridCells}

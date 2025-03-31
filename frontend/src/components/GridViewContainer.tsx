@@ -8,7 +8,6 @@ const GridViewContainer = () => {
   return (
     <div style={{ position: 'relative' }}>
       <GridView setTooltip={setTooltip} />
-      <TooltipOverlay tooltip={tooltip} />
     </div>
   );
 };

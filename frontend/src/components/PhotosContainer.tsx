@@ -7,6 +7,7 @@ import SurveyView from './SurveyView';
 import { getAppInitialized, getFilteredMediaItems, getMediaItems, getPhotoLayout } from '../selectors';
 import { PhotoLayout, MediaItem, FilteredMediaItemPropertyName } from '../types';
 import GridViewContainer from './GridViewContainer';
+import GridView from './GridView';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
@@ -15,6 +16,9 @@ export interface PhotosContainerProps {
 }
 
 const PhotosContainer = React.memo((props: PhotosContainerProps) => {
+
+  const [tooltip, setTooltip] = React.useState<{ text: string; position: { top: number; left: number } } | null>(null);
+
   const prevProps = useRef<PhotosContainerProps | null>(null);
 
   useEffect(() => {
@@ -31,9 +35,6 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
         changedProps.allMediaItems = props.allMediaItems;
       }
 
-      // if (Object.keys(changedProps).length > 0) {
-      //   console.log("PhotosContainer: rerender due to changes in:", changedProps);
-      // }
     }
     prevProps.current = props;
   }, [props]);
@@ -46,31 +47,11 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
     return null;
   }
 
-  const renderPhotoDisplay = (): JSX.Element => {
-    if (props.photoLayout === PhotoLayout.Loupe) {
-      return (
-        <div id='centerColumn'>
-          <LoupeViewController />
-        </div>
-      );
-    } else if (props.photoLayout === PhotoLayout.Survey) {
-      return (
-        <div id='centerColumn' className='centerColumnStyle'>
-          <SurveyView />
-        </div>
-      );
-    } else {
-      return (
-        <div id='centerColumn'>
-          <GridViewContainer />
-        </div>
-      );
-    }
-  };
-
   return (
-    <div key={JSON.stringify(props.allMediaItems)}>
-      {renderPhotoDisplay()}
+    <div id='centerColumn' style={{ width: '100%' }}>
+      <div style={{ position: 'relative' }}>
+        <GridView setTooltip={setTooltip} />
+      </div>
     </div>
   );
 });

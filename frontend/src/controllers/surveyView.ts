@@ -6,7 +6,7 @@ import { deselectMediaItems } from './selectMediaItem';
 
 export const deleteSurveyViewImageContainerItem = (mediaItemId: string) => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-    dispatch(setPhotoState([mediaItemId], PhotoState.Deleted))
+    return dispatch(setPhotoState([mediaItemId], PhotoState.Deleted))
       .then(() => {
         dispatch(deselectMediaItems([mediaItemId]));
         const state: TedTaggerState = getState();

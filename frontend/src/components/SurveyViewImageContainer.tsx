@@ -11,7 +11,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import DeleteIcon from '@mui/icons-material/Delete';
 import { surveyRowHeights } from '../constants';
-import { deleteSurveyViewImageContainerItem } from '../controllers';
+import { deleteSurveyViewImageContainerItem, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
 import { MediaItem } from '../types';
@@ -35,6 +35,7 @@ export interface SurveyViewImageContainerProps extends SurveyViewImageContainerP
   mediaItemZoomFactor: number;
   onDeleteSurveyViewImageContainerItem: (mediaItemId: string) => any;
   onSetMediaItemZoomFactor: (mediaItemId: string, zoomFactor: number) => any;
+  onReloadMediaItemsByViewSpec: () => any;
 }
 
 function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
@@ -59,9 +60,12 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
 
   const handleConfirmDelete = () => {
     setOpenDialog(false);
-    props.onDeleteSurveyViewImageContainerItem(props.mediaItem.uniqueId);
+    props.onDeleteSurveyViewImageContainerItem(props.mediaItem.uniqueId)
+      .then(() => {
+        props.onReloadMediaItemsByViewSpec();
+      });
   };
-
+  
   const photoUrl = getPhotoUrl(props.mediaItem);
 
   const cardMediaHeight: number = surveyRowHeights[props.numGridRows - 1];
@@ -127,6 +131,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onDeleteSurveyViewImageContainerItem: deleteSurveyViewImageContainerItem,
     onSetMediaItemZoomFactor: setMediaItemZoomFactor,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 

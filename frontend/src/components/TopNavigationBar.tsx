@@ -27,9 +27,9 @@ import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoState } from '../types';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
@@ -63,7 +63,7 @@ export interface TopNavigationBarPropsFromParent {
   selectedItemsCount: number;
 }
 
-export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
+export interface TopNavigationBarDerivedStateProps {
   mediaItemIds: string[];
   selectedMediaItems: MediaItem[];
   selectedMediaItemIds: string[];
@@ -71,17 +71,26 @@ export interface TopNavigationBarProps extends TopNavigationBarPropsFromParent {
   numGridColumns: number;
   selectedMediaItemsCount: number;
   mediaItems: MediaItem[];
+  loupeViewMediaItemId: string;
+  loupeViewMediaItemIds: string[];
+}
+
+export interface TopNavigationBarDerivedActionCreatorProps {
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
   onReloadMediaItemsByPhotoStates: (photoStates: PhotoState[]) => void;
-  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
+  onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
+
 }
 
-const TopNavigationBar: React.FC<any> = (props) => {
+export interface TopNavigationProps extends TopNavigationBarDerivedStateProps, TopNavigationBarDerivedActionCreatorProps, TopNavigationBarPropsFromParent { }
+
+const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
@@ -157,9 +166,51 @@ const TopNavigationBar: React.FC<any> = (props) => {
       });
   }
 
+  const deleteLoupeViewMediaItem = () => {
+
+    const loupeViewMediaItemId = props.loupeViewMediaItemId;
+
+    const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
+    if (loupeViewMediaItemIndex < 0) {
+      debugger;
+    }
+
+    let switchToGridView = false;
+    if (props.loupeViewMediaItemIds.length > 1) {
+      let newLoupeViewMediaItemIndex = -1;
+      const prevLoupeViewMediaItemIndex = loupeViewMediaItemIndex - 1;
+      const nextLoupeViewMediaItemIndex = loupeViewMediaItemIndex + 1;
+      if (nextLoupeViewMediaItemIndex < props.loupeViewMediaItemIds.length) {
+        newLoupeViewMediaItemIndex = nextLoupeViewMediaItemIndex;
+      } else if (prevLoupeViewMediaItemIndex >= 0) {
+        newLoupeViewMediaItemIndex = prevLoupeViewMediaItemIndex;
+      } else {
+        debugger;
+      }
+      const newLoupeViewMediaItemId = props.loupeViewMediaItemIds[newLoupeViewMediaItemIndex];
+      props.onSetLoupeViewMediaItemId(newLoupeViewMediaItemId);
+    } else {
+      switchToGridView = true;
+    }
+
+    props.onRemoveLoupeViewMediaItemId(props.loupeViewMediaItemId);
+
+    props.onSetPhotoState([props.loupeViewMediaItemId], PhotoState.Deleted)
+      .then(() => {
+        props.onReloadMediaItemsByViewSpec();
+        if (switchToGridView) {
+          props.onSetPhotoLayout(PhotoLayout.Grid);
+        }
+      });
+  };
+
   const handleDeletePhotos = () => {
-    props.onDeselectAllPhotos();
-    handleSetPhotoState(PhotoState.Deleted);
+    if (props.photoLayout === PhotoLayout.Loupe) {
+      deleteLoupeViewMediaItem();
+    } else {
+      props.onDeselectAllPhotos();
+      handleSetPhotoState(PhotoState.Deleted);
+    }
   }
 
   const handleEnterFullScreenMode = () => {
@@ -459,7 +510,7 @@ const TopNavigationBar: React.FC<any> = (props) => {
   )
 }
 
-function mapStateToProps(state: any): any {
+function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStateProps {
 
   return {
     mediaItemIds: getMediaItemIds(state),
@@ -469,6 +520,9 @@ function mapStateToProps(state: any): any {
     numGridColumns: getNumGridColumns(state),
     selectedMediaItemsCount: getSelectedMediaItemsCount(state),
     mediaItems: getMediaItems(state),
+    loupeViewMediaItemId: getLoupeViewMediaItemId(state),
+    loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
+
   };
 }
 
@@ -481,6 +535,8 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onDeselectAllPhotos: deselectAllPhotos,
     onSetPhotoState: setPhotoState,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
+    onRemoveLoupeViewMediaItemId: removeLoupeViewMediaItemId,
+
   }, dispatch);
 };
 

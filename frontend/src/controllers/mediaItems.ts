@@ -55,6 +55,7 @@ const loadMediaItemsByViewSpecParams = (albumIds: string[], photoStates: PhotoSt
       .then((mediaItemsResponse: any) => {
         dispatch(replaceMediaItems(mediaItemsResponse.data));
         dispatch(deselectHiddenMediaItems());
+        return Promise.resolve();
       });
   }
 };
@@ -78,7 +79,10 @@ export const loadAndReplaceMediaItemsByViewSpec = (): any => {
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     const groupUndecidedPhotos: boolean = getGroupUndecidedPhotos(state);
     const undecidedGroupIds: string[] = getUndecidedGroupIds(state);
-    dispatch(loadMediaItemsByViewSpecParams(albumIds, photoStates, groupUndecidedPhotos, undecidedGroupIds));
+    return dispatch(loadMediaItemsByViewSpecParams(albumIds, photoStates, groupUndecidedPhotos, undecidedGroupIds))
+      .then(() => {
+        return Promise.resolve();
+      });
   }
 };
 

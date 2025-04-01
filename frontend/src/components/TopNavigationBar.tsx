@@ -102,6 +102,12 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
 
+  React.useEffect(() => {
+    if (props.photoLayout === PhotoLayout.Loupe) {
+      updateLoupeViewMediaItemProps();
+    }
+  }, [props.mediaItemIds]);
+
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
       return '240px';
@@ -160,19 +166,32 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   }
 
   const handleSetPhotoState = (photoState: PhotoState) => {
-    props.onSetPhotoState(props.selectedMediaItemIds, photoState)
-      .then(() => {
-        props.onReloadMediaItemsByViewSpec();
-      });
+    if (props.photoLayout === PhotoLayout.Loupe) {
+      props.onSetPhotoState([props.loupeViewMediaItemId], photoState)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec()
+            .then(() => {});
+        });
+    } else {
+      props.onSetPhotoState(props.selectedMediaItemIds, photoState)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec();
+        });
+    }
   }
 
-  const deleteLoupeViewMediaItem = () => {
+  const updateLoupeViewMediaItemProps = () => {
 
     const loupeViewMediaItemId = props.loupeViewMediaItemId;
 
     const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
     if (loupeViewMediaItemIndex < 0) {
       debugger;
+    }
+
+    const mediaItemIndex = props.mediaItemIds.indexOf(loupeViewMediaItemId);
+    if (mediaItemIndex >= 0) {
+      return;
     }
 
     let switchToGridView = false;
@@ -195,22 +214,10 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
     props.onRemoveLoupeViewMediaItemId(props.loupeViewMediaItemId);
 
-    props.onSetPhotoState([props.loupeViewMediaItemId], PhotoState.Deleted)
-      .then(() => {
-        props.onReloadMediaItemsByViewSpec();
-        if (switchToGridView) {
-          props.onSetPhotoLayout(PhotoLayout.Grid);
-        }
-      });
-  };
-
-  const handleDeletePhotos = () => {
-    if (props.photoLayout === PhotoLayout.Loupe) {
-      deleteLoupeViewMediaItem();
-    } else {
-      props.onDeselectAllPhotos();
-      handleSetPhotoState(PhotoState.Deleted);
+    if (switchToGridView) {
+      props.onSetPhotoLayout(PhotoLayout.Grid);
     }
+
   }
 
   const handleEnterFullScreenMode = () => {
@@ -376,7 +383,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
         </Tooltip>
         <Tooltip title="Delete Selected Photos">
           <span>
-            <IconButton color="inherit" onClick={handleDeletePhotos} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Deleted)} disabled={props.selectedMediaItemsCount === 0}>
               <DeleteIcon />
             </IconButton>
           </span>

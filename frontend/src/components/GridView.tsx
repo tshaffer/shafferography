@@ -3,8 +3,8 @@ import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
-import { TedTaggerDispatch } from '../models';
-import { getAppInitialized, getFilteredMediaItems, getNumGridColumns } from '../selectors';
+import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
+import { getAppInitialized, getFilteredMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
@@ -13,17 +13,34 @@ export interface GridViewProps {
   appInitialized: boolean;
   numGridColumns: number;
   allMediaItems: FilteredMediaItemPicker[];
+  savedScrollOffset: number;
+  onSaveScrollOffset: (offset: number) => void;
 }
 
 const GridView = ({ setTooltip, ...props }: GridViewProps & {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
 }) => {
 
-  // console.log('GridView:', props);
-
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
   const listRef = React.useRef<VariableSizeList>(null);
+
+  React.useEffect(() => {
+    console.log("GridView mounted");
+    console.log(props.savedScrollOffset);
+    console.log(listRef.current);
+    if (listRef.current) {
+      // Delay using setTimeout to ensure measurements are complete
+      const scrollOffset = props.savedScrollOffset;
+      setTimeout(() => {
+        console.log('scrollTo', listRef.current);
+        listRef.current!.scrollTo(scrollOffset);
+      }, 100);
+    }
+    return () => {
+      console.log("GridView unmounted");
+    };
+  }, []);
 
   React.useEffect(() => {
     const updateGridWidth = () => {
@@ -90,14 +107,33 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     [gridRows, setTooltip] // Memoize based on dependencies
   );
 
+  const handleScroll = ({
+    scrollOffset,
+    scrollDirection,
+    scrollUpdateWasRequested,
+  }: {
+    scrollOffset: number;
+    scrollDirection: string;
+    scrollUpdateWasRequested: boolean;
+  }) => {
+    props.onSaveScrollOffset(scrollOffset);
+    // console.log('scrollOffset:', scrollOffset);
+    // console.log('scrollDirection:', scrollDirection);
+    // console.log('scrollUpdateWasRequested:', scrollUpdateWasRequested);
+  };
+
   const getItemSize = (index: number) => rowHeights[index];
   const listHeight = window.innerHeight - 112;
+
+  console.log('GridView:', props.savedScrollOffset);
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
       <VariableSizeList
-        itemSize={getItemSize}
         ref={listRef}
+        // initialScrollOffset={props.savedScrollOffset || 0}
+        onScroll={handleScroll}
+        itemSize={getItemSize}
         height={listHeight}
         itemCount={gridRows.length}
         width="100%"
@@ -113,11 +149,13 @@ function mapStateToProps(state: any) {
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),
     allMediaItems: getFilteredMediaItems(state),
+    savedScrollOffset: getScrollPosition(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
+    onSaveScrollOffset: setScrollPositionRedux,
   }, dispatch);
 };
 

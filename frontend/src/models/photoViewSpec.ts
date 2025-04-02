@@ -105,6 +105,7 @@ interface SetScrollPositionPayload {
 }
 
 export const setScrollPositionRedux = (scrollPosition: number): any => {
+  console.log('setScrollPositionRedux:', scrollPosition);
   return {
     type: SET_SCROLL_POSITION,
     payload: {

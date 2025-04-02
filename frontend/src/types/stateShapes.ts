@@ -32,6 +32,7 @@ export interface AppState {
 export interface MediaItemsState {
   mediaItems: MediaItem[];
   loupeViewMediaItemIds: string[];
+  surveyViewMediaItemIds: string[];
 }
 
 export interface SelectedMediaItemsState {
@@ -82,6 +83,7 @@ export interface PhotoViewSpec {
   photoLayout: PhotoLayout;
   numGridColumns: number;
   loupeViewMediaItemId: string;
+  focusedSurveyViewMediaItemId: string;
   displayMetadata: boolean;
   surveyModeZoomFactor: number;
   scrollPosition: number;

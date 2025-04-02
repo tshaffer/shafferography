@@ -19,6 +19,9 @@ export const ADD_KEYWORD_TO_MEDIA_ITEMS = 'ADD_KEYWORD_TO_MEDIA_ITEMS';
 export const SET_LOUPE_VIEW_MEDIA_ITEM_IDS = 'SET_LOUPE_VIEW_MEDIA_ITEM_IDS';
 export const REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID = 'REMOVE_LOUPE_VIEW_MEDIA_ITEM_ID';
 
+export const SET_SURVEY_VIEW_MEDIA_ITEM_IDS = 'SET_SURVEY_VIEW_MEDIA_ITEM_IDS';
+export const REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID = 'REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID';
+
 export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
 
 export const REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS = 'REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS';
@@ -165,7 +168,7 @@ export const setLoupeViewMediaItemIds = (
   };
 };
 
-interface RemoveLoupViewMediaIdPayload {
+interface RemoveLoupeViewMediaIdPayload {
   mediaItemId: string;
 };
 
@@ -180,7 +183,32 @@ export const removeLoupeViewMediaItemId = (
   };
 };
 
-// unsetUndecidedGroupFromMediaItems
+export const setSurveyViewMediaItemIds = (
+  mediaItemIds: string[],
+): any => {
+  return {
+    type: SET_SURVEY_VIEW_MEDIA_ITEM_IDS,
+    payload: {
+      mediaItemIds
+    }
+  };
+};
+
+interface RemoveSurveyViewMediaIdPayload {
+  mediaItemId: string;
+};
+
+export const removeSurveyViewMediaItemId = (
+  mediaItemId: string,
+): any => {
+  return {
+    type: REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID,
+    payload: {
+      mediaItemId
+    }
+  };
+};
+
 
 // ------------------------------------
 // Reducer
@@ -190,11 +218,12 @@ const initialState: MediaItemsState =
 {
   mediaItems: [],
   loupeViewMediaItemIds: [],
+  surveyViewMediaItemIds: [],
 };
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
+  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
@@ -313,6 +342,19 @@ export const mediaItemsStateReducer = (
       return {
         ...state,
         loupeViewMediaItemIds,
+      };
+    }
+    case SET_SURVEY_VIEW_MEDIA_ITEM_IDS: {
+      return {
+        ...state,
+        surveyViewMediaItemIds: action.payload.mediaItemIds
+      };
+    }
+    case REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID: {
+      const surveyViewMediaItemIds: string[] = state.surveyViewMediaItemIds.filter(item => item !== action.payload.mediaItemId);
+      return {
+        ...state,
+        surveyViewMediaItemIds,
       };
     }
     case SET_PHOTO_STATE: {

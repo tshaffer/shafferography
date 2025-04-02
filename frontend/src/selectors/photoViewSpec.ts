@@ -17,6 +17,10 @@ export const getLoupeViewMediaItemId = (state: TedTaggerState): string => {
   return state.photoViewSpec.loupeViewMediaItemId;
 };
 
+export const getFocusedSurveyViewMediaItemId = (state: TedTaggerState): string => {
+  return state.photoViewSpec.focusedSurveyViewMediaItemId;
+};
+
 export const getDisplayMetadata = (state: TedTaggerState): boolean => {
   return state.photoViewSpec.displayMetadata;
 };

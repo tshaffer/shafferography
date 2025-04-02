@@ -27,8 +27,8 @@ import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds } from '../selectors';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
@@ -73,12 +73,16 @@ export interface TopNavigationBarDerivedStateProps {
   mediaItems: MediaItem[];
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
+  focusedSurveyViewMediaItemId: string;
+  surveyViewMediaItemIds: string[];
 }
 
 export interface TopNavigationBarDerivedActionCreatorProps {
   onSetPhotoLayout: (photoLayout: PhotoLayout) => void;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
+  onSetFocusedSurveyViewMediaItemId: (id: string) => any;
+  onSetSurveyViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
   onReloadMediaItemsByPhotoStates: (photoStates: PhotoState[]) => void;
@@ -107,6 +111,12 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       updateLoupeViewMediaItemProps();
     }
   }, [props.mediaItemIds]);
+
+  React.useEffect(() => {
+    if (props.photoLayout === PhotoLayout.Survey) {
+      updateSurveyViewMediaItemProps();
+    }
+  }, [props.selectedMediaItemIds]);
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -146,13 +156,12 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
     if (photoLayout === PhotoLayout.Loupe) {
 
-      // set loupeViewMediaItemId and loupeViewMediaItemIds based on current selection state
       if (props.selectedMediaItemIds.length === 0) {    // not a real scenario but just in case.
         props.onSetLoupeViewMediaItemId(props.mediaItemIds[0]);
         props.onSetLoupeViewMediaItemIds(props.mediaItemIds);
       } else if (props.selectedMediaItemIds.length === 1) {
         props.onSetLoupeViewMediaItemId(props.selectedMediaItemIds[0]);
-        props.onSetLoupeViewMediaItemIds(props.mediaItemIds);
+        props.onSetLoupeViewMediaItemIds(props.mediaItemIds); // WHY NOT selectedMediaItemIds?
       } else {
         props.onSetLoupeViewMediaItemId(props.selectedMediaItemIds[0]);
         props.onSetLoupeViewMediaItemIds(props.selectedMediaItemIds);
@@ -160,8 +169,17 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
       props.onSetPhotoLayout(PhotoLayout.Loupe);
 
+    } else if (photoLayout === PhotoLayout.Survey) {
+
+      props.onSetFocusedSurveyViewMediaItemId(props.selectedMediaItemIds[0]);
+      props.onSetSurveyViewMediaItemIds(props.selectedMediaItemIds);
+
+      props.onSetPhotoLayout(PhotoLayout.Survey);
+
     } else {
+
       props.onSetPhotoLayout(photoLayout);
+
     }
   }
 
@@ -170,7 +188,13 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       props.onSetPhotoState([props.loupeViewMediaItemId], photoState)
         .then(() => {
           props.onReloadMediaItemsByViewSpec()
-            .then(() => {});
+            .then(() => { });
+        });
+    } else if (props.photoLayout === PhotoLayout.Survey) {
+      props.onSetPhotoState([props.focusedSurveyViewMediaItemId], photoState)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec()
+            .then(() => { });
         });
     } else {
       props.onSetPhotoState(props.selectedMediaItemIds, photoState)
@@ -218,6 +242,42 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       props.onSetPhotoLayout(PhotoLayout.Grid);
     }
 
+  }
+
+  const updateSurveyViewMediaItemProps = () => {
+
+    const focusedSurveyViewMediaItemId = props.focusedSurveyViewMediaItemId;
+
+    const focusedSurveyViewMediaItemIndex = props.surveyViewMediaItemIds.indexOf(focusedSurveyViewMediaItemId);
+    if (focusedSurveyViewMediaItemIndex < 0) {
+      debugger;
+    }
+
+    const numSurveyViewMediaItems = props.selectedMediaItemIds.length;  // because props.surveyViewMediaItemIds is not updated yet
+
+    props.onSetSurveyViewMediaItemIds(props.selectedMediaItemIds);
+
+    const mediaItemIndex = props.mediaItemIds.indexOf(focusedSurveyViewMediaItemId);
+    if (mediaItemIndex >= 0) {
+      return;
+    }
+
+    if (numSurveyViewMediaItems > 1) {
+      let newSurveyViewMediaItemIndex = -1;
+      const prevSurveyViewMediaItemIndex = focusedSurveyViewMediaItemIndex - 1;
+      const nextSurveyViewMediaItemIndex = focusedSurveyViewMediaItemIndex + 1;
+      if (nextSurveyViewMediaItemIndex < numSurveyViewMediaItems) {
+        newSurveyViewMediaItemIndex = nextSurveyViewMediaItemIndex;
+      } else if (prevSurveyViewMediaItemIndex >= 0) {
+        newSurveyViewMediaItemIndex = prevSurveyViewMediaItemIndex;
+      } else {
+        debugger;
+      }
+      const newSurveyViewMediaItemId = props.surveyViewMediaItemIds[newSurveyViewMediaItemIndex];
+      props.onSetFocusedSurveyViewMediaItemId(newSurveyViewMediaItemId);
+    } else {
+      props.onSetPhotoLayout(PhotoLayout.Grid);
+    }
   }
 
   const handleEnterFullScreenMode = () => {
@@ -529,7 +589,8 @@ function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStatePro
     mediaItems: getMediaItems(state),
     loupeViewMediaItemId: getLoupeViewMediaItemId(state),
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
-
+    focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
+    surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
   };
 }
 
@@ -537,7 +598,9 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetPhotoLayout: setPhotoLayoutRedux,
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
+    onSetFocusedSurveyViewMediaItemId: setFocusedSurveyViewMediaItemId,
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
+    onSetSurveyViewMediaItemIds: setSurveyViewMediaItemIds,
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
     onSetPhotoState: setPhotoState,

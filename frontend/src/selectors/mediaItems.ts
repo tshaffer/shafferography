@@ -30,6 +30,10 @@ export const getLoupeViewMediaItemIds = (state: TedTaggerState): string[] => {
   return state.mediaItemsState.loupeViewMediaItemIds;
 };
 
+export const getSurveyViewMediaItemIds = (state: TedTaggerState): string[] => {
+  return state.mediaItemsState.surveyViewMediaItemIds;
+};
+
 // export const getMediaItemsByUndecidedGroupId = (state: TedTaggerState, undecidedGroupId: string): MediaItem[] => {
 //   return state.mediaItemsState.mediaItems.filter((mediaItem: MediaItem) => mediaItem.undecidedGroupId === undecidedGroupId);
 // };

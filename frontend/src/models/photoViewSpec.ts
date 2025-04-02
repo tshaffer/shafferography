@@ -7,6 +7,7 @@ import { TedTaggerModelBaseAction } from './baseAction';
 export const SET_PHOTO_LAYOUT = 'SET_PHOTO_LAYOUT';
 export const SET_ZOOM_FACTOR = 'SET_ZOOM_FACTOR';
 export const SET_LOUPE_VIEW_MEDIA_ITEM_ID = 'SET_LOUPE_VIEW_MEDIA_ITEM_ID';
+export const SET_FOCUSED_SURVEY_VIEW_MEDIA_ITEM_ID = 'SET_FOCUSED_SURVEY_VIEW_MEDIA_ITEM_ID';
 export const SET_DISPLAY_METADATA = 'SET_DISPLAY_METADATA';
 export const SET_SURVEY_MODE_ZOOM_FACTOR = 'SET_SURVEY_MODE_ZOOM_FACTOR';
 export const SET_SCROLL_POSITION = 'SET_SCROLL_POSITION';
@@ -56,6 +57,19 @@ export const setLoupeViewMediaItemIdRedux = (loupeViewMediaItemId: string): any 
     type: SET_LOUPE_VIEW_MEDIA_ITEM_ID,
     payload: {
       loupeViewMediaItemId,
+    },
+  };
+};
+
+interface SetFocusedSurveyViewMediaItemIdPayload {
+  focusedSurveyViewMediaItemId: string,
+}
+
+export const setFocusedSurveyViewMediaItemId = (focusedSurveyViewMediaItemId: string): any => {
+  return {
+    type: SET_FOCUSED_SURVEY_VIEW_MEDIA_ITEM_ID,
+    payload: {
+      focusedSurveyViewMediaItemId,
     },
   };
 };
@@ -189,6 +203,7 @@ const initialState: PhotoViewSpec = {
   photoLayout: PhotoLayout.Grid,
   numGridColumns: 5,
   loupeViewMediaItemId: '',
+  focusedSurveyViewMediaItemId: '',
   displayMetadata: false,
   surveyModeZoomFactor: 1,
   scrollPosition: 0,
@@ -202,7 +217,7 @@ const initialState: PhotoViewSpec = {
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
+  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetFocusedSurveyViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -219,6 +234,11 @@ export const photoViewSpecReducer = (
       return {
         ...state,
         loupeViewMediaItemId: action.payload.loupeViewMediaItemId,
+      };
+    case SET_FOCUSED_SURVEY_VIEW_MEDIA_ITEM_ID:
+      return {
+        ...state,
+        focusedSurveyViewMediaItemId: action.payload.focusedSurveyViewMediaItemId,
       };
     case SET_DISPLAYED_ALBUM_IDS:
       return {

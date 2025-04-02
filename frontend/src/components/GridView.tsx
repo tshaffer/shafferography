@@ -3,24 +3,23 @@ import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
-import { TedTaggerDispatch } from '../models';
+import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
 import { getAppInitialized, getFilteredMediaItems, getNumGridColumns } from '../selectors';
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
-// import { setGridScrollOffset } from '../actions'; // Assume this action creator is defined
 
 export interface GridViewProps {
   appInitialized: boolean;
   numGridColumns: number;
   allMediaItems: FilteredMediaItemPicker[];
   savedScrollOffset: number;
+  onSaveScrollOffset: (offset: number) => void;
 }
 
 const GridView = ({
   setTooltip,
   savedScrollOffset,
-  // onSaveScrollOffset,
   ...props
 }: GridViewProps & {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void;
@@ -112,6 +111,7 @@ const GridView = ({
   }) => {
     // Save the scroll position. In this example, we dispatch an action.
     // onSaveScrollOffset && onSaveScrollOffset(scrollOffset);
+    props.onSaveScrollOffset(scrollOffset);
     console.log('scrollOffset:', scrollOffset);
     console.log('scrollDirection:', scrollDirection);
     console.log('scrollUpdateWasRequested:', scrollUpdateWasRequested);
@@ -151,8 +151,7 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators(
     {
-      // Dispatch action to save scroll offset
-      // onSaveScrollOffset: setGridScrollOffset,
+      onSaveScrollOffset: setScrollPositionRedux,
     },
     dispatch
   );

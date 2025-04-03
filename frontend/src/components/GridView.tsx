@@ -8,6 +8,7 @@ import { getAppInitialized, getFilteredMediaItems, getNumGridColumns, getScrollP
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
+import throttle from 'lodash/throttle';
 
 export interface GridViewProps {
   appInitialized: boolean;
@@ -30,7 +31,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     console.log(props.savedScrollOffset);
     console.log(listRef.current);
     if (listRef.current) {
-      // Delay using setTimeout to ensure measurements are complete
       const scrollOffset = props.savedScrollOffset;
       setTimeout(() => {
         console.log('scrollTo', listRef.current);
@@ -58,7 +58,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     if (gridWidth === 0) return [];
 
     const targetHeight = targetHeights[props.numGridColumns - 2];
-
     const gridRows: GridRowData[] = [];
     let mediaItemIndex = 0;
 
@@ -104,8 +103,20 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         </div>
       );
     },
-    [gridRows, setTooltip] // Memoize based on dependencies
+    [gridRows, setTooltip]
   );
+
+  // Create a throttled version of onSaveScrollOffset so it fires at most once every 200ms
+  const throttledOnSaveScrollOffset = React.useMemo(() => throttle((offset: number) => {
+    props.onSaveScrollOffset(offset);
+  }, 200), [props.onSaveScrollOffset]);
+
+  // Cancel the throttled function on unmount
+  React.useEffect(() => {
+    return () => {
+      throttledOnSaveScrollOffset.cancel();
+    };
+  }, [throttledOnSaveScrollOffset]);
 
   const handleScroll = ({
     scrollOffset,
@@ -116,10 +127,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     scrollDirection: string;
     scrollUpdateWasRequested: boolean;
   }) => {
-    props.onSaveScrollOffset(scrollOffset);
-    // console.log('scrollOffset:', scrollOffset);
-    // console.log('scrollDirection:', scrollDirection);
-    // console.log('scrollUpdateWasRequested:', scrollUpdateWasRequested);
+    throttledOnSaveScrollOffset(scrollOffset);
   };
 
   const getItemSize = (index: number) => rowHeights[index];
@@ -131,7 +139,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
       <VariableSizeList
         ref={listRef}
-        // initialScrollOffset={props.savedScrollOffset || 0}
         onScroll={handleScroll}
         itemSize={getItemSize}
         height={listHeight}

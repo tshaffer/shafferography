@@ -351,7 +351,6 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
         googleAlbumId: googleAlbumId,
         googleAlbumName: googleAlbumName,
         googleMediaItemId: createdMediaItem.id,
-        baseUrl: createdMediaItem.baseUrl,
       };
       await updateMediaItemFieldsInDb(mediaItemId, updates);
     }

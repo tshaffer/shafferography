@@ -29,8 +29,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string
     googleAlbumId,
     googleAlbumName,
     filePath,
-    productUrl: `${BASE_MEDIA_URL}/${relativePath}`,
-    baseUrl: null,
+    url: `${BASE_MEDIA_URL}/${relativePath}`,
     mimeType: valueOrNull(exifData.MIMEType),
     creationTime: isoCreateDate,
     width: exifData.ImageWidth, // or ExifImageWidth?

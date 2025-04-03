@@ -16,8 +16,7 @@ export interface MediaItem {
   googleAlbumId: string;
   googleAlbumName: string;
   filePath?: string,
-  productUrl?: string,
-  baseUrl?: string,
+  url?: string,
   mimeType?: string,
   creationTime?: string,
   width?: number,

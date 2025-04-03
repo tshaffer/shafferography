@@ -19,7 +19,7 @@ export const formatISOString = (ISOString: string): string => {
 };
 
 export const getPhotoUrl = (mediaItem: MediaItem): string => {
-  const photoUrl = mediaItem.productUrl!;
+  const photoUrl = mediaItem.url!;
   return photoUrl;
 };
 

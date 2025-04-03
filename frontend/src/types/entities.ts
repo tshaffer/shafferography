@@ -20,8 +20,7 @@ export interface ServerMediaItem {
   fileName: string,
   googleAlbumId: string;
   filePath?: string,
-  productUrl?: string,
-  baseUrl?: string,
+  url?: string,
   mimeType?: string,
   creationTime?: string,
   width?: number,
@@ -41,8 +40,7 @@ export interface MediaItem {
   fileName: string,
   googleAlbumId: string;
   filePath?: string,
-  productUrl?: string,
-  baseUrl?: string,
+  url?: string,
   mimeType?: string,
   creationTime?: string,
   width?: number,
@@ -118,8 +116,8 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "productUrl" | "baseUrl" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "productUrl", "baseUrl", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
+export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

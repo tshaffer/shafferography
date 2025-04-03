@@ -28,18 +28,12 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   React.useEffect(() => {
     console.log("GridView mounted");
-    console.log(props.savedScrollOffset);
-    console.log(listRef.current);
     if (listRef.current) {
       const scrollOffset = props.savedScrollOffset;
       setTimeout(() => {
-        console.log('scrollTo', listRef.current);
         listRef.current!.scrollTo(scrollOffset);
       }, 100);
     }
-    return () => {
-      console.log("GridView unmounted");
-    };
   }, []);
 
   React.useEffect(() => {
@@ -133,8 +127,6 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   const getItemSize = (index: number) => rowHeights[index];
   const listHeight = window.innerHeight - 112;
 
-  console.log('GridView:', props.savedScrollOffset);
-
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
       <VariableSizeList
@@ -144,6 +136,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         height={listHeight}
         itemCount={gridRows.length}
         width="100%"
+        overscanCount={2}
       >
         {renderRow}
       </VariableSizeList>

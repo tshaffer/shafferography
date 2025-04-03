@@ -7,7 +7,7 @@ import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
 import { addMediaItemToMediaItemsDBTable, getAlbumById } from './dbInterface';
-import { BASE_MEDIA_PATH } from '../config';
+import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
 import { getGoogleAlbumsByName } from './googlePhotos';
 
@@ -29,7 +29,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string
     googleAlbumId,
     googleAlbumName,
     filePath,
-    productUrl: `http://localhost:8080/shafferographyMedia/${relativePath}`,
+    productUrl: `${BASE_MEDIA_URL}/${relativePath}`,
     baseUrl: null,
     mimeType: valueOrNull(exifData.MIMEType),
     creationTime: isoCreateDate,

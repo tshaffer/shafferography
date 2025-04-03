@@ -10,6 +10,7 @@ import { isMediaItemSelected } from '../selectors';
 import { getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
+import LazyImage from './LazyImage';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -125,7 +126,12 @@ const GridCell = (props: GridCellProps) => {
         />
       )}
 
-      <img src={photoUrl} width={props.cellWidth} height={props.rowHeight} loading='lazy' />
+      <LazyImage
+        src={photoUrl}
+        alt="..."
+        loading="lazy"
+        width={props.cellWidth} height={props.rowHeight}
+      />
     </div>
   );
 };

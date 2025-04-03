@@ -8,6 +8,7 @@ import { deselectAllPhotos, selectPhoto, selectAllPhotos } from '../controllers'
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { shallowEqual } from 'react-redux';
+import React from 'react';
 
 export interface GridRowPropsFromParent {
   mediaItemIndex: number;
@@ -27,6 +28,11 @@ const GridRow = (props: GridRowProps) => {
 
   // console.log('GridRow:', props);
 
+  React.useEffect(() => {
+    console.log(`GridRow mounted: mediaItemIndex: ${props.mediaItemIndex}`);
+    return () => console.log(`GridRow ${props.mediaItemIndex} unmounted`);
+  }, []);
+  
   const [lastSelectedIndex, setLastSelectedIndex] = useState<number | null>(null);
   const allMediaItems = useSelector(getMediaItems, shallowEqual);
   const displayMetadata = useSelector(getDisplayMetadata);

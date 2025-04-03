@@ -105,7 +105,11 @@ interface SetScrollPositionPayload {
 }
 
 export const setScrollPositionRedux = (scrollPosition: number): any => {
-  console.log('setScrollPositionRedux:', scrollPosition);
+  // console.log('setScrollPositionRedux:', scrollPosition);
+  // const now = new Date();
+  // const midnight = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  // const msSinceMidnight = now.getTime() - midnight.getTime();
+  // console.log(msSinceMidnight);
   return {
     type: SET_SCROLL_POSITION,
     payload: {

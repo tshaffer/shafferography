@@ -113,12 +113,14 @@ const startServer = async () => {
 
   // serve static image files from
   //    /Users/tedshaffer/Pictures/ShafferographyMedia
-  app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH));
+  // app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH));
   // example image path:
   //    /Users/tedshaffer/Pictures/ShafferographyMedia/Boys on horseback at Bryce/img483.jpg
   // associated url
   //    http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg
-
+  app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH, {
+    maxAge: 86400000 // 24 hours in milliseconds
+  }));
 
 
   // Serve static files from the /public directory

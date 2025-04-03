@@ -1,11 +1,12 @@
+import React from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import { TedTaggerDispatch } from '../models';
+import { Menu, MenuItem } from "@mui/material";
+import { deselectMediaItem, TedTaggerDispatch } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor, getFocusedSurveyViewMediaItemId } from '../selectors';
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
 import { borderSizeStr } from '../constants';
-
 
 export interface SurveyViewImagePropsFromParent {
   mediaItem: MediaItem;
@@ -15,12 +16,11 @@ export interface SurveyViewImageProps extends SurveyViewImagePropsFromParent {
   focusedSurveyViewMediaItemId: string;
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
+  onDeselectMediaItem: (uniqueId: string) => void;
 }
 
 function SurveyViewImage(props: SurveyViewImageProps) {
-
   const photoUrl = getPhotoUrl(props.mediaItem);
-
   const elementId: string = 'surveyImage' + props.mediaItem.uniqueId;
   const imageElement = document.getElementById(elementId) as HTMLImageElement | null;
   const zoomFactor = props.surveyModeZoomFactor * props.mediaItemZoomFactor;
@@ -29,15 +29,51 @@ function SurveyViewImage(props: SurveyViewImageProps) {
   }
 
   const isFocused: boolean = props.focusedSurveyViewMediaItemId === props.mediaItem.uniqueId;
-  
+
+  // State to track the position of the context menu
+  const [menuPosition, setMenuPosition] = React.useState<{ top: number; left: number } | null>(null);
+
+  // Handler for right-click event: set the menu position based on the pointer's coordinates
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setMenuPosition({ top: event.clientY, left: event.clientX });
+  };
+
+  const handleClose = () => {
+    setMenuPosition(null);
+  };
+
+  const handleMenuItemClick = (action: string) => {
+    console.log(`Context menu action selected: ${action}`);
+    switch (action) {
+      case "deselectImage":
+        props.onDeselectMediaItem(props.mediaItem.uniqueId);
+        break;
+      default:
+        break;
+    }
+    handleClose();
+  };
+
   return (
-    <img
-      id={elementId}
-      src={photoUrl}
-      className='surveyImageStyle'
-      style={{ border: `${borderSizeStr} solid ${isFocused ? 'black' : 'white'}` }}
-      loading="lazy"
-    />
+    <>
+      <img
+        id={elementId}
+        src={photoUrl}
+        className='surveyImageStyle'
+        style={{ border: `${borderSizeStr} solid ${isFocused ? 'black' : 'white'}` }}
+        loading="lazy"
+        onContextMenu={handleContextMenu}
+      />
+      <Menu
+        anchorReference="anchorPosition"
+        anchorPosition={menuPosition ? { top: menuPosition.top, left: menuPosition.left } : undefined}
+        open={Boolean(menuPosition)}
+        onClose={handleClose}
+      >
+        <MenuItem onClick={() => handleMenuItemClick("deselectImage")}>Deselect Image</MenuItem>
+      </Menu>
+    </>
   );
 }
 
@@ -52,6 +88,7 @@ function mapStateToProps(state: any, ownProps: any) {
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
+    onDeselectMediaItem: deselectMediaItem,
   }, dispatch);
 };
 

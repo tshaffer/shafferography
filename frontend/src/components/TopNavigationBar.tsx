@@ -255,9 +255,14 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
     const numSurveyViewMediaItems = props.selectedMediaItemIds.length;  // because props.surveyViewMediaItemIds is not updated yet
 
+    if (numSurveyViewMediaItems === 1) {
+      props.onSetPhotoLayout(PhotoLayout.Grid);
+      return;
+    }
+
     props.onSetSurveyViewMediaItemIds(props.selectedMediaItemIds);
 
-    const mediaItemIndex = props.mediaItemIds.indexOf(focusedSurveyViewMediaItemId);
+    const mediaItemIndex = props.selectedMediaItemIds.indexOf(focusedSurveyViewMediaItemId);
     if (mediaItemIndex >= 0) {
       return;
     }
@@ -275,8 +280,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       }
       const newSurveyViewMediaItemId = props.surveyViewMediaItemIds[newSurveyViewMediaItemIndex];
       props.onSetFocusedSurveyViewMediaItemId(newSurveyViewMediaItemId);
-    } else {
-      props.onSetPhotoLayout(PhotoLayout.Grid);
     }
   }
 

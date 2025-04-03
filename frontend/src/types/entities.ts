@@ -32,6 +32,7 @@ export interface ServerMediaItem {
   keywordNodeIds: string[],
   photoState: PhotoState,
   undecidedGroupId?: string;
+  notes?: string;
 }
 
 export interface MediaItem {
@@ -52,6 +53,7 @@ export interface MediaItem {
   keywordNodeIds: string[],
   photoState: PhotoState,
   undecidedGroupId?: string;
+  notes?: string;
 }
 
 export interface Keyword {

@@ -164,6 +164,16 @@ export const setPhotoStateEndpoint = async (request: Request, response: Response
   response.sendStatus(200);
 }
 
+export const setMediaItemNotesEndpoint = async (request: Request, response: Response, next: any) => {
+  const { uniqueId, notes } = request.body;
+  const updates: Partial<MediaItem> = {
+    notes
+  };
+
+  await updateMediaItemsFieldsInDb([uniqueId], updates);
+  response.sendStatus(200);
+}
+
 const realpath = promisify(fs.realpath);
 
 export const getSubdirectoriesFromFs = async (dirPath: string): Promise<string[]> => {

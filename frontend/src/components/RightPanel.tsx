@@ -1,13 +1,19 @@
 import React from 'react';
-import { Box, Typography, Card, CardContent, Divider, IconButton, Tooltip, MenuItem, Select, FormControl, InputLabel, Button, styled, Drawer } from "@mui/material";
+import { bindActionCreators } from 'redux';
+import { connect } from 'react-redux';
+import {
+  Box, Typography, Card, CardContent, Divider, IconButton, Tooltip,
+  MenuItem, Select, FormControl, InputLabel, Button, styled, Drawer, TextField
+} from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
 import LabelIcon from "@mui/icons-material/Label";
-import CloudUploadIcon from "@mui/icons-material/CloudUpload";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { MediaItem } from "../types";
-
-const drawerWidth = 240;
+import { setMediaItemNotesRedux, TedTaggerDispatch } from '../models';
+import { getMediaItemNotes } from '../selectors';
+import { drawerWidth } from '../constants';
+import { setMediaItemNotes } from '../controllers';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -18,24 +24,38 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   justifyContent: 'flex-end',
 }));
 
-interface RightPanelProps {
-  selectedMediaItems: MediaItem[];
+export interface RightPanelPropsFromParent {
+  mediaItem: MediaItem;
   open: boolean;
   onClose: () => void;
 }
 
-const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
+export interface RightPanelDerivedStateProps {
+  notes: string | undefined;
+}
 
+export interface RightPanelDerivedActionCreatorProps {
+  onSetMediaItemNotes: (uniqueId: string, notes: string) => void;
+}
+
+export interface RightPanelAllProps extends RightPanelDerivedStateProps, RightPanelDerivedActionCreatorProps, RightPanelPropsFromParent { }
+
+const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => {
   const { open, onClose } = props;
 
-  if (props.selectedMediaItems.length !== 1) return null;
+  // Use local state for notes to avoid updating Redux on every keystroke.
+  const [localNotes, setLocalNotes] = React.useState(props.notes || "");
 
-  const firstPhoto = props.selectedMediaItems[0];
+  // Sync local state when props.notes changes
+  React.useEffect(() => {
+    setLocalNotes(props.notes || "");
+  }, [props.notes]);
 
-  // console.log("RightPanel Render - Open:", open);
+  if (!props.mediaItem) {
+    return null; // or some loading state
+  }
 
   return (
-
     <Drawer
       sx={{
         width: open ? drawerWidth : 0,  // Only apply width when open
@@ -56,20 +76,30 @@ const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
       </DrawerHeader>
       <Divider />
 
-      <Box sx={{ width: 300, p: 2, borderLeft: "1px solid #ddd", backgroundColor: "#f9f9f9", position: "relative" }}>
+      <Box id='rightPanelBox' sx={{ width: drawerWidth, p: 2, borderLeft: "1px solid #ddd", backgroundColor: "#f9f9f9", position: "relative" }}>
         <IconButton sx={{ position: "absolute", top: 8, right: 8 }} onClick={onClose}>
           <CloseIcon />
         </IconButton>
         <Typography variant="h6">Photo Details</Typography>
         <Card sx={{ mb: 2 }}>
           <CardContent>
-            <Typography variant="subtitle1">Filename: {firstPhoto.filePath}</Typography>
-            <Typography variant="body2">Dimensions: {firstPhoto.width} x {firstPhoto.height}</Typography>
-            {/* <Typography variant="body2">Date Taken: {firstPhoto.dateTaken}</Typography>
-          <Typography variant="body2">Location: {firstPhoto.location || "Unknown"}</Typography> */}
+            <Typography variant="subtitle1">Filename: {props.mediaItem.fileName}</Typography>
+            <Typography variant="body2">Dimensions: {props.mediaItem.width} x {props.mediaItem.height}</Typography>
           </CardContent>
         </Card>
         <Divider sx={{ my: 2 }} />
+        <Typography variant="h6">Notes</Typography>
+        <TextField
+          multiline
+          rows={4}
+          fullWidth
+          variant="outlined"
+          value={localNotes}
+          onChange={(e) => setLocalNotes(e.target.value)}
+          onBlur={() => props.onSetMediaItemNotes(props.mediaItem.uniqueId, localNotes)}
+          sx={{ my: 2 }}
+        />
+        {/* <Divider sx={{ my: 2 }} />
         <Typography variant="h6">Assigned Keywords</Typography>
         <Box sx={{ display: "flex", alignItems: "center", gap: 1, my: 1 }}>
           <Tooltip title="Assign Keywords">
@@ -97,10 +127,22 @@ const RightPanel: React.FC<RightPanelProps> = (props: RightPanelProps) => {
               <DeleteIcon />
             </IconButton>
           </Tooltip>
-        </Box>
+        </Box> */}
       </Box>
     </Drawer>
   );
 };
 
-export default RightPanel;
+function mapStateToProps(state: any, ownProps: RightPanelPropsFromParent): Partial<RightPanelDerivedStateProps> {
+  return {
+    notes: ownProps.mediaItem ? getMediaItemNotes(state, ownProps.mediaItem.uniqueId) : "",
+  };
+}
+
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
+  return bindActionCreators({
+    onSetMediaItemNotes: setMediaItemNotes,
+  }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(RightPanel);

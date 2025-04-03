@@ -26,6 +26,8 @@ export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
 
 export const REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS = 'REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS';
 
+export const SET_MEDIA_ITEM_NOTES = 'SET_MEDIA_ITEM_NOTES';
+
 // ------------------------------------
 // Actions
 // ------------------------------------
@@ -209,6 +211,24 @@ export const removeSurveyViewMediaItemId = (
   };
 };
 
+interface SetMediaItemNotesPayload {
+  mediaItemId: string;
+  notes: string;
+};
+
+export const setMediaItemNotesRedux = (
+  mediaItemId: string,
+  notes: string,
+): any => {
+  return {
+    type: SET_MEDIA_ITEM_NOTES,
+    payload: {
+      mediaItemId,
+      notes,
+    }
+  };
+};
+
 
 // ------------------------------------
 // Reducer
@@ -223,7 +243,7 @@ const initialState: MediaItemsState =
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload>
+  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload & SetMediaItemNotesPayload>
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
@@ -377,6 +397,23 @@ export const mediaItemsStateReducer = (
       // Only return a new state if changes were made
       if (!hasChanges) {
         return state;
+      }
+
+      return {
+        ...state,
+        mediaItems: Array.from(mediaItemsMap.values()) // Convert Map back to array
+      };
+    }
+    case SET_MEDIA_ITEM_NOTES: {
+      const { mediaItemId, notes } = action.payload;
+
+      // Convert state to a Map for fast lookups
+      const mediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
+
+      const mediaItem = mediaItemsMap.get(mediaItemId);
+
+      if (mediaItem) {
+        mediaItemsMap.set(mediaItemId, { ...mediaItem, notes });
       }
 
       return {

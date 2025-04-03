@@ -30,6 +30,7 @@ export interface MediaItem {
   photoState: PhotoState,
   albumId: string;
   undecidedGroupId?: string;
+  notes?: string;
 }
 
 export interface DateRangeSpecification {

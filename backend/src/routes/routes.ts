@@ -27,6 +27,7 @@ import {
   getMediaItemCounts,
   getMediaItemCountByUndecidedGroupPerAlbum,
   getMediaItemCountByPhotoStateByAlbumId,
+  setMediaItemNotesEndpoint,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -56,6 +57,7 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 
   app.post('/api/v1/setPhotoState', setPhotoStateEndpoint);
+  app.post('/api/v1/setMediaItemNotes', setMediaItemNotesEndpoint);
 
   app.get('/api/v1/undecidedGroups', getUndecidedGroups);
   app.post('/api/v1/undecidedGroup', addUndecidedGroup);

@@ -4,6 +4,7 @@ export const toolbarHeight = 85;
 export const bodyMargins = 16;
 
 export const centerColumnWidth = 1800;
+export const drawerWidth = 240;
 
 export const sliderContainerXTranslate = 74;
 

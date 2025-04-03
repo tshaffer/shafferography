@@ -30,6 +30,7 @@ const MediaitemSchema = new Schema(
     photoState: { type: String, required: true }, 
     albumId: { type: String, required: true }, 
     undecidedGroupId: { type: String },
+    notes: { type: String },
   }
 );
 

@@ -309,7 +309,7 @@ const AppShell = (props: AppShellProps) => {
         <PhotosContainer />
       </Main>
       <RightPanel
-        selectedMediaItems={props.selectedMediaItems}
+        mediaItem={props.selectedMediaItems[0]}
         open={rightPanelOpen}
         onClose={toggleRightPanel}
       />

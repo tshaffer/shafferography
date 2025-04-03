@@ -9,7 +9,8 @@ import {
   removeKeywordFromMediaItemIdsRedux,
   setPhotoStateRedux,
   clearMediaItems,
-  updateMediaItemsRedux
+  updateMediaItemsRedux,
+  setMediaItemNotesRedux
 } from '../models';
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
@@ -243,6 +244,28 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
     ).then((response) => {
       dispatch(setPhotoStateRedux(mediaItemIds, photoState));
       dispatch(loadMediaItemCounts());
+      return Promise.resolve();
+    }).catch((error) => {
+      console.log('error');
+      console.log(error);
+      return Promise.reject();
+    });
+  };
+};
+
+export const setMediaItemNotes = (uniqueId: string, notes: string): any => {
+
+  return (dispatch: TedTaggerDispatch) => {
+
+    const path = serverUrl + apiUrlFragment + 'setMediaItemNotes';
+
+    const setMediaItemNotesBody = { uniqueId, notes };
+
+    return axios.post(
+      path,
+      setMediaItemNotesBody
+    ).then((response) => {
+      dispatch(setMediaItemNotesRedux(uniqueId, notes));
       return Promise.resolve();
     }).catch((error) => {
       console.log('error');

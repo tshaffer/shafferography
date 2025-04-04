@@ -6,11 +6,13 @@ import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } 
 
 import '../styles/TedTagger.css';
 import { MediaItem, PhotoLayout } from '../types';
-import { isMediaItemSelected } from '../selectors';
+import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
 import { getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
 import LazyImage from './LazyImage';
+import { Typography } from '@mui/material';
+import dayjs, { Dayjs } from 'dayjs';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -21,6 +23,7 @@ export interface GridCellPropsFromParent {
 }
 
 export interface GridCellProps extends GridCellPropsFromParent {
+  displayMetadata: boolean;
   isSelected: boolean;
   onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
   onSetLoupeViewMediaItemId: (id: string) => void;
@@ -75,13 +78,48 @@ const GridCell = (props: GridCellProps) => {
     }
   };
 
+  const getMetadataJsx = (): JSX.Element | null => {
+
+    if (!props.displayMetadata) {
+      return null;
+    }
+
+    const creationDate: Dayjs = dayjs(mediaItem.creationTime!);
+    const formattedCreationDate: string = creationDate.format('MM/DD/YYYY hh:mm A');
+    // const keywords: string = props.keywordLabels.join(', ');
+
+    return (
+      <div style={{
+        backgroundColor: 'silver',
+        minHeight: '60px',
+      }}
+      >
+        <Typography variant='body2' color='black' fontSize='12px'>
+          {mediaItem.fileName}
+          <br />
+          {formattedCreationDate}
+          <br />
+          {/* {keywords} */}
+        </Typography>
+      </div >
+    );
+
+  };
+
+  const widthAttribute: string = props.cellWidth.toString() + 'px';
+  const metadataHeight: number = props.displayMetadata ? 60 : 0;
+  const imgHeightAttribute: string = props.rowHeight.toString() + 'px';
+  const divHeightAttribute: string = (props.rowHeight + metadataHeight).toString() + 'px';
+
+  const metadataJsx: JSX.Element | null = getMetadataJsx();
+
   return (
     <div
       style={{
         position: 'relative',
         display: 'inline-block',
-        width: `${props.cellWidth}px`,
-        height: `${props.rowHeight}px`,
+        width: widthAttribute,
+        height: divHeightAttribute,
         border: `${borderSizeStr} solid ${props.isSelected ? 'white' : 'white'}`,
         cursor: 'pointer',
       }}
@@ -126,11 +164,13 @@ const GridCell = (props: GridCellProps) => {
         />
       )}
 
+      {metadataJsx}
+
       <LazyImage
         src={photoUrl}
         alt="..."
         loading="lazy"
-        width={props.cellWidth} height={props.rowHeight}
+        width={widthAttribute} height={imgHeightAttribute}
       />
     </div>
   );
@@ -138,6 +178,7 @@ const GridCell = (props: GridCellProps) => {
 
 function mapStateToProps(state: any, ownProps: GridCellPropsFromParent) {
   return {
+    displayMetadata: getDisplayMetadata(state),
     isSelected: isMediaItemSelected(state, ownProps.mediaItem),
   };
 }

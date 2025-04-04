@@ -6,7 +6,7 @@ const collections = [
   "undecidedgroups",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-04-03-3";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-04-04-1";
 
 const fs = require("fs");
 

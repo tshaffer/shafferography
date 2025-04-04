@@ -27,7 +27,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   const listRef = React.useRef<VariableSizeList>(null);
 
   React.useEffect(() => {
-    console.log("GridView mounted");
+    // console.log("GridView mounted");
     if (listRef.current) {
       const scrollOffset = props.savedScrollOffset;
       setTimeout(() => {
@@ -102,7 +102,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   // Create a throttled version of onSaveScrollOffset so it fires at most once every 200ms
   const throttledOnSaveScrollOffset = React.useMemo(() => throttle((offset: number) => {
-    console.log('Throttled scroll offset:', offset);
+    // console.log('Throttled scroll offset:', offset);
     props.onSaveScrollOffset(offset);
   }, 200), [props.onSaveScrollOffset]);
 
@@ -138,9 +138,9 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         itemCount={gridRows.length}
         width="100%"
         overscanCount={1}
-        onItemsRendered={({ visibleStartIndex, visibleStopIndex }) => {
-          console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
-        }}
+        // onItemsRendered={({ visibleStartIndex, visibleStopIndex }) => {
+        //   console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
+        // }}
       >
         {renderRow}
       </VariableSizeList>

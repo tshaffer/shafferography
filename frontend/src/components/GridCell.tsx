@@ -5,14 +5,20 @@ import { connect } from 'react-redux';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } from '../models';
 
 import '../styles/TedTagger.css';
-import { MediaItem, PhotoLayout } from '../types';
+import { MediaItem, PhotoLayout, PhotoState } from '../types';
 import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
 import { getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
 import LazyImage from './LazyImage';
-import { Typography } from '@mui/material';
+import { Icon, Typography } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
+
+import HelpOutline from '@mui/icons-material/HelpOutline';
+import CloudUpload from '@mui/icons-material/CloudUpload';
+import CloudDone from '@mui/icons-material/CloudDone';
+import MoreHoriz from '@mui/icons-material/MoreHoriz';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -88,6 +94,25 @@ const GridCell = (props: GridCellProps) => {
     const formattedCreationDate: string = creationDate.format('MM/DD/YYYY hh:mm A');
     // const keywords: string = props.keywordLabels.join(', ');
 
+    let icon: JSX.Element | null = null;
+    switch (mediaItem.photoState) {
+      case PhotoState.Undecided:
+        icon = <HelpOutline />;
+        break;
+      case PhotoState.ReadyForUpload:
+        icon = <CloudUpload />;
+        break;
+      case PhotoState.Uploaded:
+        icon = <CloudDone />;
+        break;
+      case PhotoState.Unreviewed:
+        icon = <MoreHoriz />;
+        break;
+      case PhotoState.Deleted:
+        icon = <DeleteIcon />;
+        break;
+    }
+
     return (
       <div style={{
         backgroundColor: 'silver',
@@ -95,11 +120,13 @@ const GridCell = (props: GridCellProps) => {
       }}
       >
         <Typography variant='body2' color='black' fontSize='12px'>
+          <Icon color="inherit" >
+            {icon}
+          </Icon>
+          <br />
           {mediaItem.fileName}
           <br />
           {formattedCreationDate}
-          <br />
-          {/* {keywords} */}
         </Typography>
       </div >
     );

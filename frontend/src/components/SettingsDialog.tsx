@@ -24,7 +24,7 @@ export interface SettingsDialogProps extends SettingsDialogPropsFromParent { }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = (props: SettingsDialogProps) => {
 
-  const [showMetadata, setShowMetadata] = React.useState(true);
+  const [showMetadata, setShowMetadata] = React.useState(props.settings.showMetadata);
 
   const handleSetSettings = () => {
     const updatedSettings: Settings = {

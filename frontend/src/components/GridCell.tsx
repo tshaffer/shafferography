@@ -28,13 +28,18 @@ export interface GridCellPropsFromParent {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void;
 }
 
-export interface GridCellProps extends GridCellPropsFromParent {
+export interface GridCellPropsDerivedStateProps {
   displayMetadata: boolean;
   isSelected: boolean;
+}
+
+export interface GridCellPropsDerivedActionCreatorProps {
   onClickPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => void;
   onSetLoupeViewMediaItemId: (id: string) => void;
   onSetPhotoLayoutRedux: (photoLayout: PhotoLayout) => void;
 }
+
+export interface GridCellProps extends GridCellPropsDerivedStateProps, GridCellPropsDerivedActionCreatorProps, GridCellPropsFromParent { }
 
 const GridCell = (props: GridCellProps) => {
 
@@ -235,7 +240,8 @@ const MemoizedGridCell = React.memo(GridCell, (prevProps, nextProps) => {
     prevProps.rowHeight === nextProps.rowHeight &&
     prevProps.cellWidth === nextProps.cellWidth &&
     prevProps.isSelected === nextProps.isSelected &&
-    prevProps.mediaItem.uniqueId === nextProps.mediaItem.uniqueId
+    prevProps.mediaItem.uniqueId === nextProps.mediaItem.uniqueId &&
+    prevProps.displayMetadata === nextProps.displayMetadata
   );
 });
 

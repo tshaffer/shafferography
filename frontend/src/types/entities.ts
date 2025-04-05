@@ -143,8 +143,3 @@ export interface MediaItemCountByUndecidedGroupPerAlbum {
   albumId: string;
   count: number
 }
-
-export interface Settings {
-  showMetadata: boolean;
-}
-

@@ -29,7 +29,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoState, Settings, TedTaggerState } from '../types';
+import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
@@ -108,7 +108,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [settings, setSettings] = useState<Settings>({ showMetadata: props.displayMetadata });
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   React.useEffect(() => {
@@ -143,9 +142,8 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     setShowUploadToGoogleDialog(false);
   };
 
-  const handleSetSettings = (updatedSettings: Settings) => {
-    setSettings(updatedSettings);
-    props.onSetDisplayMetadata(updatedSettings.showMetadata);
+  const handleSetShowMetadata = (updatedShowMetadata: boolean) => {
+    props.onSetDisplayMetadata(updatedShowMetadata);
   };
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
@@ -414,8 +412,8 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       <SettingsDialog
         open={showSettingsDialog}
         onClose={() => setShowSettingsDialog(false)}
-        settings={settings}
-        onSetSettings={(settings) => handleSetSettings(settings)}
+        showMetadata={props.displayMetadata}
+        onSetShowMetadata={(showMetadata) => handleSetShowMetadata(showMetadata)}
       />
     );
   }

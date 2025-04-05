@@ -10,27 +10,23 @@ import {
   Tooltip,
   FormGroup,
 } from "@mui/material";
-import { Settings } from "../types";
 import React from "react";
 
 export interface SettingsDialogPropsFromParent {
   open: boolean;
   onClose: () => void;
-  settings: Settings;
-  onSetSettings: (settings: Settings) => void;
+  showMetadata: boolean;
+  onSetShowMetadata: (settings: boolean) => void;
 }
 
 export interface SettingsDialogProps extends SettingsDialogPropsFromParent { }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = (props: SettingsDialogProps) => {
 
-  const [showMetadata, setShowMetadata] = React.useState(props.settings.showMetadata);
+  const [showMetadata, setShowMetadata] = React.useState(props.showMetadata);
 
   const handleSetSettings = () => {
-    const updatedSettings: Settings = {
-      showMetadata: showMetadata,
-    };
-    props.onSetSettings(updatedSettings);
+    props.onSetShowMetadata(showMetadata);
     props.onClose();
   };
 
@@ -44,7 +40,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = (props: SettingsDialogProp
 
   return (
     <Dialog onClose={props.onClose} open={props.open}>
-      <DialogTitle>Settings</DialogTitle>
+      <DialogTitle>boolean</DialogTitle>
       <DialogContent style={{ paddingBottom: "0px" }}>
         <Box sx={{ padding: "8px", overflowY: "auto" }}>
           <FormGroup>

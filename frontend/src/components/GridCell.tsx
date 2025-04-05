@@ -145,6 +145,12 @@ const GridCell = (props: GridCellProps) => {
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
+  console.log('GridCell');
+  console.log('displayMetadata', props.displayMetadata);
+  console.log('imgHeightAttribute', imgHeightAttribute);
+  console.log('divHeightAttribute', divHeightAttribute);
+  console.log('widthAttribute', widthAttribute);
+
   return (
     <div
       style={{
@@ -202,7 +208,8 @@ const GridCell = (props: GridCellProps) => {
         src={photoUrl}
         alt="..."
         loading="lazy"
-        width={widthAttribute} height={imgHeightAttribute}
+        width={widthAttribute}
+        height={imgHeightAttribute}
       />
     </div>
   );

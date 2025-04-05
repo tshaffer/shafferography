@@ -29,10 +29,11 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
+import { MediaItem, PhotoLayout, PhotoState, Settings, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
+import SettingsDialog from './SettingsDialog';
 
 const drawerWidth = 240;
 
@@ -89,7 +90,6 @@ export interface TopNavigationBarDerivedActionCreatorProps {
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
   onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
-
 }
 
 export interface TopNavigationProps extends TopNavigationBarDerivedStateProps, TopNavigationBarDerivedActionCreatorProps, TopNavigationBarPropsFromParent { }
@@ -105,6 +105,9 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
+
+  const [settings, setSettings] = useState<Settings>({ showMetadata: true });
+  const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Loupe) {
@@ -399,6 +402,17 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     );
   }
 
+  const renderSettingsDialog = (): JSX.Element => {
+    return (
+      <SettingsDialog
+        open={showSettingsDialog}
+        onClose={() => setShowSettingsDialog(false)}
+        settings={settings}
+        onSetSettings={(settings) => setSettings(settings)}
+      />
+    );
+  }
+
   const showSpecifyUndecidedGroupUI = (event: React.MouseEvent<HTMLElement>) => {
     setUndecidedGroupAnchorEl(event.currentTarget);
   };
@@ -567,7 +581,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </Tooltip>
 
           <Tooltip title="Settings">
-            <IconButton color="inherit"><SettingsIcon /></IconButton>
+            <IconButton onClick={() => setShowSettingsDialog(true)} color="inherit"><SettingsIcon /></IconButton>
           </Tooltip>
         </Toolbar>
       </AppBar>
@@ -575,6 +589,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
       {renderZoomDialog()}
+      {renderSettingsDialog()}
 
     </React.Fragment >
   )

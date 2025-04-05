@@ -144,4 +144,7 @@ export interface MediaItemCountByUndecidedGroupPerAlbum {
   count: number
 }
 
+export interface Settings {
+  showMetadata: boolean;
+}
 

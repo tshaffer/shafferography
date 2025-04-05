@@ -24,20 +24,18 @@ export interface SettingsDialogProps extends SettingsDialogPropsFromParent { }
 
 const SettingsDialog: React.FC<SettingsDialogProps> = (props: SettingsDialogProps) => {
 
-  // const [settings, setSettings] = React.useState<Settings>(props.settings);
-
-  const [checked, setChecked] = React.useState(true);
+  const [showMetadata, setShowMetadata] = React.useState(true);
 
   const handleSetSettings = () => {
     const updatedSettings: Settings = {
-      showMetadata: checked,
+      showMetadata: showMetadata,
     };
     props.onSetSettings(updatedSettings);
     props.onClose();
   };
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setChecked(event.target.checked);
+    setShowMetadata(event.target.checked);
   };
 
   const handleClose = () => {
@@ -52,7 +50,7 @@ const SettingsDialog: React.FC<SettingsDialogProps> = (props: SettingsDialogProp
           <FormGroup>
             <FormControlLabel control={
               <Checkbox
-                checked={checked}
+                checked={showMetadata}
                 onChange={handleChange}
               />
             }

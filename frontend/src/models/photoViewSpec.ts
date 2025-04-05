@@ -209,7 +209,7 @@ const initialState: PhotoViewSpec = {
   numGridColumns: 5,
   loupeViewMediaItemId: '',
   focusedSurveyViewMediaItemId: '',
-  displayMetadata: true,
+  displayMetadata: false,
   surveyModeZoomFactor: 1,
   scrollPosition: 0,
   fullScreenMode: false,

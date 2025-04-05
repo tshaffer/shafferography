@@ -27,8 +27,8 @@ import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds } from '../selectors';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, Settings, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
@@ -76,6 +76,7 @@ export interface TopNavigationBarDerivedStateProps {
   loupeViewMediaItemIds: string[];
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
+  displayMetadata: boolean;
 }
 
 export interface TopNavigationBarDerivedActionCreatorProps {
@@ -90,6 +91,7 @@ export interface TopNavigationBarDerivedActionCreatorProps {
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
   onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
+  onSetDisplayMetadata: (displayMetadata: boolean) => any;
 }
 
 export interface TopNavigationProps extends TopNavigationBarDerivedStateProps, TopNavigationBarDerivedActionCreatorProps, TopNavigationBarPropsFromParent { }
@@ -106,7 +108,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
 
-  const [settings, setSettings] = useState<Settings>({ showMetadata: true });
+  const [settings, setSettings] = useState<Settings>({ showMetadata: props.displayMetadata });
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   React.useEffect(() => {
@@ -139,6 +141,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const handleCloseUploadToGoogleDialogDialog = () => {
     setShowUploadToGoogleDialog(false);
+  };
+
+  const handleSetSettings = (updatedSettings: Settings) => {
+    setSettings(updatedSettings);
+    props.onSetDisplayMetadata(updatedSettings.showMetadata);
   };
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
@@ -408,7 +415,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
         open={showSettingsDialog}
         onClose={() => setShowSettingsDialog(false)}
         settings={settings}
-        onSetSettings={(settings) => setSettings(settings)}
+        onSetSettings={(settings) => handleSetSettings(settings)}
       />
     );
   }
@@ -609,6 +616,7 @@ function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStatePro
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
     focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
+    displayMetadata: getDisplayMetadata(state),
   };
 }
 
@@ -624,6 +632,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetPhotoState: setPhotoState,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
     onRemoveLoupeViewMediaItemId: removeLoupeViewMediaItemId,
+    onSetDisplayMetadata: setDisplayMetadata,
 
   }, dispatch);
 };

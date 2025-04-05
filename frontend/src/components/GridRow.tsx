@@ -112,9 +112,9 @@ const GridRow = (props: GridRowProps) => {
   const heightAttribute = `${props.rowHeight + metadataHeight + bordersSize}px`;
 
   console.log('gridRow rerender:');
-  console.log(displayMetadata);
-  console.log(heightAttribute);
-  console.log(props.rowHeight + metadataHeight + bordersSize);
+  // console.log(displayMetadata);
+  // console.log(heightAttribute);
+  // console.log(props.rowHeight + metadataHeight + bordersSize);
 
   return (
     <div style={{ height: heightAttribute, backgroundColor: 'white' }}>

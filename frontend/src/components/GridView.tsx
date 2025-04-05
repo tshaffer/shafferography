@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getFilteredMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
+import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
 import { getGridRowHeight } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
@@ -14,6 +14,7 @@ export interface GridViewProps {
   appInitialized: boolean;
   numGridColumns: number;
   allMediaItems: FilteredMediaItemPicker[];
+  displayMetadata: boolean;
   savedScrollOffset: number;
   onSaveScrollOffset: (offset: number) => void;
 }
@@ -25,6 +26,41 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
   const listRef = React.useRef<VariableSizeList>(null);
+
+  const prevProps = React.useRef<any>(null);
+
+  React.useEffect(() => {
+
+    console.log('GridView useEffect');
+    console.log('prevProps:', prevProps.current);
+    console.log('currentProps:', props);
+
+    if (prevProps.current) {
+      if (prevProps.current.displayMetadata !== props.displayMetadata) {
+        console.log('Display metadata changed:', props.displayMetadata);
+        if (listRef.current) {
+          listRef.current.resetAfterIndex(0, true);
+        }
+      }
+
+    //   // const changedProps: Partial<any> = {};
+
+    //   // if (prevProps.current.appInitialized !== props.appInitialized) {
+    //   //   changedProps.appInitialized = props.appInitialized;
+    //   // }
+    //   // if (prevProps.current.photoLayout !== props.photoLayout) {
+    //   //   changedProps.photoLayout = props.photoLayout;
+    //   // }
+    //   // if (prevProps.current.allMediaItems !== props.allMediaItems) {
+    //   //   changedProps.allMediaItems = props.allMediaItems;
+    //   // }
+
+    //   // if (Object.keys(changedProps).length > 0) {
+    //   //   console.log("PhotosContainer: rerender due to changes in:", changedProps);
+    //   // }
+    }
+    prevProps.current = props;
+  }, [props]);
 
   React.useEffect(() => {
     // console.log("GridView mounted");
@@ -97,7 +133,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         </div>
       );
     },
-    [gridRows, setTooltip]
+    [gridRows, setTooltip, props.displayMetadata]
   );
 
   // Create a throttled version of onSaveScrollOffset so it fires at most once every 200ms
@@ -125,8 +161,16 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     throttledOnSaveScrollOffset(scrollOffset);
   };
 
-  const getItemSize = (index: number) => rowHeights[index];
+  const getItemSize = (index: number) => {
+    console.log('getItemSize :', rowHeights[index] + (props.displayMetadata ? 60 : 0));
+    return rowHeights[index] + (props.displayMetadata ? 60 : 0);
+  };
+  // const getItemSize = (index: number) => rowHeights[index];
   const listHeight = window.innerHeight - 112;
+
+  console.log('rowHeight:', rowHeights);
+
+  console.log('GridView render');
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
@@ -138,9 +182,9 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         itemCount={gridRows.length}
         width="100%"
         overscanCount={1}
-        // onItemsRendered={({ visibleStartIndex, visibleStopIndex }) => {
-        //   console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
-        // }}
+        onItemsRendered={({ visibleStartIndex, visibleStopIndex }) => {
+          console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
+        }}
       >
         {renderRow}
       </VariableSizeList>
@@ -149,11 +193,14 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 };
 
 function mapStateToProps(state: any) {
+  console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
+
   return {
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),
     allMediaItems: getFilteredMediaItems(state),
     savedScrollOffset: getScrollPosition(state),
+    displayMetadata: getDisplayMetadata(state),
   };
 }
 

@@ -145,11 +145,13 @@ const GridCell = (props: GridCellProps) => {
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
-  console.log('GridCell');
-  console.log('displayMetadata', props.displayMetadata);
-  console.log('imgHeightAttribute', imgHeightAttribute);
-  console.log('divHeightAttribute', divHeightAttribute);
-  console.log('widthAttribute', widthAttribute);
+  // console.log('GridCell');
+  // console.log('displayMetadata', props.displayMetadata);
+  // console.log('imgHeightAttribute', imgHeightAttribute);
+  // console.log('divHeightAttribute', divHeightAttribute);
+  // console.log('widthAttribute', widthAttribute);
+
+  // console.log('gridCell rerender:');
 
   return (
     <div
@@ -204,13 +206,20 @@ const GridCell = (props: GridCellProps) => {
 
       {metadataJsx}
 
-      <LazyImage
+      <img
+        src={photoUrl}
+        width={widthAttribute}
+        height={imgHeightAttribute}
+        loading='lazy'
+        style={{ display: 'block' }}
+      />
+      {/* <LazyImage
         src={photoUrl}
         alt="..."
         loading="lazy"
         width={widthAttribute}
         height={imgHeightAttribute}
-      />
+      /> */}
     </div>
   );
 };

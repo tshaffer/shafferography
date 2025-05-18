@@ -114,7 +114,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     if (props.photoLayout === PhotoLayout.Loupe) {
       updateLoupeViewMediaItemProps();
     }
-  }, [props.mediaItemIds]);
+  }, [props.mediaItemIds, props.selectedMediaItemIds]);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Survey) {
@@ -227,7 +227,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     }
 
     let switchToGridView = false;
-    if (props.loupeViewMediaItemIds.length > 1) {
+    if (props.loupeViewMediaItemIds.length > 1 && props.selectedMediaItemIds.length > 0) {
       let newLoupeViewMediaItemIndex = -1;
       const prevLoupeViewMediaItemIndex = loupeViewMediaItemIndex - 1;
       const nextLoupeViewMediaItemIndex = loupeViewMediaItemIndex + 1;

@@ -31,13 +31,13 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   React.useEffect(() => {
 
-    console.log('GridView useEffect');
-    console.log('prevProps:', prevProps.current);
-    console.log('currentProps:', props);
+    // console.log('GridView useEffect');
+    // console.log('prevProps:', prevProps.current);
+    // console.log('currentProps:', props);
 
     if (prevProps.current) {
       if (prevProps.current.displayMetadata !== props.displayMetadata) {
-        console.log('Display metadata changed:', props.displayMetadata);
+        // console.log('Display metadata changed:', props.displayMetadata);
         if (listRef.current) {
           listRef.current.resetAfterIndex(0, true);
         }
@@ -87,6 +87,8 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   const getGridRowData = (): GridRowData[] => {
     if (gridWidth === 0) return [];
 
+    console.log('getGridRowData gridWidth:', gridWidth);
+
     const targetHeight = targetHeights[props.numGridColumns - 2];
     const gridRows: GridRowData[] = [];
     let mediaItemIndex = 0;
@@ -99,6 +101,9 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         mediaItemIndex,
         props.allMediaItems.length - 1
       );
+      const sum = gridRowData.cellWidths.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+      console.log('getGridRowData row width:', sum);
+      
       mediaItemIndex += gridRowData.numMediaItems;
       gridRows.push(gridRowData);
     }
@@ -162,13 +167,13 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   };
 
   const getItemSize = (index: number) => {
-    console.log('getItemSize :', rowHeights[index] + (props.displayMetadata ? 60 : 0));
+    // console.log('getItemSize :', rowHeights[index] + (props.displayMetadata ? 60 : 0));
     return rowHeights[index] + (props.displayMetadata ? 60 : 0);
   };
   // const getItemSize = (index: number) => rowHeights[index];
   const listHeight = window.innerHeight - 112;
 
-  console.log('rowHeight:', rowHeights);
+  // console.log('rowHeight:', rowHeights);
 
   console.log('GridView render');
 
@@ -183,7 +188,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         width="100%"
         overscanCount={1}
         onItemsRendered={({ visibleStartIndex, visibleStopIndex }) => {
-          console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
+          // console.log('react-window visible start, end indices:', visibleStartIndex, visibleStopIndex);
         }}
       >
         {renderRow}
@@ -193,7 +198,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 };
 
 function mapStateToProps(state: any) {
-  console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
+  // console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
 
   return {
     appInitialized: getAppInitialized(state),

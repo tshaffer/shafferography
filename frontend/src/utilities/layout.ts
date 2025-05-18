@@ -55,8 +55,6 @@ export const getGridRowHeight = (
     const scaledWidthWithoutMargin = itemAspectRatio * adjustedHeight;
     itemWidthsWithoutMargin.push(roundToPrecision(scaledWidthWithoutMargin, 2));
   }
-
-  console.log('getGridRowHeight:', adjustedHeight);
   
   return {
     mediaItemIndex: startingMediaItemIndex,

@@ -3,16 +3,19 @@ import { Dimensions, GridRowData, MediaItem } from '../types';
 export const getGridRowInfo = (
   availableWidth: number,  // Renamed from rowWidth to match dynamic calculations
   targetHeight: number,
+  maxRowHeight: number,
   mediaItems: MediaItem[],
   startingMediaItemIndex: number,
   maxMediaItemIndex: number,
   margin: number = 8 // Optional, default to 8px (4px left + 4px right)
 ): GridRowData => {
+  
   let totalWidth = 0;
   let totalImageWidth = 0;
   let itemCount = 0;
   let adjustedHeight = targetHeight;
   const itemWidthsWithoutMargin: number[] = [];
+  let lastRow = true;
 
   const roundToPrecision = (value: number, precision: number): number => {
     const factor = Math.pow(10, precision);
@@ -32,6 +35,7 @@ export const getGridRowInfo = (
     // Stop adding items if row width is exceeded
     if (totalWidth + scaledWidthWithMargin > availableWidth) {
       // This code should be reached for all except the last row
+      lastRow = false;
       break;
     }
 
@@ -42,9 +46,11 @@ export const getGridRowInfo = (
 
 
   /** Adjust height if the row wasn't fully filled */
-  if (totalWidth < availableWidth && itemCount > 0) {
+  if (totalWidth < availableWidth && itemCount > 0 && !lastRow) {
     const availableSpace = availableWidth - itemCount * margin;
     adjustedHeight = targetHeight * (availableSpace / totalImageWidth);
+  } else if (lastRow) {
+    adjustedHeight = maxRowHeight;
   }
 
   /** Pass 2: Calculate exact rendered widths using adjusted height */

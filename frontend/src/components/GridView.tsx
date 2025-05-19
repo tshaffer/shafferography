@@ -115,16 +115,23 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     const gridRows: GridRowData[] = [];
     let mediaItemIndex = 0;
 
+    let runningMaxRowHeight = targetHeight;
+
     while (mediaItemIndex <= props.allMediaItems.length - 1) {
       const gridRowData: GridRowData = getGridRowInfo(
         gridWidth,
         targetHeight,
+        runningMaxRowHeight,
         props.allMediaItems as MediaItem[],
         mediaItemIndex,
         props.allMediaItems.length - 1
       );
       const sum = gridRowData.cellWidths.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
       console.log('getGridRowData row width:', sum);
+
+      if (gridRowData.rowHeight > runningMaxRowHeight) {
+        runningMaxRowHeight = gridRowData.rowHeight;
+      }
 
       mediaItemIndex += gridRowData.numMediaItems;
       gridRows.push(gridRowData);

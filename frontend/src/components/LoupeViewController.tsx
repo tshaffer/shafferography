@@ -3,10 +3,10 @@ import { connect } from 'react-redux';
 
 import { bindActionCreators } from 'redux';
 import LoupeView from './LoupeView';
-import { selectPhoto, deselectAllPhotos } from '../controllers';
+import { selectPhoto, deselectAllPhotos, setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setFullScreenMode } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem, PhotoState } from '../types';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
@@ -17,6 +17,8 @@ export interface LoupeViewControllerProps {
   onSelectPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => any;
   onDeselectAllPhotos: () => any;
   onSetFullScreenMode: (fullScreenMode: boolean) => any;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
+  onReloadMediaItemsByViewSpec: () => any;
 }
 
 const LoupeViewController = (props: LoupeViewControllerProps) => {
@@ -32,6 +34,9 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
           break;
         case 'ArrowLeft':
           handleDisplayPreviousPhoto();
+          break;
+        case 'Delete':
+          handleDeletePhoto();
           break;
         default:
           break;
@@ -86,6 +91,14 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
       }
     };
 
+    const handleDeletePhoto = () => {
+      props.onSetPhotoState([props.loupeViewMediaItemId], PhotoState.Deleted)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec()
+            .then(() => { });
+        });
+    }
+
     const handleFullScreenChange = () => {
       const enterFullScreenMode = document.fullscreenElement !== null;
       props.onSetFullScreenMode(enterFullScreenMode);
@@ -122,7 +135,9 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
     onSelectPhoto: selectPhoto,
     onDeselectAllPhotos: deselectAllPhotos,
-    onSetFullScreenMode: setFullScreenMode
+    onSetFullScreenMode: setFullScreenMode,
+    onSetPhotoState: setPhotoState,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);

@@ -28,7 +28,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata } from '../selectors';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
@@ -57,14 +57,14 @@ const AppBar = styled(MuiAppBar, {
 });
 
 export interface TopNavigationBarPropsFromParent {
-  sidebarOpen: boolean;
   onOpenSidebar: () => void;
-  rightPanelOpen: boolean;
   toggleRightPanel: () => void;
   selectedItemsCount: number;
 }
 
 export interface TopNavigationBarDerivedStateProps {
+  sidebarOpen: boolean;
+  rightPanelOpen: boolean;
   mediaItemIds: string[];
   selectedMediaItems: MediaItem[];
   selectedMediaItemIds: string[];
@@ -603,6 +603,8 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStateProps {
 
   return {
+    sidebarOpen: getSidebarOpen(state),
+    rightPanelOpen: getRightPanelOpen(state),
     mediaItemIds: getMediaItemIds(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
     selectedMediaItems: getSelectedMediaItems(state),

@@ -24,6 +24,8 @@ export interface TedTaggerState {
 
 export interface AppState {
   appInitialized: boolean;
+  sidebarOpen: boolean;
+  rightPanelOpen: boolean;
   mainDisplayMode: MainDisplayMode;
   fullScreenMediaItemId: string;
   googleUserProfile: GoogleUserProfile | null;

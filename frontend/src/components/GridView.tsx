@@ -4,14 +4,16 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getScrollPosition } from '../selectors';
-import { getGridRowHeight } from '../utilities';
+import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getRightPanelOpen, getScrollPosition, getSidebarOpen } from '../selectors';
+import { getGridRowInfo } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
 import throttle from 'lodash/throttle';
 
 export interface GridViewProps {
   appInitialized: boolean;
+  sidebarOpen: boolean;
+  rightPanelOpen: boolean;
   numGridColumns: number;
   allMediaItems: FilteredMediaItemPicker[];
   displayMetadata: boolean;
@@ -43,21 +45,21 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         }
       }
 
-    //   // const changedProps: Partial<any> = {};
+      //   // const changedProps: Partial<any> = {};
 
-    //   // if (prevProps.current.appInitialized !== props.appInitialized) {
-    //   //   changedProps.appInitialized = props.appInitialized;
-    //   // }
-    //   // if (prevProps.current.photoLayout !== props.photoLayout) {
-    //   //   changedProps.photoLayout = props.photoLayout;
-    //   // }
-    //   // if (prevProps.current.allMediaItems !== props.allMediaItems) {
-    //   //   changedProps.allMediaItems = props.allMediaItems;
-    //   // }
+      //   // if (prevProps.current.appInitialized !== props.appInitialized) {
+      //   //   changedProps.appInitialized = props.appInitialized;
+      //   // }
+      //   // if (prevProps.current.photoLayout !== props.photoLayout) {
+      //   //   changedProps.photoLayout = props.photoLayout;
+      //   // }
+      //   // if (prevProps.current.allMediaItems !== props.allMediaItems) {
+      //   //   changedProps.allMediaItems = props.allMediaItems;
+      //   // }
 
-    //   // if (Object.keys(changedProps).length > 0) {
-    //   //   console.log("PhotosContainer: rerender due to changes in:", changedProps);
-    //   // }
+      //   // if (Object.keys(changedProps).length > 0) {
+      //   //   console.log("PhotosContainer: rerender due to changes in:", changedProps);
+      //   // }
     }
     prevProps.current = props;
   }, [props]);
@@ -75,13 +77,33 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   React.useEffect(() => {
     const updateGridWidth = () => {
       if (gridContainerRef.current) {
-        setGridWidth(gridContainerRef.current.clientWidth);
+        setGridWidth(gridContainerRef.current.clientWidth - 18); // Adjust for scrollbar width
       }
     };
 
     updateGridWidth();
     window.addEventListener('resize', updateGridWidth);
     return () => window.removeEventListener('resize', updateGridWidth);
+  }, []);
+
+  React.useEffect(() => {
+
+    console.log('GridView useEffect observer invoked');
+
+    if (!gridContainerRef.current) return;
+
+    const observer = new ResizeObserver(entries => {
+      for (const entry of entries) {
+        const target = entry.target as HTMLElement;
+        const width = target.clientWidth;
+        console.log('ResizeObserver clientWidth:', width);
+        setGridWidth(width - 18); // Adjust for scrollbar width
+      }
+    });
+
+    observer.observe(gridContainerRef.current);
+
+    return () => observer.disconnect();
   }, []);
 
   const getGridRowData = (): GridRowData[] => {
@@ -94,7 +116,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     let mediaItemIndex = 0;
 
     while (mediaItemIndex <= props.allMediaItems.length - 1) {
-      const gridRowData: GridRowData = getGridRowHeight(
+      const gridRowData: GridRowData = getGridRowInfo(
         gridWidth,
         targetHeight,
         props.allMediaItems as MediaItem[],
@@ -103,7 +125,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
       );
       const sum = gridRowData.cellWidths.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
       console.log('getGridRowData row width:', sum);
-      
+
       mediaItemIndex += gridRowData.numMediaItems;
       gridRows.push(gridRowData);
     }
@@ -201,6 +223,8 @@ function mapStateToProps(state: any) {
   // console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
 
   return {
+    sidebarOpen: getSidebarOpen(state),
+    rightPanelOpen: getRightPanelOpen(state),
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),
     allMediaItems: getFilteredMediaItems(state),

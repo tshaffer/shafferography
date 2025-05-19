@@ -3,8 +3,8 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
 import { loadMediaItems, loadAlbums, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumIds, setDisplayedPhotoStates, setGoogleUserProfile } from "../models";
-import { getPhotoLayout, getSelectedMediaItems } from "../selectors";
+import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
+import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
@@ -46,6 +46,8 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 }));
 
 export interface AppShellProps {
+  sidebarOpen: boolean;
+  rightPanelOpen: boolean;
   photoLayout: PhotoLayout;
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
@@ -54,6 +56,8 @@ export interface AppShellProps {
   onLoadAlbums: () => any;
   onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
+  onSetSidebarOpen: (open: boolean) => any;
+  onSetRightPanelOpen: (open: boolean) => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
   onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => any;
@@ -63,8 +67,6 @@ const AppShell = (props: AppShellProps) => {
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [rightPanelOpen, setRightPanelOpen] = useState(false);
 
   // Save the access token, expiration, and Google ID in localStorage
   const saveTokens = (token: string, expiresIn: number, googleId: string) => {
@@ -277,40 +279,38 @@ const AppShell = (props: AppShellProps) => {
   }
 
   const handleOpenSidebar = () => {
-    setSidebarOpen(true);
+    props.onSetSidebarOpen(true);
   };
 
   const handleCloseSidebar = () => {
-    setSidebarOpen(false);
+    props.onSetSidebarOpen(false);
   };
 
   const toggleRightPanel = () => {
-    setRightPanelOpen((prev) => {
-      return !prev;
-    });
+    props.onSetRightPanelOpen(!props.rightPanelOpen);
   };
 
   return (
     <Box sx={{ display: "flex" }}>
       <CssBaseline />
       <TopNavigationBar
-        sidebarOpen={sidebarOpen}
-        rightPanelOpen={rightPanelOpen}
+        sidebarOpen={props.sidebarOpen}
+        rightPanelOpen={props.rightPanelOpen}
         onOpenSidebar={handleOpenSidebar}
         toggleRightPanel={toggleRightPanel}
         selectedItemsCount={props.selectedMediaItems.length}
       />
       <Sidebar
-        open={sidebarOpen}
+        open={props.sidebarOpen}
         onClose={handleCloseSidebar}
       />
-      <Main sidebarOpen={sidebarOpen} rightPanelOpen={rightPanelOpen}>
+      <Main sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen}>
         <DrawerHeader />
         <PhotosContainer />
       </Main>
       <RightPanel
         mediaItem={props.selectedMediaItems[0]}
-        open={rightPanelOpen}
+        open={props.rightPanelOpen}
         onClose={toggleRightPanel}
       />
     </Box>
@@ -319,6 +319,8 @@ const AppShell = (props: AppShellProps) => {
 
 function mapStateToProps(state: any) {
   return {
+    sidebarOpen: getSidebarOpen(state),
+    rightPanelOpen: getRightPanelOpen(state),
     photoLayout: getPhotoLayout(state),
     selectedMediaItems: getSelectedMediaItems(state),
   };
@@ -326,6 +328,8 @@ function mapStateToProps(state: any) {
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
+    onSetSidebarOpen: setSidebarOpen,
+    onSetRightPanelOpen: setRightPanelOpen,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onLoadMediaItemCounts: loadMediaItemCounts,
     onLoadMediaItems: loadMediaItems,

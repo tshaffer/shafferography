@@ -1,6 +1,6 @@
 import { Dimensions, GridRowData, MediaItem } from '../types';
 
-export const getGridRowHeight = (
+export const getGridRowInfo = (
   availableWidth: number,  // Renamed from rowWidth to match dynamic calculations
   targetHeight: number,
   mediaItems: MediaItem[],
@@ -55,7 +55,7 @@ export const getGridRowHeight = (
     const scaledWidthWithoutMargin = itemAspectRatio * adjustedHeight;
     itemWidthsWithoutMargin.push(roundToPrecision(scaledWidthWithoutMargin, 2));
   }
-  
+
   return {
     mediaItemIndex: startingMediaItemIndex,
     numMediaItems: itemCount,

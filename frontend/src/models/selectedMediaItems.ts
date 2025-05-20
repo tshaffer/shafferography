@@ -62,13 +62,6 @@ export const deselectMediaItem = (
 };
 
 
-export const clearSelectedMediaItems = (
-): any => {
-  return {
-    type: DESELECT_MEDIA_ITEM_SELECTION_ALL,
-  };
-};
-
 export const clearMediaItemSelection = (
 ): any => {
   return {

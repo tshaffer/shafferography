@@ -15,6 +15,7 @@ import {
 import {
   serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
   PhotoState,
+  PhotoLayout,
 } from '../types';
 import { cloneDeep } from 'lodash';
 import {
@@ -25,6 +26,7 @@ import {
   getMatchRule,
   getMediaItemIds,
   getMediaItems,
+  getPhotoLayout,
   getSearchRules,
   getSelectedMediaItemIds,
   getUndecidedGroupIds,
@@ -55,7 +57,13 @@ const loadMediaItemsByViewSpecParams = (albumIds: string[], photoStates: PhotoSt
     return axios.get(path)
       .then((mediaItemsResponse: any) => {
         dispatch(replaceMediaItems(mediaItemsResponse.data));
-        dispatch(deselectHiddenMediaItems());
+
+        const state = getState();
+        const photoLayout: PhotoLayout = getPhotoLayout(state);
+        if (photoLayout !== PhotoLayout.Loupe) {
+          dispatch(deselectHiddenMediaItems());
+        }
+        
         return Promise.resolve();
       });
   }

@@ -114,7 +114,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     if (props.photoLayout === PhotoLayout.Loupe) {
       updateLoupeViewMediaItemProps();
     }
-  }, [props.mediaItemIds, props.selectedMediaItemIds]);
+  }, [props.mediaItemIds]);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Survey) {
@@ -164,17 +164,19 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
     if (photoLayout === PhotoLayout.Loupe) {
 
-      if (props.selectedMediaItemIds.length === 0) {    // not a real scenario but just in case.
+      if (props.selectedMediaItemIds.length === 0) {
         props.onSetLoupeViewMediaItemId(props.mediaItemIds[0]);
         props.onSetLoupeViewMediaItemIds(props.mediaItemIds);
       } else if (props.selectedMediaItemIds.length === 1) {
         props.onSetLoupeViewMediaItemId(props.selectedMediaItemIds[0]);
-        props.onSetLoupeViewMediaItemIds(props.mediaItemIds); // WHY NOT selectedMediaItemIds?
+        props.onSetLoupeViewMediaItemIds(props.mediaItemIds);
       } else {
         props.onSetLoupeViewMediaItemId(props.selectedMediaItemIds[0]);
         props.onSetLoupeViewMediaItemIds(props.selectedMediaItemIds);
       }
 
+      props.onDeselectAllPhotos();
+      
       props.onSetPhotoLayout(PhotoLayout.Loupe);
 
     } else if (photoLayout === PhotoLayout.Survey) {
@@ -214,6 +216,10 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const updateLoupeViewMediaItemProps = () => {
 
+    if (props.loupeViewMediaItemIds.length === 0) {
+      return;
+    }
+
     const loupeViewMediaItemId = props.loupeViewMediaItemId;
 
     const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
@@ -226,30 +232,23 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       return;
     }
 
-    let switchToGridView = false;
-    if (props.loupeViewMediaItemIds.length > 1 && props.selectedMediaItemIds.length > 0) {
-      let newLoupeViewMediaItemIndex = -1;
-      const prevLoupeViewMediaItemIndex = loupeViewMediaItemIndex - 1;
-      const nextLoupeViewMediaItemIndex = loupeViewMediaItemIndex + 1;
-      if (nextLoupeViewMediaItemIndex < props.loupeViewMediaItemIds.length) {
-        newLoupeViewMediaItemIndex = nextLoupeViewMediaItemIndex;
-      } else if (prevLoupeViewMediaItemIndex >= 0) {
-        newLoupeViewMediaItemIndex = prevLoupeViewMediaItemIndex;
-      } else {
-        debugger;
-      }
+    let newLoupeViewMediaItemIndex = -1;
+    const prevLoupeViewMediaItemIndex = loupeViewMediaItemIndex - 1;
+    const nextLoupeViewMediaItemIndex = loupeViewMediaItemIndex + 1;
+    if (nextLoupeViewMediaItemIndex < props.loupeViewMediaItemIds.length) {
+      newLoupeViewMediaItemIndex = nextLoupeViewMediaItemIndex;
+    } else if (prevLoupeViewMediaItemIndex >= 0) {
+      newLoupeViewMediaItemIndex = prevLoupeViewMediaItemIndex;
+    }
+
+    // set new loupe view media item id if any remain
+    if (newLoupeViewMediaItemIndex >= 0) {
       const newLoupeViewMediaItemId = props.loupeViewMediaItemIds[newLoupeViewMediaItemIndex];
       props.onSetLoupeViewMediaItemId(newLoupeViewMediaItemId);
-    } else {
-      switchToGridView = true;
     }
 
+    // remove deleted media item from loupe view media item ids
     props.onRemoveLoupeViewMediaItemId(props.loupeViewMediaItemId);
-
-    if (switchToGridView) {
-      props.onSetPhotoLayout(PhotoLayout.Grid);
-    }
-
   }
 
   const updateSurveyViewMediaItemProps = () => {
@@ -423,7 +422,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   };
 
   const renderSetPhotoStateUI = () => {
-
     return (
       <React.Fragment>
         <Tooltip title="Set Unreviewed">
@@ -474,6 +472,76 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     );
   };
 
+  const renderItemCountAndActions = (): JSX.Element | null => {
+    if (props.photoLayout === PhotoLayout.Loupe) {
+      return renderLoupeViewItemCountAndActions();
+    } else if (props.photoLayout === PhotoLayout.Survey) {
+      return null;
+    } else if (props.photoLayout === PhotoLayout.Grid) {
+      return renderGridItemCountAndActions();
+    }
+    return null;
+  };
+
+  const renderGridItemCountAndActions = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        {/* Selection Count & Actions */}
+        {props.selectedMediaItemsCount > 0 && (
+          <>
+            <Tooltip title="Deselect All">
+              <span>
+                <IconButton
+                  color="inherit"
+                  onClick={props.onDeselectAllPhotos}
+                  disabled={props.selectedMediaItemsCount === 0 || props.photoLayout !== PhotoLayout.Grid}
+                >
+                  <ClearIcon />
+                </IconButton>
+              </span>
+            </Tooltip>
+            <Typography variant="subtitle1" sx={{ mx: 2 }}>
+              {props.selectedMediaItemsCount} selected
+            </Typography>
+          </>
+        )}
+
+        <Tooltip title="Toggle Right Panel">
+          <span>
+            <IconButton
+              color="inherit"
+              onClick={props.toggleRightPanel}
+              disabled={props.selectedItemsCount !== 1}
+            >
+              {props.rightPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Assign Keywords">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount === 0}
+            >
+              <LabelIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+      </React.Fragment>
+    );
+  };
+
+  const renderLoupeViewItemCountAndActions = (): JSX.Element => {
+    return (
+      <React.Fragment>
+        <Typography variant="subtitle1" sx={{ mx: 2 }}>
+          {props.loupeViewMediaItemIds.length} {props.loupeViewMediaItemIds.length === 1 ? 'item': 'items'}
+        </Typography>
+      </React.Fragment>
+    )
+  }
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -508,35 +576,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
-          {/* Selection Count & Actions */}
-          {props.selectedMediaItemsCount > 0 && (
-            <React.Fragment>
-              <Tooltip title="Deselect All">
-                <span>
-                  <IconButton color="inherit" onClick={props.onDeselectAllPhotos} disabled={(props.selectedMediaItemsCount === 0) || (props.photoLayout !== PhotoLayout.Grid)}><ClearIcon /></IconButton>
-                </span>
-              </Tooltip>
-              <Typography variant="subtitle1" sx={{ mx: 2 }}>{props.selectedMediaItemsCount} selected</Typography>
-            </React.Fragment>
-          )}
-
-          <Tooltip title="Toggle Right Panel">
-            <span>
-              <IconButton
-                color="inherit"
-                onClick={props.toggleRightPanel}
-                disabled={props.selectedItemsCount !== 1}
-              >
-                {props.rightPanelOpen ? <VisibilityOffIcon /> : <VisibilityIcon />}
-              </IconButton>
-            </span>
-          </Tooltip>
-
-          <Tooltip title="Assign Keywords">
-            <span>
-              <IconButton color="inherit" disabled={props.selectedMediaItemsCount === 0}><LabelIcon /></IconButton>
-            </span>
-          </Tooltip>
+          {renderItemCountAndActions()}
 
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
@@ -551,7 +591,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </Tooltip>
           <Tooltip title="Loupe View">
             <span>
-              <IconButton color="inherit" onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)} disabled={props.selectedMediaItemsCount === 0}><ViewComfyIcon /></IconButton>
+              <IconButton color="inherit" onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}><ViewComfyIcon /></IconButton>
             </span>
           </Tooltip>
           <Tooltip title="Survey Mode">

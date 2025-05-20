@@ -3,19 +3,16 @@ import { connect } from 'react-redux';
 
 import { bindActionCreators } from 'redux';
 import LoupeView from './LoupeView';
-import { selectPhoto, deselectAllPhotos, setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
+import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setFullScreenMode } from '../models';
-import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
+import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
 import { MediaItem, PhotoState } from '../types';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
   mediaItems: MediaItem[];
-  selectedMediaItemIds: string[],
   onSetLoupeViewMediaItemId: (id: string) => any;
-  onSelectPhoto: (id: string, commandKey: boolean, shiftKey: boolean) => any;
-  onDeselectAllPhotos: () => any;
   onSetFullScreenMode: (fullScreenMode: boolean) => any;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
@@ -45,6 +42,10 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     const handleDisplayPreviousPhoto = () => {
 
+      if (props.loupeViewMediaItemIds.length === 0) {
+        return;
+      }
+
       const loupeViewMediaItemId = props.loupeViewMediaItemId;
 
       const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
@@ -59,14 +60,14 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         const previousMediaItemId: string = props.loupeViewMediaItemIds[previousMediaItemIndex];
         const previousMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === previousMediaItemId);
         props.onSetLoupeViewMediaItemId(previousMediaItem!.uniqueId);
-        if (props.selectedMediaItemIds.length === 1) {
-          props.onDeselectAllPhotos(); // only perform the deselect if there's only a single selected item.
-          props.onSelectPhoto(previousMediaItem!.uniqueId, false, false);
-        }
       }
     };
 
     const handleDisplayNextPhoto = () => {
+
+      if (props.loupeViewMediaItemIds.length === 0) {
+        return;
+      }
 
       const loupeViewMediaItemId = props.loupeViewMediaItemId;
 
@@ -84,10 +85,6 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         const nextMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === nextMediaItemId);
         console.log('nextMediaItem: ' + nextMediaItem);
         props.onSetLoupeViewMediaItemId(nextMediaItem!.uniqueId);
-        if (props.selectedMediaItemIds.length === 1) {
-          props.onDeselectAllPhotos(); // only perform the deselect if there's only a single selected item.
-          props.onSelectPhoto(nextMediaItem!.uniqueId, false, false);
-        }
       }
     };
 
@@ -126,15 +123,12 @@ function mapStateToProps(state: any) {
     loupeViewMediaItemId: getLoupeViewMediaItemId(state),
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
     mediaItems: getMediaItems(state),
-    selectedMediaItemIds: getSelectedMediaItemIds(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
-    onSelectPhoto: selectPhoto,
-    onDeselectAllPhotos: deselectAllPhotos,
     onSetFullScreenMode: setFullScreenMode,
     onSetPhotoState: setPhotoState,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,

@@ -41,48 +41,40 @@ export const setAlbumNodesRedux = (
       albumNodes
     }
   };
-};  
+};
 // ------------------------------------
 // Reducer
 // ------------------------------------
 
 const initialState: AlbumTreeState =
 {
-  albumTree: {
-    nodes: [],
-  }
+  nodes: [],
 };
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction< AddAlbumNodePayload & SetAlbumNodesPayload >
+  action: TedTaggerModelBaseAction<AddAlbumNodePayload & SetAlbumNodesPayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
       const { albumNodes } = action.payload;
       // Prevent duplicates
-      const existingIds = new Set(state.albumTree.nodes.map(node => node.id));
-      const newNodes = albumNodes.filter(node => !existingIds.has(node.id));
+      const existingNodeIds = new Set(state.nodes.map(node => node.id));
+      const newNodes = albumNodes.filter(node => !existingNodeIds.has(node.id));
       return {
         ...state,
-        albumTree: {
-          ...state.albumTree,
-          nodes: [...state.albumTree.nodes, ...newNodes], // Append new nodes
-        },
+        nodes: [...state.nodes, ...newNodes], // Append new album nodes
       };
     }
     case ADD_ALBUM_NODE: {
       const { albumNode } = action.payload;
       // Prevent duplicates
-      if (state.albumTree.nodes.some((node) => node.id === albumNode.id)) {
+      if (state.nodes.some((node) => node.id === albumNode.id)) {
         return state; // No changes if duplicate exists
       }
       return {
         ...state,
-        albumTree: {
-          ...state.albumTree,
-          nodes: [...state.albumTree.nodes, albumNode], // Append new album node
-        },
+        nodes: [...state.nodes, albumNode], // Append new album node
       };
     }
     default:

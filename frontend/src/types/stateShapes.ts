@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId, AlbumTree } from './entities';
+import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId, AlbumTree, AlbumNode } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -28,7 +28,7 @@ export interface AlbumsState {
 }
 
 export interface AlbumTreeState {
-  albumTree: AlbumTree;
+  nodes: AlbumNode[];
 }
 
 export interface AppState {

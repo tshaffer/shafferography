@@ -1,4 +1,5 @@
 export * from './Album';
+export * from './AlbumTree';
 export * from './Keyword';
 export * from './KeywordNode';
 export * from './KeywordTree';

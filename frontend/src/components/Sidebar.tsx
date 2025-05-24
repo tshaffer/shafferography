@@ -19,6 +19,7 @@ import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGro
 import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoStateByAlbumId } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
 import { photoStateOptions } from "../constants";
+import AlbumTreeView from "./AlbumTreeView";
 
 const drawerWidth = 240;
 
@@ -168,6 +169,23 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     return itemCount.toString();
   }
 
+  const renderAlbumTreeView = () => {
+    return (
+      <React.Fragment>
+        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Album Tree View</Typography>
+        <Box>
+          {props.albums.length === 0 ? (
+            <Typography variant="body2">No Albums Available</Typography>
+          ) : (
+            <Box>
+              <AlbumTreeView />
+            </Box>
+          )}
+        </Box>
+      </React.Fragment>
+    )
+  }
+
   const renderAlbumsToDisplayChooser = () => {
     return (
       <React.Fragment>
@@ -315,6 +333,8 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
           <Divider sx={{ my: 2 }} />
 
+          {renderAlbumTreeView()}
+          
           {renderAlbumsToDisplayChooser()}
 
           {renderPhotoStatesToDisplayChooser()}

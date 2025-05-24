@@ -6,7 +6,7 @@ import Box from '@mui/material/Box';
 import { Button } from '@mui/material';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { TreeView } from '@mui/x-tree-view/TreeView';
+// import { TreeView } from '@mui/x-tree-view/TreeView';
 
 import { Keyword, KeywordNodeDeep, KeywordTreeDeep, MediaItem, StringToKeywordLUT, StringToKeywordNodeLUT, StringToStringArrayLUT } from '../types';
 import { TedTaggerDispatch, } from '../models';
@@ -103,12 +103,12 @@ const Keywords = (props: KeywordsProps) => {
     return (
       <div>
         <Button onClick={() => setShowAddKeywordDialog(true)}>Add Keyword</Button>
-        <TreeView
+        {/* <TreeView
           defaultCollapseIcon={<ExpandMoreIcon />}
           defaultExpandIcon={<ChevronRightIcon />}
         >
           {treeViewItems}
-        </TreeView>
+        </TreeView> */}
       </div >
     );
   };

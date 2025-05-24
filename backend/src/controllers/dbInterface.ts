@@ -2,6 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil } from 'lodash';
 import mongoose from "mongoose";
 import {
+  getAlbumTreeModel,
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
@@ -23,6 +24,7 @@ import {
   // MediaItemCounts,
   MediaItemCountByUndecidedGroupPerAlbum,
   StringToNumberLUT,
+  AlbumNode,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
@@ -80,7 +82,7 @@ export const getMediaItemsToDisplayFromDb = async (
 }
 
 export const getMediaItemsByViewSpecFromDb = async (
-  albumIds: string[],
+  albumNodeIds: string[],
   photoStates: PhotoState[],
   groupUndecidedPhotos: boolean,
   undecidedGroupIds: string[],
@@ -88,16 +90,12 @@ export const getMediaItemsByViewSpecFromDb = async (
   const mediaItemModel = getMediaitemModel();
 
   const baseConditions: any[] = [
-    { albumId: { $in: albumIds } },
+    { albumNodeId: { $in: albumNodeIds } },
     { photoState: { $in: photoStates } },
   ];
 
-  // Only modify behavior for PhotoState.Undecided
   if (photoStates.includes(PhotoState.Undecided)) {
     if (groupUndecidedPhotos) {
-      // When grouping Undecided photos, filter such that:
-      // - Items not having PhotoState.Undecided are returned as-is.
-      // - Items with PhotoState.Undecided must have an undecidedGroupId in the provided array.
       baseConditions.push({
         $or: [
           { photoState: { $ne: PhotoState.Undecided } },
@@ -110,7 +108,6 @@ export const getMediaItemsByViewSpecFromDb = async (
         ],
       });
     }
-    // If groupUndecidedPhotos is false, then all media items with PhotoState.Undecided are returned.
   }
 
   const query = mediaItemModel
@@ -693,7 +690,7 @@ export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNum
 
 export const getMediaItemCountByPhotoStateByAlbumIdFromDb = async (): Promise<Record<string, Record<string, number>>> => {
   const mediaItemModel = getMediaitemModel();
-  
+
   // Aggregate counts by albumId and photoState
   const counts = await mediaItemModel.aggregate([
     {
@@ -786,3 +783,80 @@ export const getMediaItemCountByUndecidedGroupPerAlbumFromDb = async (): Promise
 //   return result[0];
 // };
 
+export const getAlbumNodesFromDb = async (): Promise<AlbumNode[]> => {
+
+  const albumTreeModel = getAlbumTreeModel();
+
+  const albumNodes: AlbumNode[] = [];
+  const documents: any = await (albumTreeModel as any).find().exec();
+  for (const document of documents) {
+    const albumNode: AlbumNode = document.toObject() as AlbumNode;
+    albumNodes.push(albumNode);
+  }
+  return albumNodes;
+}
+
+export const saveAlbumTreeToDb = async (nodes: AlbumNode[]): Promise<void> => {
+
+  const albumTreeModel = getAlbumTreeModel();
+
+  // Assuming you have a singleton document for the album tree
+  // await albumTreeModel.findOneAndUpdate(
+  //   { _id: 'singleton' }, // Adjust if you support multi-user or multiple trees
+  //   { nodes },
+  //   { upsert: true, new: true }
+  // );
+  await albumTreeModel.findByIdAndUpdate(
+    'singleton',
+    { nodes },
+    { upsert: true, new: true }
+  );
+}
+
+export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Promise<void> => {
+
+  const albumTreeModel = getAlbumTreeModel();
+
+  const treeDoc = await albumTreeModel.findOne(); // adjust if you support multi-user
+  if (!treeDoc) return Promise.reject('Tree not found');
+
+  const findAndRemove = (nodes: any[]): [any | null, any[]] => {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (node.id === nodeId) {
+        return [node, [...nodes.slice(0, i), ...nodes.slice(i + 1)]];
+      }
+      if (node.type === 'group') {
+        const [found, updatedChildren] = findAndRemove(node.children);
+        if (found) {
+          node.children = updatedChildren;
+          return [found, nodes];
+        }
+      }
+    }
+    return [null, nodes];
+  };
+
+  const insertNode = (nodes: any[], nodeToInsert: any): boolean => {
+    for (const node of nodes) {
+      if (node.id === newParentId && node.type === 'group') {
+        node.children.push(nodeToInsert);
+        return true;
+      }
+      if (node.type === 'group' && insertNode(node.children, nodeToInsert)) {
+        return true;
+      }
+    }
+    return false;
+  };
+
+  let movedNode: any;
+  [movedNode, treeDoc.nodes] = findAndRemove(treeDoc.nodes);
+  if (!movedNode) return Promise.reject('Node not found');
+
+  const inserted = insertNode(treeDoc.nodes, movedNode);
+  if (!inserted) return Promise.reject('Node not found');
+
+  await treeDoc.save();
+  return Promise.resolve();
+}

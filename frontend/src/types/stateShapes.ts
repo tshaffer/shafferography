@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId } from './entities';
+import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId, AlbumTree, AlbumNode } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -11,15 +11,25 @@ import {
 } from './enums';
 
 export interface TedTaggerState {
+  albumsState: AlbumsState;
+  albumTreeState: AlbumTreeState;
   appState: AppState;
   keywordsState: KeywordsState;
+  mediaItemsCountState: MediaItemsCountState;
   mediaItemsState: MediaItemsState;
   photoViewSpec: PhotoViewSpec;
   searchUIState: SearchUIState;
   selectionsState: SelectedMediaItemsState;
-  albumsState: AlbumsState;
   undecidedGroupsState: UndecidedGroupsState;
-  mediaItemsCountState: MediaItemsCountState;
+}
+
+export interface AlbumsState {
+  albums: Album[];
+}
+
+export interface AlbumTreeState {
+  nodes: AlbumNode[];
+  selectedNodeIds: Set<string>;
 }
 
 export interface AppState {
@@ -73,10 +83,6 @@ export interface LocalStorageState {
   folders: string[];
 }
 
-export interface AlbumsState {
-  albums: Album[];
-}
-
 export interface UndecidedGroupsState {
   undecidedGroups: UndecidedGroup[];
 }
@@ -92,6 +98,7 @@ export interface PhotoViewSpec {
   fullScreenMode: boolean;
   mediaItemZoomFactorById: StringToNumberLUT;
   displayedAlbumIds: string[];
+  displayedAlbumNodeIds: string[];
   displayedPhotoStates: PhotoState[];
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];

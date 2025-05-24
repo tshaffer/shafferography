@@ -4,9 +4,10 @@ const collections = [
   "mediaitems",
   "albums",
   "undecidedgroups",
+  "albumtrees",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-05-19-1";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-05-27-1";
 
 const fs = require("fs");
 

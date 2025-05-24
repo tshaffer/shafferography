@@ -1,5 +1,5 @@
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
-import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId } from './entities';
+import { GoogleUserProfile, MediaItem, Album, UndecidedGroup, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCountByPhotoStateByAlbumId, AlbumTree } from './entities';
 import {
   DateSearchRuleType,
   KeywordSearchRuleType,
@@ -11,15 +11,24 @@ import {
 } from './enums';
 
 export interface TedTaggerState {
+  albumsState: AlbumsState;
+  albumTreeState: AlbumTreeState;
   appState: AppState;
   keywordsState: KeywordsState;
+  mediaItemsCountState: MediaItemsCountState;
   mediaItemsState: MediaItemsState;
   photoViewSpec: PhotoViewSpec;
   searchUIState: SearchUIState;
   selectionsState: SelectedMediaItemsState;
-  albumsState: AlbumsState;
   undecidedGroupsState: UndecidedGroupsState;
-  mediaItemsCountState: MediaItemsCountState;
+}
+
+export interface AlbumsState {
+  albums: Album[];
+}
+
+export interface AlbumTreeState {
+  albumTree: AlbumTree;
 }
 
 export interface AppState {
@@ -71,10 +80,6 @@ export interface KeywordSearchRule {
 
 export interface LocalStorageState {
   folders: string[];
-}
-
-export interface AlbumsState {
-  albums: Album[];
 }
 
 export interface UndecidedGroupsState {

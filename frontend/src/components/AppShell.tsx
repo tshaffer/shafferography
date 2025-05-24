@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadAlbums, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
+import { loadMediaItems, loadAlbums, loadAlbumTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
 import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
@@ -54,6 +54,7 @@ export interface AppShellProps {
   onLoadMediaItemCounts: () => any;
   onLoadMediaItems: () => any;
   onLoadAlbums: () => any;
+  onLoadAlbumTree: () => any;
   onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
   onSetSidebarOpen: (open: boolean) => any;
@@ -256,6 +257,8 @@ const AppShell = (props: AppShellProps) => {
 
     props.onLoadAlbums()
       .then(function () {
+        return props.onLoadAlbumTree();
+      }).then(function () {
         return initializeDisplayedPhotoStates()
       }).then(function () {
         return initializeDisplayedAlbumIds()
@@ -334,6 +337,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onLoadMediaItemCounts: loadMediaItemCounts,
     onLoadMediaItems: loadMediaItems,
     onLoadAlbums: loadAlbums,
+    onLoadAlbumTree: loadAlbumTree,
     onLoadUndecidedGroups: loadUndecidedGroups,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,

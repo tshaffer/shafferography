@@ -5,6 +5,7 @@ import { TedTaggerModelBaseAction } from './baseAction';
 // Constants
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
+export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 
 // ------------------------------------
 // Actions
@@ -26,6 +27,21 @@ export const addAlbumNodeRedux = (
   };
 };
 
+interface SetAlbumNodesPayload {
+  albumNodes: AlbumNode[];
+}
+
+export const setAlbumNodesRedux = (
+  albumNodes: AlbumNode[],
+): any => {
+  console.log('albums.ts: setAlbumNodesRedux', albumNodes);
+  return {
+    type: SET_ALBUM_NODES,
+    payload: {
+      albumNodes
+    }
+  };
+};  
 // ------------------------------------
 // Reducer
 // ------------------------------------
@@ -39,9 +55,22 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction< AddAlbumNodePayload>
+  action: TedTaggerModelBaseAction< AddAlbumNodePayload & SetAlbumNodesPayload >
 ): AlbumTreeState => {
   switch (action.type) {
+    case SET_ALBUM_NODES: {
+      const { albumNodes } = action.payload;
+      // Prevent duplicates
+      const existingIds = new Set(state.albumTree.nodes.map(node => node.id));
+      const newNodes = albumNodes.filter(node => !existingIds.has(node.id));
+      return {
+        ...state,
+        albumTree: {
+          ...state.albumTree,
+          nodes: [...state.albumTree.nodes, ...newNodes], // Append new nodes
+        },
+      };
+    }
     case ADD_ALBUM_NODE: {
       const { albumNode } = action.payload;
       // Prevent duplicates

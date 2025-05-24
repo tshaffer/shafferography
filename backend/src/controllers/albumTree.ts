@@ -13,7 +13,7 @@ export const saveAlbumNodes = async (request: Request, response: Response) => {
   response.sendStatus(204);
 };
 
-export const moveNode = async (request: Request, response: Response) => {
+export const moveAlbumNode = async (request: Request, response: Response) => {
   const { nodeId, newParentId }: { nodeId: string; newParentId: string } = request.body;
   await moveAlbumNodeInDb(nodeId, newParentId);
   response.send({ success: true });

@@ -41,6 +41,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
 
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
+  const [contextMenuNode, setContextMenuNode] = useState<AlbumNode | null>(null);
 
 
   const handleAddAlbum = () => {
@@ -76,10 +77,9 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             onContextMenu={(e) => {
               e.preventDefault();
               console.log('Context menu for node:', node);
-              if (node.type === 'group') {
                 setContextMenuNodeId(node.id);
+                setContextMenuNode(node);
                 setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
-              }
             }}
             style={{
               cursor: 'pointer',
@@ -121,13 +121,21 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             : undefined
         }
       >
-        <MenuItem
+        {contextMenuNode && contextMenuNode.type === 'group' && <MenuItem
           onClick={() => {
             setAddDialogOpen(true);
             setContextMenuPosition(null);
           }}
         >
           Import Album
+        </MenuItem>}
+        <MenuItem
+          onClick={() => {
+            setAddDialogOpen(true);
+            setContextMenuPosition(null);
+          }}
+        >
+          Add Group
         </MenuItem>
       </Menu>
       <SimpleTreeView

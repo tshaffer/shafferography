@@ -14,6 +14,8 @@ import {
   DialogActions,
   TextField,
   Button,
+  Menu,
+  MenuItem,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
@@ -27,13 +29,19 @@ interface AlbumTreeViewProps {
   onAddAlbumToTree: (name: string, parentId?: string) => void;
 }
 
-function AlbumTreeView (props: AlbumTreeViewProps) {
+function AlbumTreeView(props: AlbumTreeViewProps) {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState('');
+
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+
+  const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
+  const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
+
 
   const handleAddAlbum = () => {
     if (!newAlbumName.trim()) return;
@@ -54,15 +62,23 @@ function AlbumTreeView (props: AlbumTreeViewProps) {
           <span
             onClick={(e) => {
               if (e.shiftKey || e.metaKey || e.ctrlKey) {
-                  const newSet = new Set(props.selectedNodeIds);
-                  if (newSet.has(node.id)) {
-                    newSet.delete(node.id);
-                  } else {
-                    newSet.add(node.id);
-                  }
+                const newSet = new Set(props.selectedNodeIds);
+                if (newSet.has(node.id)) {
+                  newSet.delete(node.id);
+                } else {
+                  newSet.add(node.id);
+                }
                 props.onSetSelectedNodeIds(newSet);
               } else {
                 setSelectedId(node.id);
+              }
+            }}
+            onContextMenu={(e) => {
+              e.preventDefault();
+              console.log('Context menu for node:', node);
+              if (node.type === 'group') {
+                setContextMenuNodeId(node.id);
+                setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
               }
             }}
             style={{
@@ -95,6 +111,25 @@ function AlbumTreeView (props: AlbumTreeViewProps) {
 
   return (
     <>
+      <Menu
+        open={!!contextMenuPosition}
+        onClose={() => setContextMenuPosition(null)}
+        anchorReference="anchorPosition"
+        anchorPosition={
+          contextMenuPosition !== null
+            ? { top: contextMenuPosition.mouseY, left: contextMenuPosition.mouseX }
+            : undefined
+        }
+      >
+        <MenuItem
+          onClick={() => {
+            setAddDialogOpen(true);
+            setContextMenuPosition(null);
+          }}
+        >
+          Import Album
+        </MenuItem>
+      </Menu>
       <SimpleTreeView
         onSelectedItemsChange={(event, id) => {
           setSelectedId(id ?? null);
@@ -128,6 +163,7 @@ function AlbumTreeView (props: AlbumTreeViewProps) {
           </Button>
         </DialogActions>
       </Dialog>
+
 
       <Snackbar
         open={snackbarOpen}

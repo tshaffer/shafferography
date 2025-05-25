@@ -29,6 +29,7 @@ export interface AlbumsState {
 
 export interface AlbumTreeState {
   nodes: AlbumNode[];
+    selectedNodeIds: Set<string>;
 }
 
 export interface AppState {

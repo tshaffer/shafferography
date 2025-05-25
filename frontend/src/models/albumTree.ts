@@ -8,6 +8,7 @@ import { cloneDeep } from 'lodash';
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
+export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
 
 // ------------------------------------
 // Actions
@@ -47,6 +48,20 @@ export const setAlbumNodesRedux = (
   };
 };
 
+interface SetSelectedAlbumNodeIdsPayload {
+  selectedNodeIds: Set<string>;
+}
+export const setSelectedAlbumNodeIdsRedux = (
+  selectedNodeIds: Set<string>
+): any => {
+  return {
+    type: SET_SELECTED_ALBUM_NODE_IDS,
+    payload: {
+      selectedNodeIds
+    }
+  };
+};
+
 // ------------------------------------
 // Utilities
 // ------------------------------------
@@ -80,11 +95,12 @@ const insertNode = (
 const initialState: AlbumTreeState =
 {
   nodes: [],
+  selectedNodeIds:new Set(),
 };
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & SetAlbumNodesPayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -108,6 +124,12 @@ export const albumTreeStateReducer = (
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
       if (!added) newState.nodes.push(newAlbum);
       return newState;
+    }
+    case SET_SELECTED_ALBUM_NODE_IDS: {
+      return {
+        ...state,
+        selectedNodeIds: action.payload.selectedNodeIds,
+      };
     }
     default:
       return state;

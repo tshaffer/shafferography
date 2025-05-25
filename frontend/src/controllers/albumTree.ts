@@ -19,7 +19,7 @@ export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
   };
 };
 
-export const addAlbumToTree = (name: string, parentId: string): TedTaggerAnyPromiseThunkAction => {
+export const addAlbumToTree = (name: string, parentId?: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     dispatch(addAlbumToTreeRedux(name, parentId));

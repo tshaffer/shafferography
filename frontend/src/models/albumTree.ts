@@ -1,5 +1,7 @@
+import { v4 as uuidv4 } from 'uuid';
 import { AlbumNode, AlbumTreeState } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
+import { cloneDeep } from 'lodash';
 
 // ------------------------------------
 // Constants
@@ -11,18 +13,20 @@ export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 // Actions
 // ------------------------------------
 
-interface AddAlbumNodePayload {
-  albumNode: AlbumNode;
+interface AddAlbumToTreePayload {
+  name: string;
+  parentId?: string;
 }
 
-export const addAlbumNodeRedux = (
-  albumNode: AlbumNode,
+export const addAlbumToTreeRedux = (
+  name: string,
+  parentId?: string
 ): any => {
-  console.log('albums.ts: addAlbumNodeRedux', albumNode);
   return {
     type: ADD_ALBUM_NODE,
     payload: {
-      albumNode
+      name,
+      parentId,
     }
   };
 };
@@ -42,6 +46,33 @@ export const setAlbumNodesRedux = (
     }
   };
 };
+
+// ------------------------------------
+// Utilities
+// ------------------------------------
+
+/**
+ * Insert a new node under a parent by ID.
+ */
+const insertNode = (
+  nodes: AlbumNode[],
+  parentId: string | undefined,
+  newNode: AlbumNode
+): boolean => {
+  for (const node of nodes) {
+    if (node.type === 'group' && node.id === parentId) {
+      node.children.push(newNode);
+      return true;
+    }
+    if (node.type === 'group') {
+      const added = insertNode(node.children, parentId, newNode);
+      if (added) return true;
+    }
+  }
+  return false;
+};
+
+
 // ------------------------------------
 // Reducer
 // ------------------------------------
@@ -53,7 +84,7 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumNodePayload & SetAlbumNodesPayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & SetAlbumNodesPayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -67,15 +98,16 @@ export const albumTreeStateReducer = (
       };
     }
     case ADD_ALBUM_NODE: {
-      const { albumNode } = action.payload;
-      // Prevent duplicates
-      if (state.nodes.some((node) => node.id === albumNode.id)) {
-        return state; // No changes if duplicate exists
-      }
-      return {
-        ...state,
-        nodes: [...state.nodes, albumNode], // Append new album node
+      const newAlbum: AlbumNode = {
+        id: uuidv4(),
+        name: action.payload.name,
+        type: 'album',
+        mediaCount: 0,
       };
+      const newState = cloneDeep(state);
+      const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
+      if (!added) newState.nodes.push(newAlbum);
+      return newState;
     }
     default:
       return state;

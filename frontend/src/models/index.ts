@@ -9,4 +9,6 @@ export * from './searchUI';
 export * from './photoViewSpec';
 export * from './albums';
 export * from './undecidedGroups';
+export * from './albumTree';
+
 

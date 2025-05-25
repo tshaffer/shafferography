@@ -7,6 +7,7 @@ import { cloneDeep } from 'lodash';
 // Constants
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
+export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
 export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
 
@@ -25,6 +26,24 @@ export const addAlbumToTreeRedux = (
 ): any => {
   return {
     type: ADD_ALBUM_NODE,
+    payload: {
+      name,
+      parentId,
+    }
+  };
+};
+
+interface AddGroupToTreePayload {
+  name: string;
+  parentId?: string;
+}
+
+export const addGroupToTreeRedux = (
+  name: string,
+  parentId?: string
+): any => {
+  return {
+    type: ADD_GROUP_NODE,
     payload: {
       name,
       parentId,
@@ -100,7 +119,7 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -123,6 +142,18 @@ export const albumTreeStateReducer = (
       const newState = cloneDeep(state);
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
       if (!added) newState.nodes.push(newAlbum);
+      return newState;
+    }
+    case ADD_GROUP_NODE: {
+      const newGroup: AlbumNode = {
+        id: uuidv4(),
+        name: action.payload.name,
+        type: 'group',
+        children: [],
+      };
+      const newState = cloneDeep(state);
+      const added = insertNode(newState.nodes, action.payload.parentId, newGroup);
+      if (!added) newState.nodes.push(newGroup);
       return newState;
     }
     case SET_SELECTED_ALBUM_NODE_IDS: {

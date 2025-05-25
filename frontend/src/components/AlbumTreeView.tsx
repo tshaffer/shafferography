@@ -6,8 +6,6 @@ import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import { ExpandMore, ChevronRight } from '@mui/icons-material';
 import { SvgIconProps } from '@mui/material/SvgIcon';
 import {
-  Snackbar,
-  Alert,
   Dialog,
   DialogTitle,
   DialogContent,
@@ -19,7 +17,7 @@ import {
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
-import { addAlbumToTree } from '../controllers';
+import { addAlbumToTree, addGroupToTree } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 
 interface AlbumTreeViewProps {
@@ -27,17 +25,18 @@ interface AlbumTreeViewProps {
   selectedNodeIds: Set<string>;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (name: string, parentId?: string) => void;
+  onAddGroupToTree: (name: string, parentId?: string) => void;
 }
 
 function AlbumTreeView(props: AlbumTreeViewProps) {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
+
+  const [addGroupDialogOpen, setAddGroupDialogOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
 
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState('');
-
-  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
 
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
@@ -49,7 +48,13 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     props.onAddAlbumToTree(newAlbumName, selectedId ?? undefined);
     setNewAlbumName('');
     setAddDialogOpen(false);
-    setSnackbarOpen(true);
+  };
+
+  const handleAddGroup = () => {
+    if (!newGroupName.trim()) return;
+    props.onAddGroupToTree(newGroupName, contextMenuNodeId ?? undefined);
+    setNewGroupName('');
+    setAddGroupDialogOpen(false);
   };
 
   const renderTree = (node: AlbumNode): React.ReactNode => {
@@ -131,7 +136,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         </MenuItem>}
         <MenuItem
           onClick={() => {
-            setAddDialogOpen(true);
+            setAddGroupDialogOpen(true);
             setContextMenuPosition(null);
           }}
         >
@@ -172,21 +177,28 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={addGroupDialogOpen} onClose={() => setAddGroupDialogOpen(false)}>
+        <DialogTitle>Add New Group</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Group Name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddGroupDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleAddGroup}
+            disabled={!newGroupName.trim()}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
 
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={3000}
-        onClose={() => setSnackbarOpen(false)}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-      >
-        <Alert
-          onClose={() => setSnackbarOpen(false)}
-          severity="success"
-          sx={{ width: '100%' }}
-        >
-          Successfully imported album!
-        </Alert>
-      </Snackbar>
 
     </>
   );
@@ -203,6 +215,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetSelectedNodeIds: setSelectedAlbumNodeIdsRedux,
     onAddAlbumToTree: addAlbumToTree,
+    onAddGroupToTree: addGroupToTree,
   }, dispatch);
 };
 

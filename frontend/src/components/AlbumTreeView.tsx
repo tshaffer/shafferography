@@ -19,14 +19,12 @@ import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
 import { addAlbumToTree } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
-import { cloneDeep } from 'lodash';
 
 interface AlbumTreeViewProps {
   nodes: AlbumNode[];
   selectedNodeIds: Set<string>;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (name: string, parentId?: string) => void;
-
 }
 
 function AlbumTreeView (props: AlbumTreeViewProps) {

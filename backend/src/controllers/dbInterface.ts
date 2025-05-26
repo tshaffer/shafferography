@@ -82,7 +82,7 @@ export const getMediaItemsToDisplayFromDb = async (
 }
 
 export const getMediaItemsByViewSpecFromDb = async (
-  albumIds: string[],
+  albumNodeIds: string[],
   photoStates: PhotoState[],
   groupUndecidedPhotos: boolean,
   undecidedGroupIds: string[],
@@ -90,16 +90,12 @@ export const getMediaItemsByViewSpecFromDb = async (
   const mediaItemModel = getMediaitemModel();
 
   const baseConditions: any[] = [
-    { albumId: { $in: albumIds } },
+    { albumNodeId: { $in: albumNodeIds } },
     { photoState: { $in: photoStates } },
   ];
 
-  // Only modify behavior for PhotoState.Undecided
   if (photoStates.includes(PhotoState.Undecided)) {
     if (groupUndecidedPhotos) {
-      // When grouping Undecided photos, filter such that:
-      // - Items not having PhotoState.Undecided are returned as-is.
-      // - Items with PhotoState.Undecided must have an undecidedGroupId in the provided array.
       baseConditions.push({
         $or: [
           { photoState: { $ne: PhotoState.Undecided } },
@@ -112,7 +108,6 @@ export const getMediaItemsByViewSpecFromDb = async (
         ],
       });
     }
-    // If groupUndecidedPhotos is false, then all media items with PhotoState.Undecided are returned.
   }
 
   const query = mediaItemModel

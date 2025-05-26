@@ -49,7 +49,7 @@ export const getMediaItemsByViewSpec = async (request: Request, response: Respon
   const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
   const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
   console.log('getMediaItemsByViewSpec', photoStates, albumIds);
-  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(albumIds, albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
+  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
   response.json(mediaItems);
 }
 

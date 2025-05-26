@@ -36,6 +36,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
       displayedAlbumNodeIds.push(props.item.id);
       props.onSetDisplayedAlbumNodeIds([...displayedAlbumNodeIds]);
     }
+    localStorage.setItem('displayedAlbumNodeIds', displayedAlbumNodeIds.join(','));
     setSelected(!selected);
 
   };

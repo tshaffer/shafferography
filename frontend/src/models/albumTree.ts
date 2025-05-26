@@ -10,6 +10,7 @@ export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
 export const MOVE_NODE_IN_TREE = 'MOVE_NODE_IN_TREE';
 export const DELETE_NODES = 'DELETE_NODES';
+export const RENAME_NODE = 'RENAME_NODE';
 export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
 
@@ -63,6 +64,24 @@ export const deleteNodesRedux = (
     type: 'DELETE_NODES',
     payload: {
       nodeIds,
+    }
+  };
+};
+
+interface RenameNodePayload {
+  nodeId: string;
+  newName: string;
+}
+
+export const renameNodeRedux = (
+  nodeId: string,
+  newName: string
+): any => {
+  return {
+    type: 'RENAME_NODE',
+    payload: {
+      nodeId,
+      newName,
     }
   };
 };
@@ -217,7 +236,7 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload & RenameNodePayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -261,6 +280,23 @@ export const albumTreeStateReducer = (
         ...state,
         nodes: newNodes,
       };
+    }
+    case RENAME_NODE: {
+      const rename = (nodes: AlbumNode[]): boolean => {
+        for (const node of nodes) {
+          if (node.id === action.payload.nodeId) {
+            node.name = action.payload.newName;
+            return true;
+          }
+          if (node.type === 'group') {
+            if (rename(node.children)) return true;
+          }
+        }
+        return false;
+      };
+      const newState = cloneDeep(state);
+      rename(newState.nodes);
+      return newState;
     }
     case DELETE_NODES: {
       const idsToDelete = new Set(action.payload.nodeIds);

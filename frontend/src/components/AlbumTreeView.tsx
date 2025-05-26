@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
-import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes } from '../controllers';
+import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 
 interface AlbumTreeViewProps {
@@ -28,6 +28,7 @@ interface AlbumTreeViewProps {
   onAddGroupToTree: (name: string, parentId?: string) => void;
   onMoveNodeInTree: (nodeId: string, newParentId: string) => void;
   onDeleteNodes: (nodeIds: string[]) => void;
+  onRenameNode: (nodeId: string, newName: string) => void;
 }
 
 function AlbumTreeView(props: AlbumTreeViewProps) {
@@ -41,27 +42,29 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
   const [newAlbumName, setNewAlbumName] = useState('');
 
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [renameDialogOpen, setRenameDialogOpen] = useState(false);
+  const [renameValue, setRenameValue] = useState('');
   const [newParentId, setNewParentId] = useState<string | null>(null);
-  
+
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
   const [contextMenuNode, setContextMenuNode] = useState<AlbumNode | null>(null);
 
-const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
-  const result: AlbumNode[] = [];
+  const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
+    const result: AlbumNode[] = [];
 
-  const traverse = (nodeList: AlbumNode[]) => {
-    for (const node of nodeList) {
-      if (node.type === 'group') {
-        result.push(node);
-        traverse(node.children);
+    const traverse = (nodeList: AlbumNode[]) => {
+      for (const node of nodeList) {
+        if (node.type === 'group') {
+          result.push(node);
+          traverse(node.children);
+        }
       }
-    }
-  };
+    };
 
-  traverse(nodes);
-  return result;
-};
+    traverse(nodes);
+    return result;
+  };
 
   const handleAddAlbum = () => {
     if (!newAlbumName.trim()) return;
@@ -75,6 +78,16 @@ const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
     props.onAddGroupToTree(newGroupName, contextMenuNodeId ?? undefined);
     setNewGroupName('');
     setAddGroupDialogOpen(false);
+  };
+
+  const handleRenameNode = (e: any) => {
+    const nodeId = Array.from(props.selectedNodeIds)[0];
+    const node = findNodeById(props.nodes, nodeId);
+    if (node) {
+      setRenameValue(renameValue);
+      setRenameDialogOpen(false);
+      props.onRenameNode(nodeId, renameValue);
+    }
   };
 
   const renderTree = (node: AlbumNode): React.ReactNode => {
@@ -169,6 +182,14 @@ const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
           }}
         >
           Move To...
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setRenameDialogOpen(true);
+            setContextMenuPosition(null);
+          }}
+        >
+          Rename
         </MenuItem>
         <MenuItem
           onClick={() => {
@@ -271,6 +292,26 @@ const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={renameDialogOpen} onClose={() => setRenameDialogOpen(false)}>
+        <DialogTitle>Rename Node</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="New Name"
+            value={renameValue}
+            onChange={(e) => setRenameValue(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setRenameDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleRenameNode}
+          >
+            Rename
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 }
@@ -289,6 +330,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onAddGroupToTree: addGroupToTree,
     onMoveNodeInTree: moveNodeInTree,
     onDeleteNodes: deleteNodes,
+    onRenameNode: renameNode,
   }, dispatch);
 };
 

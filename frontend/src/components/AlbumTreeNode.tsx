@@ -10,11 +10,13 @@ import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 import { LeafAlbumNode } from '../types';
 import React from 'react';
 import { getDisplayedAlbumNodeIds } from '../selectors';
+import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
   item: LeafAlbumNode;
   displayedAlbumNodeIds: string[];
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
+  onReloadMediaItemsByViewSpec: () => any;
 }
 
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
@@ -24,18 +26,18 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   const getItemLabel = (item: LeafAlbumNode) => item.name;
 
   const toggleSelection = () => {
-    
-  const displayedAlbumNodeIds = props.displayedAlbumNodeIds;
+
+    const displayedAlbumNodeIds = props.displayedAlbumNodeIds;
     const index = displayedAlbumNodeIds.indexOf(props.item.id);
     if (index !== -1) {
       // If the item is already selected, remove it from the displayed list
       displayedAlbumNodeIds.splice(index, 1);
-      props.onSetDisplayedAlbumNodeIds([...displayedAlbumNodeIds]);
     } else {
       // If the item is not selected, add it to the displayed list
       displayedAlbumNodeIds.push(props.item.id);
-      props.onSetDisplayedAlbumNodeIds([...displayedAlbumNodeIds]);
     }
+    props.onSetDisplayedAlbumNodeIds([...displayedAlbumNodeIds]);
+    props.onReloadMediaItemsByViewSpec();
     localStorage.setItem('displayedAlbumNodeIds', displayedAlbumNodeIds.join(','));
     setSelected(!selected);
 
@@ -75,6 +77,7 @@ function mapStateToProps(state: any, ownProps: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
+    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
   }, dispatch);
 };
 

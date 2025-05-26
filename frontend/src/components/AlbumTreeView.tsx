@@ -16,9 +16,10 @@ import {
   MenuItem,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { AlbumNode } from '../types';
+import { AlbumNode, LeafAlbumNode } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
+import AlbumTreeNode from './AlbumTreeNode';
 
 interface AlbumTreeViewProps {
   nodes: AlbumNode[];
@@ -90,8 +91,22 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     }
   };
 
+  const getAlbumNodeJsx = (node: LeafAlbumNode): JSX.Element => {
+    return (
+      <AlbumTreeNode item={node}/>
+   );
+  }
+
+  const getNodeLabel = (node: AlbumNode): JSX.Element | null => {
+    if (node.type === 'group') {
+      return <span>{node.name}</span>;
+    } else if (node.type === 'album') {
+      return getAlbumNodeJsx(node as LeafAlbumNode);
+    }
+    return null;
+  };
+
   const renderTree = (node: AlbumNode): React.ReactNode => {
-    const label = node.name;
 
     return (
       <TreeItem
@@ -127,7 +142,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
               display: 'inline-block'
             }}
           >
-            {label}
+            {getNodeLabel(node)}
           </span>
         }
       >

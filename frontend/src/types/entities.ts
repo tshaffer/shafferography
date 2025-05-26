@@ -157,7 +157,7 @@ export interface LeafAlbumNode {
   id: string;
   name: string;
   type: 'album';
-  mediaCount: number;
+  // mediaCount: number;
 }
 
 export interface AlbumTree {

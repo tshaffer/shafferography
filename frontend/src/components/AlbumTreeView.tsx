@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
-import { addAlbumToTree, addGroupToTree } from '../controllers';
+import { addAlbumToTree, addGroupToTree, moveNodeInTree } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 
 interface AlbumTreeViewProps {
@@ -26,6 +26,7 @@ interface AlbumTreeViewProps {
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (name: string, parentId?: string) => void;
   onAddGroupToTree: (name: string, parentId?: string) => void;
+  onMoveNodeInTree: (nodeId: string, newParentId: string) => void;
 }
 
 function AlbumTreeView(props: AlbumTreeViewProps) {
@@ -38,10 +39,28 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
   const [addDialogOpen, setAddDialogOpen] = useState(false);
   const [newAlbumName, setNewAlbumName] = useState('');
 
+  const [moveDialogOpen, setMoveDialogOpen] = useState(false);
+  const [newParentId, setNewParentId] = useState<string | null>(null);
+  
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
   const [contextMenuNode, setContextMenuNode] = useState<AlbumNode | null>(null);
 
+const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
+  const result: AlbumNode[] = [];
+
+  const traverse = (nodeList: AlbumNode[]) => {
+    for (const node of nodeList) {
+      if (node.type === 'group') {
+        result.push(node);
+        traverse(node.children);
+      }
+    }
+  };
+
+  traverse(nodes);
+  return result;
+};
 
   const handleAddAlbum = () => {
     if (!newAlbumName.trim()) return;
@@ -82,9 +101,9 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             onContextMenu={(e) => {
               e.preventDefault();
               console.log('Context menu for node:', node);
-                setContextMenuNodeId(node.id);
-                setContextMenuNode(node);
-                setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
+              setContextMenuNodeId(node.id);
+              setContextMenuNode(node);
+              setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
             }}
             style={{
               cursor: 'pointer',
@@ -141,6 +160,14 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
           }}
         >
           Add Group
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
+            setMoveDialogOpen(true);
+            setContextMenuPosition(null);
+          }}
+        >
+          Move To...
         </MenuItem>
       </Menu>
       <SimpleTreeView
@@ -199,6 +226,41 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         </DialogActions>
       </Dialog>
 
+      <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)}>
+        <DialogTitle>Move Selected Albums or Groups</DialogTitle>
+        <DialogContent>
+          <TextField
+            select
+            label="New Parent"
+            fullWidth
+            value={newParentId ?? ''}
+            onChange={(e) => setNewParentId(e.target.value)}
+          >
+            <MenuItem value="" disabled>Select new parent</MenuItem>
+            {getAllGroupNodes(props.nodes)
+              .filter(n => !props.selectedNodeIds.has(n.id))
+              .map(n => (
+                <MenuItem key={n.id} value={n.id}>{n.name}</MenuItem>
+              ))}
+          </TextField>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setMoveDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={() => {
+              for (const nodeId of Array.from(props.selectedNodeIds)) {
+                props.onMoveNodeInTree(nodeId, newParentId!);
+              }
+              setMoveDialogOpen(false);
+              setNewParentId(null);
+              props.onSetSelectedNodeIds(new Set());
+            }}
+            disabled={!newParentId}
+          >
+            Move
+          </Button>
+        </DialogActions>
+      </Dialog>
 
     </>
   );
@@ -216,6 +278,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetSelectedNodeIds: setSelectedAlbumNodeIdsRedux,
     onAddAlbumToTree: addAlbumToTree,
     onAddGroupToTree: addGroupToTree,
+    onMoveNodeInTree: moveNodeInTree,
   }, dispatch);
 };
 

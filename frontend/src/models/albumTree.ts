@@ -8,6 +8,7 @@ import { cloneDeep } from 'lodash';
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
+export const MOVE_NODE_IN_TREE = 'MOVE_NODE_IN_TREE';
 export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
 
@@ -51,6 +52,24 @@ export const addGroupToTreeRedux = (
   };
 };
 
+interface MoveNodePayload {
+  nodeId: string;
+  newParentId: string;
+}
+
+export const moveNodeInTreeRedux = (
+  nodeId: string,
+  newParentId: string
+): any => {
+  return {
+    type: 'MOVE_NODE_IN_TREE',
+    payload: {
+      nodeId,
+      newParentId,
+    }
+  };
+};
+
 interface SetAlbumNodesPayload {
   albumNodes: AlbumNode[];
 }
@@ -86,6 +105,22 @@ export const setSelectedAlbumNodeIdsRedux = (
 // ------------------------------------
 
 /**
+ * Deep clone a tree of AlbumNode objects.
+ */
+export const deepCloneTree = (nodes: AlbumNode[]): AlbumNode[] => {
+  return nodes.map(node => {
+    if (node.type === 'group') {
+      return {
+        ...node,
+        children: deepCloneTree(node.children),
+      };
+    } else {
+      return { ...node };
+    }
+  });
+};
+
+/**
  * Insert a new node under a parent by ID.
  */
 const insertNode = (
@@ -106,6 +141,54 @@ const insertNode = (
   return false;
 };
 
+export const moveNodeInTreeHelper = (
+  nodes: AlbumNode[],
+  nodeId: string,
+  newParentId: string
+): AlbumNode[] => {
+  const sourceTree = deepCloneTree(nodes);
+
+  const [movedNode, remainingTree] = (function findAndRemove(
+    nodes: AlbumNode[]
+  ): [AlbumNode | null, AlbumNode[]] {
+    for (let i = 0; i < nodes.length; i++) {
+      const node = nodes[i];
+      if (node.id === nodeId) {
+        return [node, [...nodes.slice(0, i), ...nodes.slice(i + 1)]];
+      }
+      if (node.type === 'group') {
+        const [found, updatedChildren] = findAndRemove(node.children);
+        if (found) {
+          return [found, [
+            ...nodes.slice(0, i),
+            { ...node, children: updatedChildren },
+            ...nodes.slice(i + 1),
+          ]];
+        }
+      }
+    }
+    return [null, nodes];
+  })(sourceTree);
+
+  if (!movedNode) return nodes;
+
+  const didInsert = (function insert(
+    nodes: AlbumNode[]
+  ): boolean {
+    for (const node of nodes) {
+      if (node.type === 'group' && node.id === newParentId) {
+        node.children.push(movedNode);
+        return true;
+      }
+      if (node.type === 'group' && insert(node.children)) {
+        return true;
+      }
+    }
+    return false;
+  })(remainingTree);
+
+  return didInsert ? remainingTree : nodes;
+};
 
 // ------------------------------------
 // Reducer
@@ -119,7 +202,7 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -155,6 +238,14 @@ export const albumTreeStateReducer = (
       const added = insertNode(newState.nodes, action.payload.parentId, newGroup);
       if (!added) newState.nodes.push(newGroup);
       return newState;
+    }
+    case MOVE_NODE_IN_TREE: {
+      const { nodeId, newParentId } = action.payload;
+      const newNodes = moveNodeInTreeHelper(state.nodes, nodeId, newParentId);
+      return {
+        ...state,
+        nodes: newNodes,
+      };
     }
     case SET_SELECTED_ALBUM_NODE_IDS: {
       return {

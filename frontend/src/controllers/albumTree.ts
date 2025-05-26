@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch, addAlbumRedux, addAlbums } from '../models';
 import { serverUrl, apiUrlFragment, AlbumNode } from '../types';
-import { addAlbumToTreeRedux, addGroupToTreeRedux, setAlbumNodesRedux } from '../models/albumTree';
+import { addAlbumToTreeRedux, addGroupToTreeRedux, moveNodeInTreeRedux, setAlbumNodesRedux } from '../models/albumTree';
 
 export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
@@ -54,4 +54,20 @@ export const addAlbumToTree = (name: string, parentId?: string): TedTaggerAnyPro
   }
 };
 
+export const moveNodeInTree = (nodeId: string, newParentId: string): TedTaggerAnyPromiseThunkAction => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    dispatch(moveNodeInTreeRedux(nodeId, newParentId));
+    return Promise.resolve();
 
+    // const path = serverUrl + apiUrlFragment + 'album-tree/move-node';
+    // return axios.post(path, { nodeId, newParentId })
+    //   .then((response: any) => {
+    //     dispatch(moveNodeInTreeRedux(nodeId, newParentId));
+    //     return Promise.resolve();
+    //   }).catch((error) => {
+    //     console.log('error');
+    //     console.log(error);
+    //     return '';
+    //   });
+  };
+}

@@ -98,6 +98,7 @@ export interface PhotoViewSpec {
   fullScreenMode: boolean;
   mediaItemZoomFactorById: StringToNumberLUT;
   displayedAlbumIds: string[];
+  displayedAlbumNodeIds: string[];
   displayedPhotoStates: PhotoState[];
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];

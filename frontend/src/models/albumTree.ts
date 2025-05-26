@@ -254,7 +254,6 @@ export const albumTreeStateReducer = (
         id: uuidv4(),
         name: action.payload.name,
         type: 'album',
-        mediaCount: 0,
       };
       const newState = cloneDeep(state);
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);

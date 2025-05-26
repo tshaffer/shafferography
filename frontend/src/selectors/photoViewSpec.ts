@@ -45,6 +45,10 @@ export const getDisplayedAlbumIds = (state: TedTaggerState): string[] => {
   return state.photoViewSpec.displayedAlbumIds;
 };
 
+export const getDisplayedAlbumNodeIds = (state: TedTaggerState): string[] => {
+  return state.photoViewSpec.displayedAlbumNodeIds;
+};
+
 export const getDisplayedPhotoStates = (state: TedTaggerState): PhotoState[] => {
   return state.photoViewSpec.displayedPhotoStates;
 };

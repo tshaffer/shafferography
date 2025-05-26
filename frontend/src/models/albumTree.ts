@@ -9,6 +9,7 @@ import { cloneDeep } from 'lodash';
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
 export const MOVE_NODE_IN_TREE = 'MOVE_NODE_IN_TREE';
+export const DELETE_NODES = 'DELETE_NODES';
 export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
 export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
 
@@ -48,6 +49,20 @@ export const addGroupToTreeRedux = (
     payload: {
       name,
       parentId,
+    }
+  };
+};
+
+interface DeleteNodesPayload {
+  nodeIds: string[];
+}
+export const deleteNodesRedux = (
+  nodeIds: string[]
+): any => {
+  return {
+    type: 'DELETE_NODES',
+    payload: {
+      nodeIds,
     }
   };
 };
@@ -202,7 +217,7 @@ const initialState: AlbumTreeState =
 
 export const albumTreeStateReducer = (
   state: AlbumTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload>
 ): AlbumTreeState => {
   switch (action.type) {
     case SET_ALBUM_NODES: {
@@ -245,6 +260,24 @@ export const albumTreeStateReducer = (
       return {
         ...state,
         nodes: newNodes,
+      };
+    }
+    case DELETE_NODES: {
+      const idsToDelete = new Set(action.payload.nodeIds);
+
+      const filterTree = (nodes: AlbumNode[]): AlbumNode[] => {
+        return nodes
+          .filter(node => !idsToDelete.has(node.id))
+          .map(node =>
+            node.type === 'group'
+              ? { ...node, children: filterTree(node.children) }
+              : node
+          );
+      };
+
+      return {
+        ...state,
+        nodes: filterTree(state.nodes),
       };
     }
     case SET_SELECTED_ALBUM_NODE_IDS: {

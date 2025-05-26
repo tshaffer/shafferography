@@ -17,7 +17,7 @@ import {
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode } from '../types';
-import { addAlbumToTree, addGroupToTree, moveNodeInTree } from '../controllers';
+import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 
 interface AlbumTreeViewProps {
@@ -27,6 +27,7 @@ interface AlbumTreeViewProps {
   onAddAlbumToTree: (name: string, parentId?: string) => void;
   onAddGroupToTree: (name: string, parentId?: string) => void;
   onMoveNodeInTree: (nodeId: string, newParentId: string) => void;
+  onDeleteNodes: (nodeIds: string[]) => void;
 }
 
 function AlbumTreeView(props: AlbumTreeViewProps) {
@@ -169,6 +170,14 @@ const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
         >
           Move To...
         </MenuItem>
+        <MenuItem
+          onClick={() => {
+            props.onDeleteNodes(Array.from(props.selectedNodeIds));
+            setContextMenuPosition(null);
+          }}
+        >
+          Delete
+        </MenuItem>
       </Menu>
       <SimpleTreeView
         onSelectedItemsChange={(event, id) => {
@@ -279,6 +288,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onAddAlbumToTree: addAlbumToTree,
     onAddGroupToTree: addGroupToTree,
     onMoveNodeInTree: moveNodeInTree,
+    onDeleteNodes: deleteNodes,
   }, dispatch);
 };
 

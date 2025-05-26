@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch, addAlbumRedux, addAlbums } from '../models';
 import { serverUrl, apiUrlFragment, AlbumNode } from '../types';
-import { addAlbumToTreeRedux, addGroupToTreeRedux, moveNodeInTreeRedux, setAlbumNodesRedux } from '../models/albumTree';
+import { addAlbumToTreeRedux, addGroupToTreeRedux, deleteNodesRedux, moveNodeInTreeRedux, setAlbumNodesRedux } from '../models/albumTree';
 
 export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
@@ -63,6 +63,24 @@ export const moveNodeInTree = (nodeId: string, newParentId: string): TedTaggerAn
     // return axios.post(path, { nodeId, newParentId })
     //   .then((response: any) => {
     //     dispatch(moveNodeInTreeRedux(nodeId, newParentId));
+    //     return Promise.resolve();
+    //   }).catch((error) => {
+    //     console.log('error');
+    //     console.log(error);
+    //     return '';
+    //   });
+  };
+}
+
+export const deleteNodes = (nodeIds: string[]): TedTaggerAnyPromiseThunkAction => {
+  return (dispatch: TedTaggerDispatch, getState: any) => {
+    dispatch(deleteNodesRedux(nodeIds));
+    return Promise.resolve();
+
+    // const path = serverUrl + apiUrlFragment + 'album-tree/delete-nodes';
+    // return axios.post(path, { nodeIds })
+    //   .then((response: any) => {
+    //     dispatch(deleteNodesRedux(nodeIds));
     //     return Promise.resolve();
     //   }).catch((error) => {
     //     console.log('error');

@@ -166,7 +166,7 @@ interface SetDisplayedAlbumNodeIdsPayload {
 
 export const setDisplayedAlbumNodeIds = (displayedAlbumNodeIds: string[]): any => {
   return {
-    type: SET_DISPLAYED_ALBUM_IDS,
+    type: SET_DISPLAYED_ALBUM_NODE_IDS,
     payload: {
       displayedAlbumNodeIds,
     },

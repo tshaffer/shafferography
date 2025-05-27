@@ -8,9 +8,9 @@ import {
   ListItemButton,
 } from '@mui/material';
 
-import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
+import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { LeafAlbumNode } from '../types';
-import { getDisplayedAlbumNodeIds } from '../selectors';
+import { getDisplayedAlbumNodeIds, getSelectedAlbumNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
@@ -18,6 +18,8 @@ export interface AlbumTreeNodeProps {
   displayedAlbumNodeIds: string[];
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
+  selectedNodeIds: Set<string>;
+  onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
 }
 
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
@@ -26,7 +28,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   const getItemLabel = (item: LeafAlbumNode) => item.name;
 
   const isChecked = displayedAlbumNodeIds.includes(item.id);
-  
+
   const toggleSelection = () => {
     let newDisplayedAlbumNodeIds: string[];
 
@@ -51,11 +53,24 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   return (
     <ListItemButton
       key={getItemLabel(item)}
-      onClick={toggleSelection}
       sx={{ paddingLeft: '5px', paddingY: 0.2 }}
     >
-      <Checkbox checked={isChecked} />
-      <ListItemText primary={getItemLabel(item)} />
+      <Checkbox
+        checked={isChecked}
+        onChange={toggleSelection}
+      />
+      <ListItemText
+        primary={getItemLabel(item)}
+        onClick={(e) => {
+          const newSet = new Set(props.selectedNodeIds);
+          if (newSet.has(props.item.id)) {
+            newSet.delete(props.item.id);
+          } else {
+            newSet.add(props.item.id);
+          }
+          props.onSetSelectedNodeIds(newSet);
+        }}
+      />
       <span>({getItemCount(item)})</span>
     </ListItemButton>
   );
@@ -63,12 +78,14 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
 
 const mapStateToProps = (state: any) => ({
   displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
+  selectedNodeIds: getSelectedAlbumNodeIds(state),
 });
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
   bindActionCreators(
     {
       onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
+      onSetSelectedNodeIds: setSelectedAlbumNodeIdsRedux,
       onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     },
     dispatch

@@ -114,19 +114,6 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         itemId={node.id}
         label={
           <span
-            onClick={(e) => {
-              if (e.shiftKey || e.metaKey || e.ctrlKey) {
-                const newSet = new Set(props.selectedNodeIds);
-                if (newSet.has(node.id)) {
-                  newSet.delete(node.id);
-                } else {
-                  newSet.add(node.id);
-                }
-                props.onSetSelectedNodeIds(newSet);
-              } else {
-                setSelectedId(node.id);
-              }
-            }}
             onContextMenu={(e) => {
               e.preventDefault();
               console.log('Context menu for node:', node);

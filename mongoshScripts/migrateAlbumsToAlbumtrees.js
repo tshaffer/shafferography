@@ -1,11 +1,8 @@
 // Run this in mongosh connected to the pgPhotos database
 
-const { ObjectId } = require('mongodb');
-
 // Set DRY_RUN to true for a safe test run (no DB writes)
 const DRY_RUN = true;
 
-const dbName = 'pgPhotos';
 const albumsCollection = db.getCollection('albums');
 const mediaItemsCollection = db.getCollection('mediaitems');
 const albumTreesCollection = db.getCollection('albumtrees');
@@ -15,7 +12,7 @@ const albums = albumsCollection.find().toArray();
 const albumIdToNodeId = {};
 
 const albumNodes = albums.map(album => {
-  const newId = new ObjectId().toHexString();
+  const newId = ObjectId().toHexString();  // Use ObjectId directly in mongosh
   albumIdToNodeId[album.albumId] = newId;
 
   return {

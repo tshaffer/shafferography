@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch, addAlbumRedux, addAlbums } from '../models';
+import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch } from '../models';
 import { serverUrl, apiUrlFragment, AlbumNode } from '../types';
 import { addAlbumToTreeRedux, addGroupToTreeRedux, deleteNodesRedux, moveNodeInTreeRedux, renameNodeRedux, setAlbumNodesRedux } from '../models/albumTree';
 

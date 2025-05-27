@@ -1,13 +1,13 @@
 import { TedTaggerModelBaseAction } from './baseAction';
-import { MediaItemCountByUndecidedGroupPerAlbum, MediaItemsCountState, StringToNumberLUT } from '../types';
+import { MediaItemCountByUndecidedGroupPerAlbumNode, MediaItemsCountState, StringToNumberLUT } from '../types';
 
 // ------------------------------------
 // Constants
 // ------------------------------------
 export const SET_MEDIA_ITEM_COUNTS = 'SET_MEDIA_ITEM_COUNTS';
-export const SET_MEDIA_ITEM_COUNTS_BY_ALBUM = 'SET_MEDIA_ITEM_COUNTS_BY_ALBUM';
+export const SET_MEDIA_ITEM_COUNTS_BY_ALBUM_NODE = 'SET_MEDIA_ITEM_COUNTS_BY_ALBUM_NODE';
 export const SET_MEDIA_ITEM_COUNTS_BY_PHOTO_STATE = 'SET_MEDIA_ITEM_COUNTS_BY_PHOTO_STATE';
-export const SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM = 'SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM';
+export const SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM_NODE = 'SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM_NODE';
 
 // ------------------------------------
 // Actions
@@ -22,17 +22,17 @@ export const setMediaItemCounts = (
   };
 };
 
-interface SetMediaItemCountByAlbumPayload {
-  mediaItemCountByAlbum: StringToNumberLUT;
+interface SetMediaItemCountByAlbumNodePayload {
+  mediaItemCountByAlbumNode: StringToNumberLUT;
 }
 
-export const setMediaItemCountByAlbum = (
-  mediaItemCountByAlbum: StringToNumberLUT,
+export const setMediaItemCountByAlbumNode = (
+  mediaItemCountByAlbumNode: StringToNumberLUT,
 ): any => {
   return {
-    type: SET_MEDIA_ITEM_COUNTS_BY_ALBUM,
+    type: SET_MEDIA_ITEM_COUNTS_BY_ALBUM_NODE,
     payload: {
-      mediaItemCountByAlbum
+      mediaItemCountByAlbumNode
     }
   };
 };
@@ -52,17 +52,17 @@ export const setMediaItemCountByPhotoState = (
   };
 };
 
-interface SetMediaItemCountByUndecidedGroupPerAlbumPayload {
-  mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[];
+interface SetMediaItemCountByUndecidedGroupPerAlbumNodePayload {
+  mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[];
 }
 
-export const setMediaItemCountByUndecidedGroupPerAlbum = (
-  mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[],
+export const setMediaItemCountByUndecidedGroupPerAlbumNode = (
+  mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[],
 ): any => {
   return {
-    type: SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM,
+    type: SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM_NODE,
     payload: {
-      mediaItemCountByUndecidedGroupPerAlbum
+      mediaItemCountByUndecidedGroupPerAlbumNode
     }
   };
 };
@@ -73,10 +73,10 @@ export const setMediaItemCountByUndecidedGroupPerAlbum = (
 
 const initialState: MediaItemsCountState =
 {
-  mediaItemCountByAlbum: {},
+  mediaItemCountByAlbumNode: {},
   mediaItemCountByPhotoState: {},
-  mediaItemCountByPhotoStateByAlbumId: {},
-  mediaItemCountByUndecidedGroupPerAlbum: []
+  mediaItemCountByPhotoStateByAlbumNodeId: {},
+  mediaItemCountByUndecidedGroupPerAlbumNode: []
 };
 
 export const mediaItemsCountStateReducer = (
@@ -84,18 +84,18 @@ export const mediaItemsCountStateReducer = (
   action: TedTaggerModelBaseAction<
     MediaItemsCountState &
     SetMediaItemCountByPhotoStatePayload &
-    SetMediaItemCountByAlbumPayload &
-    SetMediaItemCountByUndecidedGroupPerAlbumPayload
+    SetMediaItemCountByAlbumNodePayload &
+    SetMediaItemCountByUndecidedGroupPerAlbumNodePayload
   >
 ): MediaItemsCountState => {
   switch (action.type) {
     case SET_MEDIA_ITEM_COUNTS: {
       return action.payload;
     }
-    case SET_MEDIA_ITEM_COUNTS_BY_ALBUM: {
+    case SET_MEDIA_ITEM_COUNTS_BY_ALBUM_NODE: {
       return {
         ...state,
-        mediaItemCountByAlbum: action.payload.mediaItemCountByAlbum,
+        mediaItemCountByAlbumNode: action.payload.mediaItemCountByAlbumNode,
       };
     }
     case SET_MEDIA_ITEM_COUNTS_BY_PHOTO_STATE: {
@@ -104,10 +104,10 @@ export const mediaItemsCountStateReducer = (
         mediaItemCountByPhotoState: action.payload.mediaItemCountByPhotoState,
       };
     }
-    case SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM: {
+    case SET_MEDIA_ITEM_COUNTS_BY_UNDECIDED_GROUP_PER_ALBUM_NODE: {
       return {
         ...state,
-        mediaItemCountByUndecidedGroupPerAlbum: action.payload.mediaItemCountByUndecidedGroupPerAlbum,
+        mediaItemCountByUndecidedGroupPerAlbumNode: action.payload.mediaItemCountByUndecidedGroupPerAlbumNode,
       };
     }
     default:

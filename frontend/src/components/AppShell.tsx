@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadAlbums, loadAlbumTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumIds, setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
+import { loadMediaItems, loadAlbumTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
+import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
 import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
@@ -53,14 +53,12 @@ export interface AppShellProps {
   onReloadMediaItemsByViewSpec: () => any;
   onLoadMediaItemCounts: () => any;
   onLoadMediaItems: () => any;
-  onLoadAlbums: () => any;
   onLoadAlbumTree: () => any;
   onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
   onSetSidebarOpen: (open: boolean) => any;
   onSetRightPanelOpen: (open: boolean) => any;
   onSetGoogleUserProfile: (googleUserProfile: any) => void;
-  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => any;
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => any;
 }
@@ -232,16 +230,6 @@ const AppShell = (props: AppShellProps) => {
 
   React.useEffect(() => {
 
-    const initializeDisplayedAlbumIds = async (): Promise<string[]> => {
-      let displayedAlbumIds: string[] = [];
-      const displayedAlbumsStr: string | null = localStorage.getItem('displayedAlbumIds');
-      if (displayedAlbumsStr) {
-        displayedAlbumIds = displayedAlbumsStr.split(',');
-        props.onSetDisplayedAlbumIds(displayedAlbumIds);
-      }
-      return displayedAlbumIds;
-    }
-
     const initializeDisplayedAlbumNodeIds = async (): Promise<string[]> => {
       let displayedAlbumNodeIds: string[] = [];
       const displayedAlbumsStr: string | null = localStorage.getItem('displayedAlbumNodeIds');
@@ -266,13 +254,9 @@ const AppShell = (props: AppShellProps) => {
       return displayedPhotoStates;
     };
 
-    props.onLoadAlbums()
+    props.onLoadAlbumTree()
       .then(function () {
-        return props.onLoadAlbumTree();
-      }).then(function () {
         return initializeDisplayedPhotoStates()
-      }).then(function () {
-        return initializeDisplayedAlbumIds()
       }).then(function () {
         return initializeDisplayedAlbumNodeIds()
       }).then(function () {
@@ -349,12 +333,10 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onLoadMediaItemCounts: loadMediaItemCounts,
     onLoadMediaItems: loadMediaItems,
-    onLoadAlbums: loadAlbums,
     onLoadAlbumTree: loadAlbumTree,
     onLoadUndecidedGroups: loadUndecidedGroups,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,
-    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
     onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
     onSetDisplayedPhotoStates: setDisplayedPhotoStates,
   }, dispatch);

@@ -12,8 +12,6 @@ import {
   uploadToGoogleEndpoint,
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   setPhotoStateEndpoint,
-  getAlbums,
-  addAlbum,
   mergePeopleTakeoutEndpoint,
   importPhotosEndpoint,
   getPerFileImportPhotosStatus,
@@ -22,15 +20,15 @@ import {
   assignMediaItemsToUndecidedGroup,
   deleteUndecidedGroup,
   getUndecidedGroups,
-  getMediaItemCountByAlbum,
   getMediaItemCountByPhotoState,
   getMediaItemCounts,
-  getMediaItemCountByUndecidedGroupPerAlbum,
-  getMediaItemCountByPhotoStateByAlbumId,
   setMediaItemNotesEndpoint,
   getAlbumNodes,
   saveAlbumNodes,
   moveAlbumNode,
+  getMediaItemCountByAlbumNode,
+  getMediaItemCountByPhotoStateByAlbumNodeId,
+  getMediaItemCountByUndecidedGroupPerAlbumNode,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -41,12 +39,9 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsByViewSpec);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
-  app.get('/api/v1/albums', getAlbums);
 
   app.get('/api/v1/import-photos-status/:importId', getPerFileImportPhotosStatus);
   app.get('/api/v1/upload-to-google-status/:uploadId', getPerFileUploadToGoogleStatus);
-
-  app.post('/api/v1/album', addAlbum);
 
   app.post('/api/v1/addKeyword', addKeyword);
   app.post('/api/v1/addKeywordNode', addKeywordNode);
@@ -69,14 +64,14 @@ export const createRoutes = (app: express.Application) => {
   app.delete('/api/v1/undecidedGroups/:groupId', deleteUndecidedGroup);
 
   app.get('/api/v1/mediaItemCounts', getMediaItemCounts);
-  app.get('/api/v1/mediaItemCountByAlbum', getMediaItemCountByAlbum);
   app.get('/api/v1/mediaItemCountByPhotoState', getMediaItemCountByPhotoState);
-  app.get('/api/v1/mediaItemCountByUndecidedGroupPerAlbum', getMediaItemCountByUndecidedGroupPerAlbum);
-  app.get('/api/v1/mediaItemCountByPhotoStateByAlbumId', getMediaItemCountByPhotoStateByAlbumId);
+
+  app.get('/api/v1/mediaItemCountByAlbum', getMediaItemCountByAlbumNode);
+  app.get('/api/v1/mediaItemCountByUndecidedGroupPerAlbum', getMediaItemCountByUndecidedGroupPerAlbumNode);
+  app.get('/api/v1/mediaItemCountByPhotoStateByAlbumId', getMediaItemCountByPhotoStateByAlbumNodeId);
 
   app.get('/api/v1/album-tree', getAlbumNodes);
   app.put('/api/v1/album-tree', saveAlbumNodes);
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
-  
 };
 

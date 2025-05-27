@@ -21,6 +21,7 @@ import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
 import GroupTreeNode from './GroupTreeNode';
+import ImportFromDriveDialog from './ImportFromDriveDialog';
 
 interface AlbumTreeViewProps {
   nodes: AlbumNode[];
@@ -47,6 +48,8 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
   const [renameDialogOpen, setRenameDialogOpen] = useState(false);
   const [renameValue, setRenameValue] = useState('');
   const [newParentId, setNewParentId] = useState<string | null>(null);
+
+  const [importFromDriveDialogOpen, setImportFromDriveDialogOpen] = useState(false);
 
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
@@ -171,8 +174,10 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
       >
         {contextMenuNode && contextMenuNode.type === 'group' && <MenuItem
           onClick={() => {
-            setAddDialogOpen(true);
+            setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
+            // setAddDialogOpen(true);
+            // setContextMenuPosition(null);
           }}
         >
           Import Album
@@ -222,6 +227,11 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         {props.nodes.map(renderTree)}
       </SimpleTreeView>
 
+      <ImportFromDriveDialog
+        open={importFromDriveDialogOpen}
+        onClose={() => setImportFromDriveDialogOpen(false)}
+      />
+      
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
         <DialogTitle>Add New Album</DialogTitle>
         <DialogContent>

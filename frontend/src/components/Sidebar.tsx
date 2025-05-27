@@ -14,9 +14,9 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { Album, MediaItemCountByPhotoStateByAlbumId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
-import { setDisplayedAlbumIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedAlbumIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getAlbums, getUndecidedGroups, getMediaItemCountByAlbum, getMediaItemCountByPhotoStateByAlbumId } from "../selectors";
+import { AlbumNode, MediaItemCountByPhotoStateByAlbumNodeId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
+import { setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
+import { getDisplayedAlbumNodeIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getUndecidedGroups, getMediaItemCountByAlbumNode, getMediaItemCountByPhotoStateByAlbumNodeId, getAlbumTree } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
 import { photoStateOptions } from "../constants";
 import AlbumTreeView from "./AlbumTreeView";
@@ -38,21 +38,20 @@ export interface SidebarPropsFromParent {
 }
 
 export interface SidebarDerivedStateProps {
-  displayedAlbumIds: string[];
+  displayedAlbumNodeIds: string[];
   displayedPhotoStates: string[];
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];
   displayedUndecidedGroups: UndecidedGroup[];
-  albums: Album[];
+  albumNodes: AlbumNode[];
   undecidedGroups: UndecidedGroup[];
-  mediaItemCountByAlbum: StringToNumberLUT;
-  mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId;
+  mediaItemCountByAlbumNode: StringToNumberLUT;
+  mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId;
 }
 
 export interface SidebarDerivedActionCreatorProps {
   onSetDisplayedPhotoStates: (displayedPhotoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => void;
-  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
   onSetGroupUndecidedPhotos: (groupUndecidedPhotos: boolean) => void;
   onSetDisplayedUndecidedGroupIds: (displayedUndecidedGroupIds: string[]) => void;
@@ -70,15 +69,15 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
-  const getAlbumById = (albumId: string): Album | undefined => {
-    return props.albums.find((album: Album) => album.albumId === albumId);
+  const getAlbumNodeById = (albumNodeId: string): AlbumNode | undefined => {
+    return props.albumNodes.find((albumNode: AlbumNode) => albumNode.id === albumNodeId);
   }
 
-  const getUndecidedGroupName = (albumIds: string[]): string => {
-    const names = albumIds
-      .map(id => getAlbumById(id))
-      .filter((album): album is Album => album !== undefined)
-      .map(album => album.albumName);
+  const getUndecidedGroupName = (albumNodeIds: string[]): string => {
+    const names = albumNodeIds
+      .map(id => getAlbumNodeById(id))
+      .filter((album): album is AlbumNode => album !== undefined)
+      .map(album => album.name);
 
     return `${names.join('_')}`;
   };
@@ -89,7 +88,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     const undecidedGroups: UndecidedGroup[] = props.undecidedGroups;
 
     for (const undecidedGroup of undecidedGroups) {
-      const undecidedGroupNamePrefix = getUndecidedGroupName(undecidedGroup.albumIds);
+      const undecidedGroupNamePrefix = getUndecidedGroupName(undecidedGroup.albumNodeIds);
       if (!groupedUndecidedGroups[undecidedGroupNamePrefix]) {
         groupedUndecidedGroups[undecidedGroupNamePrefix] = [];
       }
@@ -122,12 +121,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     setShowRetrievePeopleDialog(false);
   };
 
-  const handleAlbumChange = (selectedAlbumIds: string[]) => {
-    props.onSetDisplayedAlbumIds(selectedAlbumIds);
-    props.onReloadMediaItemsByViewSpec();
-    localStorage.setItem('displayedAlbumIds', selectedAlbumIds.join(','));
-  };
-
   const handlePhotoStatesToViewChange = (selectedPhotoStates: PhotoState[]) => {
     props.onSetDisplayedPhotoStates(selectedPhotoStates);
     props.onReloadMediaItemsByViewSpec();
@@ -153,18 +146,18 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 
-  const getItemCountByAlbum = (item: Album): string => {
-    if (!props.mediaItemCountByAlbum || !props.mediaItemCountByAlbum[item.albumId]) {
+  const getItemCountByAlbumNode = (item: AlbumNode): string => {
+    if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
       return '0';
     }
-    const count = props.mediaItemCountByAlbum[item.albumId];
+    const count = props.mediaItemCountByAlbumNode[item.id];
     return count ? count.toString() : '0';
   };
 
-  function getItemCountByPhotoStateByAlbumId(item: PhotoStateOption): string {
+  function getItemCountByPhotoStateByAlbumNodeId(item: PhotoStateOption): string {
     let itemCount = 0;
-    for (const albumId of props.displayedAlbumIds) {
-      itemCount += props.mediaItemCountByPhotoStateByAlbumId[albumId]?.[item.value] ?? 0;
+    for (const albumId of props.displayedAlbumNodeIds) {
+      itemCount += props.mediaItemCountByPhotoStateByAlbumNodeId[albumId]?.[item.value] ?? 0;
     }
     return itemCount.toString();
   }
@@ -174,7 +167,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
       <React.Fragment>
         <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Album Tree View</Typography>
         <Box>
-          {props.albums.length === 0 ? (
+          {props.albumNodes.length === 0 ? (
             <Typography variant="body2">No Albums Available</Typography>
           ) : (
             <Box>
@@ -185,31 +178,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
       </React.Fragment>
     )
   }
-
-  const renderAlbumsToDisplayChooser = () => {
-    return (
-      <React.Fragment>
-        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Albums</Typography>
-        <Box>
-          {props.albums.length === 0 ? (
-            <Typography variant="body2">No Albums Available</Typography>
-          ) : (
-            <Box>
-              <CheckboxListSelector
-                items={props.albums}
-                selectedItems={props.albums.filter((set: Album) => props.displayedAlbumIds.includes(set.albumId))}
-                getItemLabel={(item: Album) => item.albumName}
-                onChange={(selected) => handleAlbumChange(selected.map((set: Album) => set.albumId))}
-                maxHeight={350}
-                showCount={true}
-                getItemCount={getItemCountByAlbum}
-              />
-            </Box>
-          )}
-        </Box>
-      </React.Fragment>
-    )
-  };
 
   const renderPhotoStatesToDisplayChooser = () => {
 
@@ -236,7 +204,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
               handlePhotoStatesToViewChange(photoStates.map((photoState) => photoState.value))
             }
             showCount={true}
-            getItemCount={getItemCountByPhotoStateByAlbumId}
+            getItemCount={getItemCountByPhotoStateByAlbumNodeId}
           />
 
           {props.undecidedGroups && (props.undecidedGroups.length > 0) && props.displayedPhotoStates.includes(PhotoState.Undecided) && (<FormControlLabel
@@ -335,8 +303,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
           {renderAlbumTreeView()}
           
-          {renderAlbumsToDisplayChooser()}
-
           {renderPhotoStatesToDisplayChooser()}
         </List>
 
@@ -356,22 +322,22 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
 function mapStateToProps(state: TedTaggerState): SidebarDerivedStateProps {
   return {
+    albumNodes: getAlbumTree(state),
     undecidedGroups: getUndecidedGroups(state),
     groupUndecidedPhotos: getGroupUndecidedPhotos(state),
-    displayedAlbumIds: getDisplayedAlbumIds(state),
+    displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
     displayedPhotoStates: getDisplayedPhotoStates(state),
     displayedUndecidedGroups: getDisplayedUndecidedGroups(state),
     displayedUndecidedGroupIds: getDisplayedUndecidedGroupIds(state),
-    albums: getAlbums(state),
-    mediaItemCountByAlbum: getMediaItemCountByAlbum(state),
-    mediaItemCountByPhotoStateByAlbumId: getMediaItemCountByPhotoStateByAlbumId(state),
+    mediaItemCountByAlbumNode: getMediaItemCountByAlbumNode(state),
+    mediaItemCountByPhotoStateByAlbumNodeId: getMediaItemCountByPhotoStateByAlbumNodeId(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetPhotoState: setPhotoState,
-    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
+    onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
     onSetDisplayedPhotoStates: setDisplayedPhotoStates,
     onSetGroupUndecidedPhotos: setGroupUndecidedPhotos,
     onSetDisplayedUndecidedGroupIds: setDisplayedUndecidedGroupIds,

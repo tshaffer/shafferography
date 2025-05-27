@@ -13,7 +13,6 @@ export const SET_SURVEY_MODE_ZOOM_FACTOR = 'SET_SURVEY_MODE_ZOOM_FACTOR';
 export const SET_SCROLL_POSITION = 'SET_SCROLL_POSITION';
 export const SET_FULL_SCREEN_MODE = 'SET_FULL_SCREEN_MODE';
 export const SET_MEDIA_ITEM_ZOOM_FACTOR = 'SET_MEDIA_ITEM_ZOOM_FACTOR';
-export const SET_DISPLAYED_ALBUM_IDS = 'SET_DISPLAYED_ALBUM_IDS';
 export const SET_DISPLAYED_ALBUM_NODE_IDS = 'SET_DISPLAYED_ALBUM_NODE_IDS';
 export const SET_DISPLAYED_REVIEW_LEVELS = 'SET_DISPLAYED_REVIEW_LEVELS';
 export const SET_GROUP_UNDECIDED_PHOTOS = 'SET_GROUP_UNDECIDED_PHOTOS';
@@ -147,19 +146,6 @@ export const setMediaItemZoomFactor = (mediaItemId: string, zoomFactor: number):
   };
 };
 
-interface SetDisplayedAlbumIdsPayload {
-  displayedAlbumIds: string[],
-}
-
-export const setDisplayedAlbumIds = (displayedAlbumIds: string[]): any => {
-  return {
-    type: SET_DISPLAYED_ALBUM_IDS,
-    payload: {
-      displayedAlbumIds,
-    },
-  };
-};
-
 interface SetDisplayedAlbumNodeIdsPayload {
   displayedAlbumNodeIds: string[],
 }
@@ -228,7 +214,6 @@ const initialState: PhotoViewSpec = {
   scrollPosition: 0,
   fullScreenMode: false,
   mediaItemZoomFactorById: {},
-  displayedAlbumIds: [],
   displayedAlbumNodeIds: [],
   displayedPhotoStates: [PhotoState.ReadyForUpload, PhotoState.Unreviewed, PhotoState.Undecided, PhotoState.Uploaded],
   groupUndecidedPhotos: false,
@@ -237,7 +222,7 @@ const initialState: PhotoViewSpec = {
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetFocusedSurveyViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumIdsPayload & SetDisplayedAlbumNodeIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
+  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetFocusedSurveyViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumNodeIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -259,11 +244,6 @@ export const photoViewSpecReducer = (
       return {
         ...state,
         focusedSurveyViewMediaItemId: action.payload.focusedSurveyViewMediaItemId,
-      };
-    case SET_DISPLAYED_ALBUM_IDS:
-      return {
-        ...state,
-        displayedAlbumIds: action.payload.displayedAlbumIds,
       };
     case SET_DISPLAYED_ALBUM_NODE_IDS:
       return {

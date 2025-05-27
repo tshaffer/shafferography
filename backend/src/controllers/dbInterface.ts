@@ -19,18 +19,14 @@ import {
   DateSearchRule,
   KeywordData,
   User,
-  Album,
   UndecidedGroup,
-  // MediaItemCounts,
-  MediaItemCountByUndecidedGroupPerAlbum,
   StringToNumberLUT,
   AlbumNode,
+  MediaItemCountByUndecidedGroupPerAlbumNode,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
-import { AlbumModel } from '../models';
-import { IAlbum } from '../models';
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
@@ -508,38 +504,6 @@ export const getMediaItemsInNamedAlbumFromDb = async (googleAlbumName: string): 
   return mediaItems;
 }
 
-export const getAllAlbumsFromDb = async (): Promise<IAlbum[]> => {
-  try {
-    const albums = await AlbumModel.find().exec();
-    return albums;
-  } catch (error) {
-    console.error('Error retrieving photo sets:', error);
-    throw error;
-  }
-};
-
-export const addAlbumToDb = async (album: Required<Album>): Promise<IAlbum> => {
-  try {
-    const newAlbum = new AlbumModel(album);
-    await newAlbum.save();
-    return newAlbum;
-  } catch (error) {
-    console.error('Error adding album:', error);
-    throw error;
-  }
-};
-
-export const getAlbumById = async (albumId: string): Promise<Album> => {
-  try {
-    const querySpec = { albumId };
-    const album = await AlbumModel.find(querySpec).exec();
-    return album[0];
-  } catch (error) {
-    console.error('Error retrieving photo set:', error);
-    throw error;
-  }
-};
-
 export const getAllUndecidedGroupsFromDb = async (): Promise<UndecidedGroup[]> => {
   try {
     const undecidedGroupModel = getUndecidedGroupModel();
@@ -548,7 +512,8 @@ export const getAllUndecidedGroupsFromDb = async (): Promise<UndecidedGroup[]> =
       const ud: UndecidedGroup = {
         id: undecidedGroupDocument._id.toString(), // Ensure `id` is returned as a string
         name: undecidedGroupDocument.name,
-        albumIds: undecidedGroupDocument.albumIds,
+        albumNodeIds: [],
+        // albumIds: undecidedGroupDocument.albumIds,
         createdAt: undecidedGroupDocument.createdAt,
       }
       return ud;
@@ -582,7 +547,8 @@ export const addUndecidedGroupToDb = async (albumIds: string[], name: string): P
     return {
       id: newGroupDoc._id.toString(), // Convert MongoDB ObjectId to string
       name,
-      albumIds,
+      albumNodeIds: [],
+      // albumIds,
       createdAt
     };
   } catch (error) {
@@ -636,32 +602,6 @@ export const deleteUndecidedGroupFromDb = async (undecidedGroupId: string): Prom
   }
 };
 
-export const getMediaItemCountByAlbumFromDb = async (): Promise<StringToNumberLUT> => {
-  const mediaItemModel = getMediaitemModel();
-  const counts = await mediaItemModel.aggregate([
-    {
-      $group: {
-        _id: "$albumId",
-        count: { $sum: 1 }
-      }
-    },
-    {
-      $project: {
-        albumId: "$_id",
-        count: 1,
-        _id: 0
-      }
-    }
-  ]);
-
-  const mapping: StringToNumberLUT = {};
-  counts.forEach((entry: { albumId: string; count: number }) => {
-    mapping[entry.albumId] = entry.count;
-  });
-
-  return mapping;
-};
-
 export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNumberLUT> => {
   const mediaItemModel = getMediaitemModel();
   const counts = await mediaItemModel.aggregate([
@@ -688,20 +628,47 @@ export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNum
   return mapping;
 };
 
-export const getMediaItemCountByPhotoStateByAlbumIdFromDb = async (): Promise<Record<string, Record<string, number>>> => {
+export const getMediaItemCountByAlbumNodeFromDb = async (): Promise<StringToNumberLUT> => {
   const mediaItemModel = getMediaitemModel();
 
-  // Aggregate counts by albumId and photoState
   const counts = await mediaItemModel.aggregate([
     {
       $group: {
-        _id: { albumId: "$albumId", photoState: "$photoState" },
+        _id: "$albumNodeId",
         count: { $sum: 1 }
       }
     },
     {
       $project: {
-        albumId: "$_id.albumId",
+        albumNodeId: "$_id",
+        count: 1,
+        _id: 0
+      }
+    }
+  ]);
+
+  const mapping: StringToNumberLUT = {};
+  counts.forEach((entry: { albumNodeId: string; count: number }) => {
+    mapping[entry.albumNodeId] = entry.count;
+  });
+
+  return mapping;
+};
+
+export const getMediaItemCountByPhotoStateByAlbumNodeIdFromDb = async (): Promise<Record<string, Record<string, number>>> => {
+  const mediaItemModel = getMediaitemModel();
+
+  // Aggregate counts by albumNodeId and photoState
+  const counts = await mediaItemModel.aggregate([
+    {
+      $group: {
+        _id: { albumNodeId: "$albumNodeId", photoState: "$photoState" },
+        count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        albumNodeId: "$_id.albumNodeId",
         photoState: "$_id.photoState",
         count: 1,
         _id: 0
@@ -709,37 +676,32 @@ export const getMediaItemCountByPhotoStateByAlbumIdFromDb = async (): Promise<Re
     }
   ]);
 
-  // Construct the nested lookup table:
-  // {
-  //   albumId1: { photoState1: count, photoState2: count, ... },
-  //   albumId2: { photoState1: count, photoState2: count, ... },
-  //   ...
-  // }
   const mapping: Record<string, Record<string, number>> = {};
-  counts.forEach((entry: { albumId: string; photoState: string; count: number }) => {
-    if (!mapping[entry.albumId]) {
-      mapping[entry.albumId] = {};
+  counts.forEach((entry: { albumNodeId: string; photoState: string; count: number }) => {
+    if (!mapping[entry.albumNodeId]) {
+      mapping[entry.albumNodeId] = {};
     }
-    mapping[entry.albumId][entry.photoState] = entry.count;
+    mapping[entry.albumNodeId][entry.photoState] = entry.count;
   });
 
   return mapping;
 };
 
-export const getMediaItemCountByUndecidedGroupPerAlbumFromDb = async (): Promise<MediaItemCountByUndecidedGroupPerAlbum[]> => {
+export const getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb = async (): Promise<MediaItemCountByUndecidedGroupPerAlbumNode[]> => {
   const undecidedGroupModel = getUndecidedGroupModel();
+
   const result = await undecidedGroupModel.aggregate([
-    { $unwind: "$albumIds" },
+    { $unwind: "$albumNodeIds" },
     {
       $lookup: {
         from: "mediaitems",
-        let: { albumId: "$albumIds", groupId: "$_id" },
+        let: { albumNodeId: "$albumNodeIds", groupId: "$_id" },
         pipeline: [
           {
             $match: {
               $expr: {
                 $and: [
-                  { $eq: ["$albumId", "$$albumId"] },
+                  { $eq: ["$albumNodeId", "$$albumNodeId"] },
                   { $eq: ["$photoState", "undecided"] },
                   { $eq: ["$undecidedGroupId", { $toString: "$$groupId" }] }
                 ]
@@ -754,34 +716,14 @@ export const getMediaItemCountByUndecidedGroupPerAlbumFromDb = async (): Promise
       $project: {
         _id: 0,
         undecidedGroupId: { $toString: "$_id" },
-        albumId: "$albumIds",
+        albumNodeId: "$albumNodeIds",
         count: { $size: "$mediaItems" }
       }
     }
   ]);
+
   return result;
 };
-
-// export const getMediaItemsCountsFromDb = async (): Promise<MediaItemCounts> => {
-//   const mediaItemModel = getMediaitemModel();
-//   const result = await mediaItemModel.aggregate([
-//     {
-//       $facet: {
-//         byPhotoState: [
-//           { $group: { _id: "$photoState", count: { $sum: 1 } } },
-//           { $project: { photoState: "$_id", count: 1, _id: 0 } }
-//         ],
-//         byAlbum: [
-//           { $group: { _id: "$albumId", count: { $sum: 1 } } },
-//           { $project: { albumId: "$_id", count: 1, _id: 0 } }
-//         ]
-//       }
-//     }
-//   ]);
-
-//   // Since the aggregation returns an array with a single document, return that document.
-//   return result[0];
-// };
 
 export const getAlbumNodesFromDb = async (): Promise<AlbumNode[]> => {
 
@@ -801,11 +743,6 @@ export const saveAlbumTreeToDb = async (nodes: AlbumNode[]): Promise<void> => {
   const albumTreeModel = getAlbumTreeModel();
 
   // Assuming you have a singleton document for the album tree
-  // await albumTreeModel.findOneAndUpdate(
-  //   { _id: 'singleton' }, // Adjust if you support multi-user or multiple trees
-  //   { nodes },
-  //   { upsert: true, new: true }
-  // );
   await albumTreeModel.findByIdAndUpdate(
     'singleton',
     { nodes },

@@ -1,14 +1,15 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
+import React from 'react';
 
 import {
   ListItemText,
   Checkbox,
   ListItemButton,
-} from "@mui/material";
+} from '@mui/material';
+
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 import { LeafAlbumNode } from '../types';
-import React from 'react';
 import { getDisplayedAlbumNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
@@ -20,66 +21,59 @@ export interface AlbumTreeNodeProps {
 }
 
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
-
-  const [selected, setSelected] = React.useState(false);
+  const { item, displayedAlbumNodeIds, onSetDisplayedAlbumNodeIds, onReloadMediaItemsByViewSpec } = props;
 
   const getItemLabel = (item: LeafAlbumNode) => item.name;
 
+  const isChecked = displayedAlbumNodeIds.includes(item.id);
+
+  console.log(isChecked, item.name, item.id);
+  
   const toggleSelection = () => {
+    let newDisplayedAlbumNodeIds: string[];
 
-    const displayedAlbumNodeIds = props.displayedAlbumNodeIds;
-    const index = displayedAlbumNodeIds.indexOf(props.item.id);
-    if (index !== -1) {
-      // If the item is already selected, remove it from the displayed list
-      displayedAlbumNodeIds.splice(index, 1);
+    if (isChecked) {
+      // Remove the item
+      newDisplayedAlbumNodeIds = displayedAlbumNodeIds.filter(id => id !== item.id);
     } else {
-      // If the item is not selected, add it to the displayed list
-      displayedAlbumNodeIds.push(props.item.id);
+      // Add the item
+      newDisplayedAlbumNodeIds = [...displayedAlbumNodeIds, item.id];
     }
-    props.onSetDisplayedAlbumNodeIds([...displayedAlbumNodeIds]);
-    props.onReloadMediaItemsByViewSpec();
-    localStorage.setItem('displayedAlbumNodeIds', displayedAlbumNodeIds.join(','));
-    setSelected(!selected);
 
+    onSetDisplayedAlbumNodeIds(newDisplayedAlbumNodeIds);
+    onReloadMediaItemsByViewSpec();
+    localStorage.setItem('displayedAlbumNodeIds', newDisplayedAlbumNodeIds.join(','));
   };
 
   const getItemCount = (item: LeafAlbumNode): string => {
     return '69';
-    // if (!props.mediaItemCountByAlbum || !props.mediaItemCountByAlbum[item.albumId]) {
-    //   return '0';
-    // }
-    // const count = props.mediaItemCountByAlbum[item.albumId];
-    // return count ? count.toString() : '0';
+    // Placeholder - replace with actual logic if needed
   };
-
 
   return (
     <ListItemButton
-      key={getItemLabel(props.item)}
-      onClick={() => toggleSelection()}
+      key={getItemLabel(item)}
+      onClick={toggleSelection}
       sx={{ paddingLeft: '5px', paddingY: 0.2 }}
     >
-      <Checkbox checked={selected} />
-      <ListItemText primary={getItemLabel(props.item)} />
-      {(
-        <span>({getItemCount!(props.item)})</span>
-      )}
+      <Checkbox checked={isChecked} />
+      <ListItemText primary={getItemLabel(item)} />
+      <span>({getItemCount(item)})</span>
     </ListItemButton>
   );
 }
 
-function mapStateToProps(state: any, ownProps: any) {
-  return {
-    displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-  };
-}
+const mapStateToProps = (state: any) => ({
+  displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
+});
 
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
-    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
-  }, dispatch);
-};
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
+  bindActionCreators(
+    {
+      onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
+      onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+    },
+    dispatch
+  );
 
 export default connect(mapStateToProps, mapDispatchToProps)(AlbumTreeNode);
-

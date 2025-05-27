@@ -16,10 +16,11 @@ import {
   MenuItem,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { AlbumNode, LeafAlbumNode } from '../types';
+import { AlbumNode, GroupNode, LeafAlbumNode } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
+import GroupTreeNode from './GroupTreeNode';
 
 interface AlbumTreeViewProps {
   nodes: AlbumNode[];
@@ -93,13 +94,19 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
 
   const getAlbumNodeJsx = (node: LeafAlbumNode): JSX.Element => {
     return (
-      <AlbumTreeNode item={node}/>
-   );
+      <AlbumTreeNode item={node} />
+    );
   }
+
+  const getGroupNodeJsx = (node: GroupNode): JSX.Element => {
+    return (
+      <GroupTreeNode item={node} />
+    );
+  };
 
   const getNodeLabel = (node: AlbumNode): JSX.Element | null => {
     if (node.type === 'group') {
-      return <span>{node.name}</span>;
+      return getGroupNodeJsx(node as GroupNode);
     } else if (node.type === 'album') {
       return getAlbumNodeJsx(node as LeafAlbumNode);
     }
@@ -107,7 +114,6 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
   };
 
   const renderTree = (node: AlbumNode): React.ReactNode => {
-
     return (
       <TreeItem
         key={node.id}
@@ -116,10 +122,12 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
           <span
             onContextMenu={(e) => {
               e.preventDefault();
-              console.log('Context menu for node:', node);
               setContextMenuNodeId(node.id);
               setContextMenuNode(node);
               setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
+            }}
+            onClick={(e) => {
+              e.stopPropagation(); // Prevent expand/collapse when clicking label
             }}
             style={{
               cursor: 'pointer',

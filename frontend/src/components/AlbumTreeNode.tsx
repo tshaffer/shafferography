@@ -26,8 +26,6 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   const getItemLabel = (item: LeafAlbumNode) => item.name;
 
   const isChecked = displayedAlbumNodeIds.includes(item.id);
-
-  console.log(isChecked, item.name, item.id);
   
   const toggleSelection = () => {
     let newDisplayedAlbumNodeIds: string[];

@@ -1,8 +1,8 @@
-import { TedTaggerState, MediaItemCountByUndecidedGroupPerAlbum, StringToNumberLUT, MediaItemCountByPhotoStateByAlbumId } from '../types';
+import { TedTaggerState, StringToNumberLUT, MediaItemCountByPhotoStateByAlbumNodeId, MediaItemCountByUndecidedGroupPerAlbumNode } from '../types';
 
-export const getMediaItemCountByAlbum = (state: TedTaggerState): StringToNumberLUT => {
-  const mediaItemCountByAlbum: StringToNumberLUT = state.mediaItemsCountState.mediaItemCountByAlbum;
-  return mediaItemCountByAlbum;
+export const getMediaItemCountByAlbumNode = (state: TedTaggerState): StringToNumberLUT => {
+  const mediaItemCountByAlbumNode: StringToNumberLUT = state.mediaItemsCountState.mediaItemCountByAlbumNode;
+  return mediaItemCountByAlbumNode;
 }
 
 export const getMediaItemCountByPhotoState = (state: TedTaggerState): StringToNumberLUT => {
@@ -10,12 +10,12 @@ export const getMediaItemCountByPhotoState = (state: TedTaggerState): StringToNu
   return mediaItemCountByPhotoState;
 }
 
-export const getMediaItemCountByPhotoStateByAlbumId = (state: TedTaggerState): MediaItemCountByPhotoStateByAlbumId => {
-  const mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId = state.mediaItemsCountState.mediaItemCountByPhotoStateByAlbumId;
-  return mediaItemCountByPhotoStateByAlbumId;
+export const getMediaItemCountByPhotoStateByAlbumNodeId = (state: TedTaggerState): MediaItemCountByPhotoStateByAlbumNodeId => {
+  const mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId = state.mediaItemsCountState.mediaItemCountByPhotoStateByAlbumNodeId;
+  return mediaItemCountByPhotoStateByAlbumNodeId;
 }
 
-export const getMediaItemCountByUndecidedGroupPerAlbum = (state: TedTaggerState): MediaItemCountByUndecidedGroupPerAlbum[] => {
-  const mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[] = state.mediaItemsCountState.mediaItemCountByUndecidedGroupPerAlbum;
-  return mediaItemCountByUndecidedGroupPerAlbum;
+export const getMediaItemCountByUndecidedGroupPerAlbumNode = (state: TedTaggerState): MediaItemCountByUndecidedGroupPerAlbumNode[] => {
+  const mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[] = state.mediaItemsCountState.mediaItemCountByUndecidedGroupPerAlbumNode;
+  return mediaItemCountByUndecidedGroupPerAlbumNode;
 }

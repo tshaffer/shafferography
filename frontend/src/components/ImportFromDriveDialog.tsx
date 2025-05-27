@@ -11,12 +11,12 @@ import { Button, DialogActions, DialogContent, IconButton, Stack, Typography, Al
 
 import AddIcon from "@mui/icons-material/Add";
 import CloseIcon from "@mui/icons-material/Close";
-
-import { getAppInitialized, getDisplayedAlbumIds, getAlbums } from '../selectors';
-import { apiUrlFragment, FileToImport, Album, serverUrl } from '../types';
-import { setDisplayedAlbumIds, TedTaggerDispatch } from '../models';
 import { bindActionCreators } from 'redux';
-import { addAlbum, reloadMediaItemsByViewSpec } from '../controllers';
+import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
+
+import { getAlbumTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
+import { AlbumNode, apiUrlFragment, FileToImport, serverUrl } from '../types';
+import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
 
@@ -27,10 +27,10 @@ export interface ImportFromDriveDialogPropsFromParent {
 
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
-  displayedAlbumIds: string[];
-  albums: Album[];
-  onAddAlbum: (album: Album) => any;
-  onSetDisplayedAlbumIds: (displayedAlbumIds: string[]) => any;
+  displayedAlbumNodeIds: string[];
+  albumNodes: AlbumNode[];
+  onAddAlbumNode: (name: string, parentId?: string) => any;
+  onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => any;
   onReloadMediaItemsByViewSpec: () => void;
   onLoadMediaItemCounts: () => any;
 }
@@ -39,6 +39,7 @@ type FileStatus = "uploading" | "processing" | "completed" | "conversion failed"
 type FileStatuses = Record<string, FileStatus>;
 
 const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
+
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [newAlbumName, setNewAlbumName] = React.useState<string>('');
@@ -51,18 +52,18 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
   const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
-  const localAlbumIdRef = React.useRef<string>(props.displayedAlbumIds[0]);
+  const localAlbumNodeIdRef = React.useRef<string>(props.displayedAlbumNodeIds[0]);
 
   const updateLocalAlbumId = (newId: string) => {
-    localAlbumIdRef.current = newId;
-    console.log("Updated localAlbumId (ref):", localAlbumIdRef.current);
+    localAlbumNodeIdRef.current = newId;
+    console.log("Updated localAlbumId (ref):", localAlbumNodeIdRef.current);
   };
 
   React.useEffect(() => {
     if (props.open) {
-      updateLocalAlbumId(props.displayedAlbumIds[0]);
+      updateLocalAlbumId(props.displayedAlbumNodeIds[0]);
       setProgress(0);
-      setIsAddingNew(props.albums.length === 0);
+      setIsAddingNew(props.albumNodes.length === 0);
       setFileProgress({});
       setFileStatuses({});
       setProcessingComplete(false);
@@ -83,18 +84,19 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const createAlbum = async (): Promise<Album | undefined> => {
+  const createAlbum = async (): Promise<AlbumNode | undefined> => {
     if (!newAlbumName.trim()) return Promise.resolve(undefined);
 
-    const newAlbum: Album = {
-      albumId: uuidv4(),
-      albumName: newAlbumName,
+    const newAlbum: AlbumNode = {
+      id: uuidv4(),
+      name: newAlbumName,
+      type: 'album',
     };
 
-    return props.onAddAlbum(newAlbum).then(() => {
-      console.log('Album added: ', newAlbum);
-      updateLocalAlbumId(newAlbum.albumId);
-      setLastAddedAlbumId(newAlbum.albumId);
+    return props.onAddAlbumNode(newAlbumName).then(() => {
+      console.log('AlbumNode added: ', newAlbum);
+      updateLocalAlbumId(newAlbum.id);
+      setLastAddedAlbumId(newAlbum.id);
       setNewAlbumName("");
       setIsAddingNew(false);
 
@@ -121,8 +123,8 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           if (Object.values(updatedStatuses).every((status) => ((status === "completed") || (status === "conversion failed")))) {
             clearInterval(interval);
             console.log("All files processed!");
-            props.onSetDisplayedAlbumIds([localAlbumIdRef.current]);
-            localStorage.setItem('displayedAlbumIds', localAlbumIdRef.current);
+            props.onSetDisplayedAlbumNodeIds([localAlbumNodeIdRef.current]);
+            localStorage.setItem('displayedAlbumNodeIds', localAlbumNodeIdRef.current);
             props.onReloadMediaItemsByViewSpec();
             setProcessingComplete(true);
             resolve();
@@ -135,32 +137,32 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   };
 
   const albumExists = (albumName: string): boolean => {
-    return props.albums.some((album) => album.albumName === albumName);
+    return props.albumNodes.some((album) => album.name === albumName);
   };
 
   const handleImport = async () => {
     if (selectedFiles && (baseDirectory !== '')) {
-      let albumId = localAlbumIdRef.current;
+      let albumNodeId = localAlbumNodeIdRef.current;
       if (isAddingNew) {
         if (albumExists(newAlbumName)) {
           // Instead of logging an error, set an error message to display in a modal dialog.
-          setErrorMessage('Album already exists');
+          setErrorMessage('AlbumNode already exists');
           return;
         }
-        const newAlbum: Album | undefined = await createAlbum();
+        const newAlbum: AlbumNode | undefined = await createAlbum();
         if (!newAlbum) return;
-        albumId = newAlbum.albumId;
-      } else if (!albumId) {
+        albumNodeId = newAlbum.id;
+      } else if (!albumNodeId) {
         // Instead of logging an error, set an error message to display in a modal dialog.
         setErrorMessage('No album selected');
         return;
       }
-      console.log('import files: ', baseDirectory, albumId, selectedFiles);
-      await handleImportFromDrive(baseDirectory, albumId, selectedFiles);
+      console.log('import files: ', baseDirectory, albumNodeId, selectedFiles);
+      await handleImportFromDrive(baseDirectory, albumNodeId, selectedFiles);
     }
   };
 
-  const handleImportFromDrive = async (baseDirectory: string, albumId: string, selectedFiles: FileList) => {
+  const handleImportFromDrive = async (baseDirectory: string, albumNodeId: string, selectedFiles: FileList) => {
     setFileProgress({});
     setFileStatuses({});
     setProcessingComplete(false);
@@ -184,7 +186,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
     const uploadBody = {
       baseDirectory,
-      albumId,
+      albumNodeId,
       files,
     };
 
@@ -208,7 +210,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       await checkProcessingComplete(response.data.importId);
 
       props.onLoadMediaItemCounts();
-      
+
       console.log("Processing is fully complete!");
 
     } catch (error) {
@@ -246,31 +248,31 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
               {isAddingNew ? (
                 <Box display="flex" gap={1} alignItems="center">
                   <TextField
-                    label="New Album Name"
+                    label="New AlbumNode Name"
                     value={newAlbumName}
                     onChange={(e) => setNewAlbumName(e.target.value)}
                     fullWidth
                     autoFocus
                   />
-                  <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albums.length === 0 && newAlbumName.trim() === ''}>
+                  <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albumNodes.length === 0 && newAlbumName.trim() === ''}>
                     <CloseIcon />
                   </IconButton>
                 </Box>
               ) : (
                 <TextField
                   select
-                  label="Choose an Album"
-                  value={localAlbumIdRef.current}
+                  label="Choose an AlbumNode"
+                  value={localAlbumNodeIdRef.current}
                   onChange={(e) => updateLocalAlbumId(e.target.value)}
                   fullWidth
                 >
                   <MenuItem onClick={() => setIsAddingNew(true)} key={'newAlbum'} value={''}>
                     <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
-                    Add New Album
+                    Add New AlbumNode
                   </MenuItem>
-                  {props.albums.map((set) => (
-                    <MenuItem key={set.albumId} value={set.albumId}>
-                      {set.albumName}
+                  {props.albumNodes.map((set) => (
+                    <MenuItem key={set.id} value={set.id}>
+                      {set.name}
                     </MenuItem>
                   ))}
                 </TextField>
@@ -313,7 +315,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
         </DialogActions>
       </Dialog>
 
-      {/* Error Modal Dialog */}
       {errorMessage && (
         <Dialog open={true} onClose={() => setErrorMessage(null)}>
           <DialogTitle>Error</DialogTitle>
@@ -332,15 +333,15 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
-    displayedAlbumIds: getDisplayedAlbumIds(state),
-    albums: getAlbums(state),
+    displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
+    albumNodes: getAlbumTree(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
-    onAddAlbum: addAlbum,
-    onSetDisplayedAlbumIds: setDisplayedAlbumIds,
+    onAddAlbumNode: addAlbumToTree,
+    onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onLoadMediaItemCounts: loadMediaItemCounts,
   }, dispatch);

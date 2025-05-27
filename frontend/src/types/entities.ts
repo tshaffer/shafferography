@@ -1,4 +1,3 @@
-import { StringToNumberLUT } from "./base";
 import { PhotoState } from "./enums";
 
 export interface GeoData {
@@ -33,6 +32,7 @@ export interface ServerMediaItem {
   photoState: PhotoState,
   undecidedGroupId?: string;
   notes?: string;
+  albumNodeId?: string;
 }
 
 export interface MediaItem {
@@ -54,6 +54,7 @@ export interface MediaItem {
   photoState: PhotoState,
   undecidedGroupId?: string;
   notes?: string;
+  albumNodeId?: string;
 }
 
 export interface Keyword {
@@ -99,11 +100,6 @@ export interface GoogleUserProfile {
   name: string;
 }
 
-export interface Album {
-  albumId: string;
-  albumName: string;
-}
-
 export interface FileToImport {
   name: string;
   size: number;
@@ -128,19 +124,19 @@ export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = Filte
 export interface UndecidedGroup {
   id: string;
   name: string;
-  albumIds: string[];
+  albumNodeIds: string[];
   createdAt: string;
 }
 
-export interface MediaItemCountByPhotoStateByAlbumId {
-  [albumId: string]: {
+export interface MediaItemCountByPhotoStateByAlbumNodeId {
+  [albumNodeId: string]: {
     [photoState: string]: number;
   };
 }
 
-export interface MediaItemCountByUndecidedGroupPerAlbum {
+export interface MediaItemCountByUndecidedGroupPerAlbumNode {
   undecidedGroupId: string;
-  albumId: string;
+  albumNodeId: string;
   count: number
 }
 
@@ -157,7 +153,6 @@ export interface LeafAlbumNode {
   id: string;
   name: string;
   type: 'album';
-  // mediaCount: number;
 }
 
 export interface AlbumTree {

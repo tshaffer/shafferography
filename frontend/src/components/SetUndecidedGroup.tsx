@@ -7,8 +7,8 @@ import { TextField, Button, Collapse, List, ListItem, ListItemText, Popover, Lis
 
 import { addUndecidedGroup, assignMediaItemsToUndecidedGroup } from '../controllers';
 import { TedTaggerDispatch } from '../models';
-import { getSelectedMediaItemIds, getDisplayedAlbumIds, getAlbums, getUndecidedGroups } from '../selectors';
-import { Album, PhotoState, TedTaggerState, UndecidedGroup } from '../types';
+import { getSelectedMediaItemIds, getDisplayedAlbumNodeIds, getUndecidedGroups, getAlbumTree } from '../selectors';
+import { AlbumNode, PhotoState, TedTaggerState, UndecidedGroup } from '../types';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
 export interface SetUndecidedGroupPropsFromParent {
@@ -20,8 +20,8 @@ export interface SetUndecidedGroupPropsFromParent {
 
 export interface SetUndecidedGroupDerivedStateProps {
   selectedMediaItemIds: string[];
-  displayedAlbumIds: string[];
-  albums: Album[];
+  displayedAlbumNodeIds: string[];
+  albumNodes: AlbumNode[];
   undecidedGroups: UndecidedGroup[];
   onAddUndecidedGroup: (albumIds: string[], undecidedGroupName: string) => any;
   onAssignMediaItemsToUndecidedGroup: (undecidedGroupId: string, mediaItemIds: string[]) => any;
@@ -29,8 +29,8 @@ export interface SetUndecidedGroupDerivedStateProps {
 
 export interface SetUndecidedGroupDerivedActionCreatorProps {
   selectedMediaItemIds: string[];
-  displayedAlbumIds: string[];
-  albums: Album[];
+  displayedAlbumNodeIds: string[];
+  albums: AlbumNode[];
   undecidedGroups: UndecidedGroup[];
   onAddUndecidedGroup: (albumIds: string[], undecidedGroupName: string) => any;
   onAssignMediaItemsToUndecidedGroup: (undecidedGroupId: string, mediaItemIds: string[]) => any;
@@ -46,20 +46,20 @@ const SetUndecidedGroup: React.FC<any> = (props: SetUndecidedGroupAllProps) => {
 
   React.useEffect(() => {
     if (props.open) {
-      setUndecidedGroupName(`${getUndecidedGroupName(props.displayedAlbumIds)}-${props.undecidedGroups.length}`); // Auto-incremented default name
+      setUndecidedGroupName(`${getUndecidedGroupName(props.displayedAlbumNodeIds)}-${props.undecidedGroups.length}`); // Auto-incremented default name
     }
   }, [props.open]);
 
 
-  const getAlbumById = (albumId: string): Album | undefined => {
-    return props.albums.find((album: Album) => album.albumId === albumId);
+  const getAlbumById = (albumId: string): AlbumNode | undefined => {
+    return props.albumNodes.find((albumNode: AlbumNode) => albumNode.id === albumId);
   }
 
   const getUndecidedGroupName = (albumIds: string[]): string => {
     const names = albumIds
       .map(id => getAlbumById(id))
-      .filter((album): album is Album => album !== undefined)
-      .map(album => album.albumName);
+      .filter((album): album is AlbumNode => album !== undefined)
+      .map(album => album.name);
 
     return `${names.join('_')}`;
   };
@@ -79,7 +79,7 @@ const SetUndecidedGroup: React.FC<any> = (props: SetUndecidedGroupAllProps) => {
   // Create undecidedGroup named: UndecidedGroup-4
   const handleCreateUndecidedGroup = (undecidedGroupName: string) => {
     console.log(`Create undecidedGroup named: ${undecidedGroupName}`);
-    props.onAddUndecidedGroup(props.displayedAlbumIds, undecidedGroupName)
+    props.onAddUndecidedGroup(props.displayedAlbumNodeIds, undecidedGroupName)
       .then((undecidedGroup: UndecidedGroup) => {
         props.onAssignMediaItemsToUndecidedGroup(undecidedGroup.id, props.selectedMediaItemIds);
         setLastUndecidedGroup(undecidedGroup);
@@ -143,7 +143,7 @@ const SetUndecidedGroup: React.FC<any> = (props: SetUndecidedGroupAllProps) => {
 
           {/* Expandable Other Groups */}
           <ListItemButton onClick={() => setShowOtherAlbums(!showOtherAlbums)} sx={buttonStyle}>
-            <ListItemText primary="Add to Existing Group from Another Album" />
+            <ListItemText primary="Add to Existing Group from Another AlbumNode" />
             {showOtherAlbums ? <ExpandLess /> : <ExpandMore />}
           </ListItemButton>
 
@@ -175,8 +175,8 @@ const SetUndecidedGroup: React.FC<any> = (props: SetUndecidedGroupAllProps) => {
 function mapStateToProps(state: TedTaggerState): Partial<SetUndecidedGroupDerivedStateProps> {
   return {
     selectedMediaItemIds: getSelectedMediaItemIds(state),
-    displayedAlbumIds: getDisplayedAlbumIds(state),
-    albums: getAlbums(state),
+    displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
+    albumNodes: getAlbumTree(state),
     undecidedGroups: getUndecidedGroups(state),
   };
 }

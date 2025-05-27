@@ -9,7 +9,6 @@ import { selectedMediaItemsStateReducer } from './selectedMediaItems';
 import { keywordsStateReducer } from './keywords';
 import { searchUIStateReducer } from './searchUI';
 import { photoViewSpecReducer } from './photoViewSpec';
-import { albumsStateReducer } from './albums';
 import { undecidedGroupsStateReducer } from './undecidedGroups';
 import { mediaItemsCountStateReducer } from './mediaItemsCount';
 import { albumTreeStateReducer } from './albumTree';
@@ -18,7 +17,6 @@ import { albumTreeStateReducer } from './albumTree';
 // Reducers
 // -----------------------------------------------------------------------
 export const rootReducer = combineReducers<TedTaggerState>({
-  albumsState: albumsStateReducer,
   albumTreeState: albumTreeStateReducer,
   appState: appStateReducer,
   mediaItemsState: mediaItemsStateReducer,

@@ -14,21 +14,28 @@ import {
   getMediaItemsToDisplayFromDbUsingSearchSpec,
   updateKeywordNodeDb,
   updateMediaItemsFieldsInDb,
-  getAllAlbumsFromDb,
-  addAlbumToDb,
+  // getAllAlbumsFromDb,
+  // addAlbumToDb,
   getMediaItemsByViewSpecFromDb,
-  getMediaItemCountByAlbumFromDb,
   getMediaItemCountByPhotoStateFromDb,
-  getMediaItemCountByUndecidedGroupPerAlbumFromDb,
-  getMediaItemCountByPhotoStateByAlbumIdFromDb
+  getMediaItemCountByAlbumNodeFromDb,
+  getMediaItemCountByPhotoStateByAlbumNodeIdFromDb,
+  getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb,
 } from './dbInterface';
-import { Keyword, KeywordData, KeywordNode, MediaItem, MediaItemCountByPhotoStateByAlbumId, MediaItemCountByUndecidedGroupPerAlbum, MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT } from '../types';
+import {
+  Keyword,
+  KeywordData,
+  KeywordNode,
+  MediaItem,
+  MediaItemCountByPhotoStateByAlbumNodeId,
+  MediaItemCountByUndecidedGroupPerAlbumNode,
+  MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT
+} from '../types';
 import {
   deleteDirectory,
 } from '../utilities';
 import { MatchRule, PhotoState } from 'enums';
 import path from 'path';
-import { IAlbum } from '../models';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
 
@@ -41,14 +48,11 @@ export const getVersion = (request: Request, response: Response, next: any) => {
 
 export const getMediaItemsByViewSpec = async (request: Request, response: Response) => {
   const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
-  const albumIdsAsStr: string = request.query.albumIds as string;
-  const albumIds: string[] = albumIdsAsStr.split(',');
   const albumNodeIdsAsStr: string = request.query.albumNodeIds as string;
   const albumNodeIds: string[] = albumNodeIdsAsStr.split(',');
   const groupUndecidedPhotos: boolean = request.query.groupUndecidedPhotos === 'true';
   const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
   const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
-  console.log('getMediaItemsByViewSpec', photoStates, albumIds);
   const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
   response.json(mediaItems);
 }
@@ -250,18 +254,8 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
   }
 }
 
-export const getAlbums = async (request: Request, response: Response, next: any) => {
-  const albums: any = await getAllAlbumsFromDb();
-  response.json(albums);
-};
-
-export const addAlbum = async (request: Request, response: Response, next: any) => {
-  const newAlbum: IAlbum = await addAlbumToDb(request.body);
-  response.json(newAlbum);
-}
-
-export const getMediaItemCountByAlbum = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByAlbumFromDb();
+export const getMediaItemCountByAlbumNode = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByAlbumNodeFromDb();
   response.json(counts);
 };
 
@@ -270,27 +264,27 @@ export const getMediaItemCountByPhotoState = async (request: Request, response: 
   response.json(counts);
 };
 
-export const getMediaItemCountByPhotoStateByAlbumId = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByPhotoStateByAlbumIdFromDb();
+export const getMediaItemCountByPhotoStateByAlbumNodeId = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByPhotoStateByAlbumNodeIdFromDb();
   response.json(counts);
 };
 
-export const getMediaItemCountByUndecidedGroupPerAlbum = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByUndecidedGroupPerAlbumFromDb();
+export const getMediaItemCountByUndecidedGroupPerAlbumNode = async (request: Request, response: Response, next: any) => {
+  const counts: any = await getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb();
   response.json(counts);
 };
 
 export const getMediaItemCounts = async (request: Request, response: Response, next: any) => {
-  const mediaItemCountByAlbum: StringToNumberLUT = await getMediaItemCountByAlbumFromDb();
+  const mediaItemCountByAlbumNode: StringToNumberLUT = await getMediaItemCountByAlbumNodeFromDb();
   const mediaItemCountByPhotoState: StringToNumberLUT = await getMediaItemCountByPhotoStateFromDb();
-  const mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId = await getMediaItemCountByPhotoStateByAlbumIdFromDb();
-  const mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[] = await getMediaItemCountByUndecidedGroupPerAlbumFromDb();
+  const mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId = await getMediaItemCountByPhotoStateByAlbumNodeIdFromDb();
+  const mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[] = await getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb();
   response.json(
     {
-      mediaItemCountByAlbum,
+      mediaItemCountByAlbumNode,
       mediaItemCountByPhotoState,
-      mediaItemCountByPhotoStateByAlbumId,
-      mediaItemCountByUndecidedGroupPerAlbum
+      mediaItemCountByPhotoStateByAlbumNodeId,
+      mediaItemCountByUndecidedGroupPerAlbumNode
     } as MediaItemCounts
   );
 };

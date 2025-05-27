@@ -19,7 +19,6 @@ import {
 } from '../types';
 import { cloneDeep } from 'lodash';
 import {
-  getDisplayedAlbumIds,
   getDisplayedAlbumNodeIds,
   getDisplayedPhotoStates,
   getDisplayedUndecidedGroupIds,
@@ -46,13 +45,12 @@ const deselectHiddenMediaItems = (): any => {
   };
 }
 
-const loadMediaItemsByViewSpecParams = (albumIds: string[], albumNodeIds: string[], photoStates: PhotoState[], groupUndecidedPhotos: boolean, undecidedGroupIds: string[]): any => {
+const loadMediaItemsByViewSpecParams = (albumNodeIds: string[], photoStates: PhotoState[], groupUndecidedPhotos: boolean, undecidedGroupIds: string[]): any => {
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
-    path += '?albumIds=' + albumIds.join(',');
-    path += '&albumNodeIds=' + albumNodeIds.join(',');
+    path += '?albumNodeIds=' + albumNodeIds.join(',');
     path += '&photoStates=' + JSON.stringify(photoStates);
     path += '&groupUndecidedPhotos=' + JSON.stringify(groupUndecidedPhotos);
     path += '&undecidedGroupIds=' + undecidedGroupIds.join(',');
@@ -75,25 +73,23 @@ const loadMediaItemsByViewSpecParams = (albumIds: string[], albumNodeIds: string
 export const reloadMediaItemsByViewSpec = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
     const state: TedTaggerState = getState();
-    const albumIds: string[] = getDisplayedAlbumIds(state);
     const albumNodeIds: string[] = getDisplayedAlbumNodeIds(state);
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     const groupUndecidedPhotos: boolean = getGroupUndecidedPhotos(state);
     const undecidedGroupIds: string[] = getDisplayedUndecidedGroupIds(state);
     dispatch(clearMediaItems());
-    dispatch(loadMediaItemsByViewSpecParams(albumIds, albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds));
+    dispatch(loadMediaItemsByViewSpecParams(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds));
   }
 };
 
 export const loadAndReplaceMediaItemsByViewSpec = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
     const state: TedTaggerState = getState();
-    const albumIds: string[] = getDisplayedAlbumIds(state);
-    const albumNodeIds: string[] = getDisplayedAlbumIds(state);
+    const albumNodeIds: string[] = getDisplayedAlbumNodeIds(state);
     const photoStates: PhotoState[] = getDisplayedPhotoStates(state);
     const groupUndecidedPhotos: boolean = getGroupUndecidedPhotos(state);
     const undecidedGroupIds: string[] = getUndecidedGroupIds(state);
-    return dispatch(loadMediaItemsByViewSpecParams(albumIds, albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds))
+    return dispatch(loadMediaItemsByViewSpecParams(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds))
       .then(() => {
         return Promise.resolve();
       });

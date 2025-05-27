@@ -28,7 +28,7 @@ const MediaitemSchema = new Schema(
     people: [{ name: String, default: '' }], 
     keywordNodeIds: [String], 
     photoState: { type: String, required: true }, 
-    albumId: { type: String, required: true }, 
+    albumNodeId: { type: String, required: true }, 
     undecidedGroupId: { type: String },
     notes: { type: String },
   }

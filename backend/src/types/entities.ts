@@ -28,7 +28,7 @@ export interface MediaItem {
   peopleRetrievedFromGoogle: boolean,
   keywordNodeIds: string[],
   photoState: PhotoState,
-  albumId: string;
+  albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
 }
@@ -90,11 +90,6 @@ export interface UserWithToken extends User {
   accessToken: string;
 }
 
-export interface Album {
-  albumId: string;
-  albumName: string;
-}
-
 export interface FileToImport {
   name: string;
   size: number;
@@ -106,27 +101,27 @@ export interface FileToImport {
 export interface UndecidedGroup {
   id: string;
   name: string;
-  albumIds: string[];
+  albumNodeIds: string[];
   createdAt: string;
 }
 
-export interface MediaItemCountByPhotoStateByAlbumId {
-  [albumId: string]: {
+export interface MediaItemCountByPhotoStateByAlbumNodeId {
+  [albumNodeId: string]: {
     [photoState: string]: number;
   };
 }
 
-export interface MediaItemCountByUndecidedGroupPerAlbum {
+export interface MediaItemCountByUndecidedGroupPerAlbumNode {
   undecidedGroupId: string;
-  albumId: string;
+  albumNodeId: string;
   count: number
 }
 
 export interface MediaItemCounts {
-  mediaItemCountByAlbum: StringToNumberLUT;
+  mediaItemCountByAlbumNode: StringToNumberLUT;
   mediaItemCountByPhotoState: StringToNumberLUT;
-  mediaItemCountByPhotoStateByAlbumId: MediaItemCountByPhotoStateByAlbumId;
-  mediaItemCountByUndecidedGroupPerAlbum: MediaItemCountByUndecidedGroupPerAlbum[];
+  mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId;
+  mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[];
 }
 
 export type AlbumNode = GroupNode | LeafAlbumNode;

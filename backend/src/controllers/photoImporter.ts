@@ -2,11 +2,13 @@ import { Request, Response } from 'express';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { FileToImport, GeoData, GoogleAlbum, MediaItem, Album, PhotoState } from '../types';
+import { FileToImport, GeoData, GoogleAlbum, MediaItem, 
+  PhotoState } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
-import { addMediaItemToMediaItemsDBTable, getAlbumById } from './dbInterface';
+import { addMediaItemToMediaItemsDBTable, 
+} from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
 import { getGoogleAlbumsByName } from './googlePhotos';
@@ -43,7 +45,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
     photoState: PhotoState.Unreviewed,
-    albumId,
+    albumNodeId: 'albumId',
   }
 
   return mediaItem;
@@ -112,13 +114,13 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     let metadataAlbumName: string = '';
     let googleAlbumId: string = '';
     if (importFromTakeout) {
-      const album: Album = await getAlbumById(albumId);
-      metadataAlbumName = album.albumName;
-      const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(request.body.googleAccessToken, album.albumName);
-      if (googleAlbums.length > 0) {
-        googleAlbumId = googleAlbums[0].id;
-        googleAlbumName = album.albumName;
-      }
+      // const album: Album = await getAlbumById(albumId);
+      // metadataAlbumName = album.albumName;
+      // const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(request.body.googleAccessToken, album.albumName);
+      // if (googleAlbums.length > 0) {
+      //   googleAlbumId = googleAlbums[0].id;
+      //   googleAlbumName = album.albumName;
+      // }
     }
 
     for (const fileName of fileNames) {

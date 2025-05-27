@@ -1,7 +1,7 @@
 // Run this in mongosh connected to the pgPhotos database
 
 // Set DRY_RUN to true for a safe test run (no DB writes)
-const DRY_RUN = true;
+const DRY_RUN = false;
 
 const albumsCollection = db.getCollection('albums');
 const mediaItemsCollection = db.getCollection('mediaitems');
@@ -52,7 +52,7 @@ mediaItemsCollection.find().forEach(mediaItem => {
   if (albumNodeId) {
     updatedCount++;
     if (DRY_RUN) {
-      if (sampleUpdates.length < 5) {
+      if (sampleUpdates.length < 5000) {
         sampleUpdates.push({
           _id: mediaItem._id,
           albumId: mediaItem.albumId,

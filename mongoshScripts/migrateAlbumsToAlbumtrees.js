@@ -1,4 +1,9 @@
+// Run this in mongosh connected to the pgPhotos database
+
 const { ObjectId } = require('mongodb');
+
+// Set DRY_RUN to true for a safe test run (no DB writes)
+const DRY_RUN = true;
 
 const dbName = 'pgPhotos';
 const albumsCollection = db.getCollection('albums');
@@ -30,24 +35,45 @@ const albumTreesDoc = {
   nodes: albumNodes
 };
 
-albumTreesCollection.deleteMany({}); // Clear any existing data just in case
-albumTreesCollection.insertOne(albumTreesDoc);
-print('Inserted albumtrees document with _id: "singleton".');
+if (DRY_RUN) {
+  print('--- DRY RUN: albumtrees document would be: ---');
+  printjson(albumTreesDoc);
+} else {
+  albumTreesCollection.deleteMany({});
+  albumTreesCollection.insertOne(albumTreesDoc);
+  print('Inserted albumtrees document with _id: "singleton".');
+}
 
 // 3️⃣ Update mediaitems with albumNodeId
 let updatedCount = 0;
+let sampleUpdates = [];
 
 mediaItemsCollection.find().forEach(mediaItem => {
   const albumId = mediaItem.albumId;
   const albumNodeId = albumIdToNodeId[albumId];
 
   if (albumNodeId) {
-    mediaItemsCollection.updateOne(
-      { _id: mediaItem._id },
-      { $set: { albumNodeId: albumNodeId } }
-    );
     updatedCount++;
+    if (DRY_RUN) {
+      if (sampleUpdates.length < 5) {
+        sampleUpdates.push({
+          _id: mediaItem._id,
+          albumId: mediaItem.albumId,
+          newAlbumNodeId: albumNodeId
+        });
+      }
+    } else {
+      mediaItemsCollection.updateOne(
+        { _id: mediaItem._id },
+        { $set: { albumNodeId: albumNodeId } }
+      );
+    }
   }
 });
 
-print(`Updated ${updatedCount} mediaitems with albumNodeId.`);
+if (DRY_RUN) {
+  print(`--- DRY RUN: ${updatedCount} mediaitems would be updated. Sample updates: ---`);
+  printjson(sampleUpdates);
+} else {
+  print(`Updated ${updatedCount} mediaitems with albumNodeId.`);
+}

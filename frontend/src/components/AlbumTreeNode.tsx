@@ -9,8 +9,8 @@ import {
 } from '@mui/material';
 
 import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { LeafAlbumNode } from '../types';
-import { getDisplayedAlbumNodeIds, getSelectedAlbumNodeIds } from '../selectors';
+import { LeafAlbumNode, StringToNumberLUT } from '../types';
+import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedAlbumNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
@@ -19,6 +19,7 @@ export interface AlbumTreeNodeProps {
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
   selectedNodeIds: Set<string>;
+  mediaItemCountByAlbumNode: StringToNumberLUT;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
 }
 
@@ -46,8 +47,11 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   };
 
   const getItemCount = (item: LeafAlbumNode): string => {
-    return '69';
-    // Placeholder - replace with actual logic if needed
+    if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
+      return '0';
+    }
+    const count = props.mediaItemCountByAlbumNode[item.id];
+    return count ? count.toString() : '0';
   };
 
   return (
@@ -79,6 +83,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
 const mapStateToProps = (state: any) => ({
   displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
   selectedNodeIds: getSelectedAlbumNodeIds(state),
+  mediaItemCountByAlbumNode: getMediaItemCountByAlbumNode(state),
 });
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>

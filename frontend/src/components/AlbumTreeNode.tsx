@@ -6,26 +6,28 @@ import {
   ListItemText,
   Checkbox,
   ListItemButton,
+  Typography,
 } from '@mui/material';
 
 import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { LeafAlbumNode } from '../types';
-import { getDisplayedAlbumNodeIds, getSelectedAlbumNodeIds } from '../selectors';
+import { AlbumNode, StringToNumberLUT } from '../types';
+import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedMediaContentNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
-  item: LeafAlbumNode;
+  item: AlbumNode;
   displayedAlbumNodeIds: string[];
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
   selectedNodeIds: Set<string>;
+  mediaItemCountByAlbumNode: StringToNumberLUT;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
 }
 
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
   const { item, displayedAlbumNodeIds, onSetDisplayedAlbumNodeIds, onReloadMediaItemsByViewSpec } = props;
 
-  const getItemLabel = (item: LeafAlbumNode) => item.name;
+  const getItemLabel = (item: AlbumNode) => item.name;
 
   const isChecked = displayedAlbumNodeIds.includes(item.id);
 
@@ -45,22 +47,38 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
     localStorage.setItem('displayedAlbumNodeIds', newDisplayedAlbumNodeIds.join(','));
   };
 
-  const getItemCount = (item: LeafAlbumNode): string => {
-    return '69';
-    // Placeholder - replace with actual logic if needed
+  const getItemCount = (): string => {
+    if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
+      return '0';
+    }
+    const count = props.mediaItemCountByAlbumNode[item.id];
+    return count ? count.toString() : '0';
+  };
+
+  const getListItemTextContent = () => {
+    const count: string = '(' + getItemCount() + ')';
+    const label: string = getItemLabel(item);
+
+    return (
+      <span style={{ display: 'flex', justifyContent: 'space-between', width: '154px' }}> {/* Adjust width as needed */}
+        <span style={{ textAlign: 'left' }}>{label}</span>
+        <span style={{ textAlign: 'right' }}>{count}</span>
+      </span>
+    );
   };
 
   return (
     <ListItemButton
       key={getItemLabel(item)}
-      sx={{ paddingLeft: '5px', paddingY: 0.2 }}
+      sx={{ paddingLeft: '0px' }}
     >
       <Checkbox
+        sx={{ paddingLeft: '0px' }}
         checked={isChecked}
         onChange={toggleSelection}
       />
       <ListItemText
-        primary={getItemLabel(item)}
+        primary={getListItemTextContent()}
         onClick={(e) => {
           const newSet = new Set(props.selectedNodeIds);
           if (newSet.has(props.item.id)) {
@@ -71,14 +89,14 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
           props.onSetSelectedNodeIds(newSet);
         }}
       />
-      <span>({getItemCount(item)})</span>
     </ListItemButton>
   );
 }
 
 const mapStateToProps = (state: any) => ({
   displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-  selectedNodeIds: getSelectedAlbumNodeIds(state),
+  selectedNodeIds: getSelectedMediaContentNodeIds(state),
+  mediaItemCountByAlbumNode: getMediaItemCountByAlbumNode(state),
 });
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>

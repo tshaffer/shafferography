@@ -2,7 +2,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil } from 'lodash';
 import mongoose from "mongoose";
 import {
-  getAlbumTreeModel,
+  getMediaContentTreeModel,
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
@@ -21,7 +21,7 @@ import {
   User,
   UndecidedGroup,
   StringToNumberLUT,
-  AlbumNode,
+  MediaContentNode,
   MediaItemCountByUndecidedGroupPerAlbumNode,
 } from '../types';
 import { Document } from 'mongoose';
@@ -725,22 +725,23 @@ export const getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb = async (): Pro
   return result;
 };
 
-export const getAlbumNodesFromDb = async (): Promise<AlbumNode[]> => {
+export const getMediaContentNodesFromDb = async (): Promise<MediaContentNode[]> => {
 
-  const albumTreeModel = getAlbumTreeModel();
+  const contentTreeModel = await getMediaContentTreeModel();
 
-  const albumNodes: AlbumNode[] = [];
-  const documents: any = await (albumTreeModel as any).find().exec();
+  const documents: any = await contentTreeModel.find().exec();
+
+  const mediaContentNodes: MediaContentNode[] = [];
   for (const document of documents) {
-    const albumNode: AlbumNode = document.toObject() as AlbumNode;
-    albumNodes.push(albumNode);
+    const mediaContentNode: MediaContentNode = document.toObject() as MediaContentNode;
+    mediaContentNodes.push(mediaContentNode);
   }
-  return albumNodes;
+  return mediaContentNodes;
 }
 
-export const saveAlbumTreeToDb = async (nodes: AlbumNode[]): Promise<void> => {
+export const saveAlbumTreeToDb = async (nodes: MediaContentNode[]): Promise<void> => {
 
-  const albumTreeModel = getAlbumTreeModel();
+  const albumTreeModel = await getMediaContentTreeModel();
 
   // Assuming you have a singleton document for the album tree
   await albumTreeModel.findByIdAndUpdate(
@@ -752,7 +753,7 @@ export const saveAlbumTreeToDb = async (nodes: AlbumNode[]): Promise<void> => {
 
 export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Promise<void> => {
 
-  const albumTreeModel = getAlbumTreeModel();
+  const albumTreeModel = await getMediaContentTreeModel();
 
   const treeDoc = await albumTreeModel.findOne(); // adjust if you support multi-user
   if (!treeDoc) return Promise.reject('Tree not found');
@@ -795,5 +796,4 @@ export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Pr
   if (!inserted) return Promise.reject('Node not found');
 
   await treeDoc.save();
-  return Promise.resolve();
 }

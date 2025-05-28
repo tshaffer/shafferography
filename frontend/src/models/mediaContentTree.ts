@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { AlbumNode, AlbumTreeState } from '../types';
+import { MediaContentNode, MediaContentTreeState, MediaContentNodeType } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 import { cloneDeep } from 'lodash';
 
@@ -8,11 +8,11 @@ import { cloneDeep } from 'lodash';
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
-export const MOVE_NODE_IN_TREE = 'MOVE_NODE_IN_TREE';
+export const MOVE_NODE = 'MOVE_NODE';
 export const DELETE_NODES = 'DELETE_NODES';
 export const RENAME_NODE = 'RENAME_NODE';
-export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
-export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
+export const SET_MEDIA_CONTENT_NODES = 'SET_MEDIA_CONTENT_NODES';
+export const SET_SELECTED_MEDIA_CONTENT_NODE_IDS = 'SET_SELECTED_MEDIA_CONTENT_NODE_IDS';
 
 // ------------------------------------
 // Actions
@@ -96,7 +96,7 @@ export const moveNodeInTreeRedux = (
   newParentId: string
 ): any => {
   return {
-    type: 'MOVE_NODE_IN_TREE',
+    type: 'MOVE_NODE',
     payload: {
       nodeId,
       newParentId,
@@ -105,15 +105,15 @@ export const moveNodeInTreeRedux = (
 };
 
 interface SetAlbumNodesPayload {
-  albumNodes: AlbumNode[];
+  albumNodes: MediaContentNode[];
 }
 
 export const setAlbumNodesRedux = (
-  albumNodes: AlbumNode[],
+  albumNodes: MediaContentNode[],
 ): any => {
   console.log('albums.ts: setAlbumNodesRedux', albumNodes);
   return {
-    type: SET_ALBUM_NODES,
+    type: SET_MEDIA_CONTENT_NODES,
     payload: {
       albumNodes
     }
@@ -127,7 +127,7 @@ export const setSelectedAlbumNodeIdsRedux = (
   selectedNodeIds: Set<string>
 ): any => {
   return {
-    type: SET_SELECTED_ALBUM_NODE_IDS,
+    type: SET_SELECTED_MEDIA_CONTENT_NODE_IDS,
     payload: {
       selectedNodeIds
     }
@@ -141,7 +141,7 @@ export const setSelectedAlbumNodeIdsRedux = (
 /**
  * Deep clone a tree of AlbumNode objects.
  */
-export const deepCloneTree = (nodes: AlbumNode[]): AlbumNode[] => {
+export const deepCloneTree = (nodes: MediaContentNode[]): MediaContentNode[] => {
   return nodes.map(node => {
     if (node.type === 'group') {
       return {
@@ -158,9 +158,9 @@ export const deepCloneTree = (nodes: AlbumNode[]): AlbumNode[] => {
  * Insert a new node under a parent by ID.
  */
 const insertNode = (
-  nodes: AlbumNode[],
+  nodes: MediaContentNode[],
   parentId: string | undefined,
-  newNode: AlbumNode
+  newNode: MediaContentNode
 ): boolean => {
   for (const node of nodes) {
     if (node.type === 'group' && node.id === parentId) {
@@ -176,15 +176,15 @@ const insertNode = (
 };
 
 export const moveNodeInTreeHelper = (
-  nodes: AlbumNode[],
+  nodes: MediaContentNode[],
   nodeId: string,
   newParentId: string
-): AlbumNode[] => {
+): MediaContentNode[] => {
   const sourceTree = deepCloneTree(nodes);
 
   const [movedNode, remainingTree] = (function findAndRemove(
-    nodes: AlbumNode[]
-  ): [AlbumNode | null, AlbumNode[]] {
+    nodes: MediaContentNode[]
+  ): [MediaContentNode | null, MediaContentNode[]] {
     for (let i = 0; i < nodes.length; i++) {
       const node = nodes[i];
       if (node.id === nodeId) {
@@ -207,7 +207,7 @@ export const moveNodeInTreeHelper = (
   if (!movedNode) return nodes;
 
   const didInsert = (function insert(
-    nodes: AlbumNode[]
+    nodes: MediaContentNode[]
   ): boolean {
     for (const node of nodes) {
       if (node.type === 'group' && node.id === newParentId) {
@@ -228,18 +228,18 @@ export const moveNodeInTreeHelper = (
 // Reducer
 // ------------------------------------
 
-const initialState: AlbumTreeState =
+const initialState: MediaContentTreeState =
 {
   nodes: [],
-  selectedNodeIds:new Set(),
+  selectedNodeIds: new Set(),
 };
 
 export const albumTreeStateReducer = (
-  state: AlbumTreeState = initialState,
+  state: MediaContentTreeState = initialState,
   action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload & RenameNodePayload>
-): AlbumTreeState => {
+): MediaContentTreeState => {
   switch (action.type) {
-    case SET_ALBUM_NODES: {
+    case SET_MEDIA_CONTENT_NODES: {
       const { albumNodes } = action.payload;
       // Prevent duplicates
       const existingNodeIds = new Set(state.nodes.map(node => node.id));
@@ -250,10 +250,10 @@ export const albumTreeStateReducer = (
       };
     }
     case ADD_ALBUM_NODE: {
-      const newAlbum: AlbumNode = {
+      const newAlbum: MediaContentNode = {
         id: uuidv4(),
         name: action.payload.name,
-        type: 'album',
+        type: MediaContentNodeType.Album,
       };
       const newState = cloneDeep(state);
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
@@ -261,10 +261,10 @@ export const albumTreeStateReducer = (
       return newState;
     }
     case ADD_GROUP_NODE: {
-      const newGroup: AlbumNode = {
+      const newGroup: MediaContentNode = {
         id: uuidv4(),
         name: action.payload.name,
-        type: 'group',
+        type: MediaContentNodeType.Group,
         children: [],
       };
       const newState = cloneDeep(state);
@@ -272,7 +272,7 @@ export const albumTreeStateReducer = (
       if (!added) newState.nodes.push(newGroup);
       return newState;
     }
-    case MOVE_NODE_IN_TREE: {
+    case MOVE_NODE: {
       const { nodeId, newParentId } = action.payload;
       const newNodes = moveNodeInTreeHelper(state.nodes, nodeId, newParentId);
       return {
@@ -281,7 +281,7 @@ export const albumTreeStateReducer = (
       };
     }
     case RENAME_NODE: {
-      const rename = (nodes: AlbumNode[]): boolean => {
+      const rename = (nodes: MediaContentNode[]): boolean => {
         for (const node of nodes) {
           if (node.id === action.payload.nodeId) {
             node.name = action.payload.newName;
@@ -300,7 +300,7 @@ export const albumTreeStateReducer = (
     case DELETE_NODES: {
       const idsToDelete = new Set(action.payload.nodeIds);
 
-      const filterTree = (nodes: AlbumNode[]): AlbumNode[] => {
+      const filterTree = (nodes: MediaContentNode[]): MediaContentNode[] => {
         return nodes
           .filter(node => !idsToDelete.has(node.id))
           .map(node =>
@@ -315,7 +315,7 @@ export const albumTreeStateReducer = (
         nodes: filterTree(state.nodes),
       };
     }
-    case SET_SELECTED_ALBUM_NODE_IDS: {
+    case SET_SELECTED_MEDIA_CONTENT_NODE_IDS: {
       return {
         ...state,
         selectedNodeIds: action.payload.selectedNodeIds,

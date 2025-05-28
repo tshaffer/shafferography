@@ -3,7 +3,7 @@ import {
   GoogleUserProfile,
   MediaItem,
   UndecidedGroup,
-  AlbumNode,
+  MediaContentNode,
   MediaItemCountByPhotoStateByAlbumNodeId,
   MediaItemCountByUndecidedGroupPerAlbumNode
 } from './entities';
@@ -18,8 +18,7 @@ import {
 } from './enums';
 
 export interface TedTaggerState {
-  // albumsState: AlbumsState;
-  albumTreeState: AlbumTreeState;
+  mediaContentTreeState: MediaContentTreeState;
   appState: AppState;
   keywordsState: KeywordsState;
   mediaItemsCountState: MediaItemsCountState;
@@ -30,8 +29,8 @@ export interface TedTaggerState {
   undecidedGroupsState: UndecidedGroupsState;
 }
 
-export interface AlbumTreeState {
-  nodes: AlbumNode[];
+export interface MediaContentTreeState {
+  nodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
 }
 

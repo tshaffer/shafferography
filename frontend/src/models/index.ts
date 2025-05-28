@@ -8,6 +8,6 @@ export * from './keywords';
 export * from './searchUI';
 export * from './photoViewSpec';
 export * from './undecidedGroups';
-export * from './albumTree';
+export * from './mediaContentTree';
 
 

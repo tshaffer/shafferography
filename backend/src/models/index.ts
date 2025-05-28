@@ -1,4 +1,4 @@
-export * from './AlbumTree';
+export * from './MediaContentTree';
 export * from './Keyword';
 export * from './KeywordNode';
 export * from './KeywordTree';

@@ -1,5 +1,5 @@
 import { StringToNumberLUT } from "baseTypes";
-import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState } from "enums";
+import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "enums";
 
 export interface GeoData {
   latitude: number;
@@ -124,23 +124,22 @@ export interface MediaItemCounts {
   mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[];
 }
 
-export type AlbumNode = GroupNode | LeafAlbumNode;
+export type MediaContentNode = GroupNode | AlbumNode;
 
 export interface GroupNode {
   id: string;
   name: string;
-  type: 'group';
-  children: AlbumNode[];
+  type: MediaContentNodeType.Group;
+  children: MediaContentNode[];
 }
 
-export interface LeafAlbumNode {
+export interface AlbumNode {
   id: string;
   name: string;
-  type: 'album';
-  mediaCount: number;
+  type: MediaContentNodeType.Album;
 }
 
-export interface AlbumTree {
+export interface MediaContentTree {
   // _id: string;
-  nodes: AlbumNode[];
+  nodes: MediaContentNode[];
 }

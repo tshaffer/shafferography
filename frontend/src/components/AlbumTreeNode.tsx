@@ -6,6 +6,7 @@ import {
   ListItemText,
   Checkbox,
   ListItemButton,
+  Typography,
 } from '@mui/material';
 
 import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
@@ -57,9 +58,10 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
   return (
     <ListItemButton
       key={getItemLabel(item)}
-      sx={{ paddingLeft: '5px', paddingY: 0.2 }}
+      sx={{ paddingLeft: '0px' }}
     >
       <Checkbox
+        sx={{ paddingLeft: '0px' }}
         checked={isChecked}
         onChange={toggleSelection}
       />
@@ -75,7 +77,9 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
           props.onSetSelectedNodeIds(newSet);
         }}
       />
-      <span>({getItemCount(item)})</span>
+      <Typography variant="body2" component="span">
+        ({getItemCount(item)})
+      </Typography>
     </ListItemButton>
   );
 }

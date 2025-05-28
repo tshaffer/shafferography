@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { styled } from '@mui/material/styles';
 import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import { ExpandMore, ChevronRight } from '@mui/icons-material';
 import { SvgIconProps } from '@mui/material/SvgIcon';
@@ -116,9 +117,30 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     return null;
   };
 
+  const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
+    '& .MuiTreeItem-content': {
+      paddingLeft: '2px !important',
+      paddingTop: '0px !important',
+      paddingBottom: '0px !important',
+      paddingRight: '0px !important',
+      marginLeft: '0px !important',
+      gap: 0,
+    },
+    '& .MuiTreeItem-label': {
+      lineHeight: 0.5,
+    },
+    '& .MuiTreeItem-iconContainer': {
+      marginLeft: 0,
+      marginRight: 0,
+    },
+    '& [style*="--TreeView-itemDepth"]': {
+      '--TreeView-itemDepth': '0 !important',
+    },
+  }));
+
   const renderTree = (node: MediaContentNode): React.ReactNode => {
     return (
-      <TreeItem
+      <CustomTreeItem
         key={node.id}
         itemId={node.id}
         label={
@@ -130,14 +152,13 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
               setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
             }}
             onClick={(e) => {
-              e.stopPropagation(); // Prevent expand/collapse when clicking label
+              e.stopPropagation();
             }}
             style={{
               cursor: 'pointer',
               backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
               border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
               borderRadius: 8,
-              padding: '4px 8px',
               fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
               color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
               boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
@@ -149,7 +170,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         }
       >
         {node.type === 'group' && node.children.map(renderTree)}
-      </TreeItem>
+      </CustomTreeItem>
     );
   };
 
@@ -225,6 +246,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         </MenuItem>
       </Menu>
       <SimpleTreeView
+        id='mediaContentTreeView'
         onSelectedItemsChange={(event, id) => {
           setSelectedId(id ?? null);
         }}

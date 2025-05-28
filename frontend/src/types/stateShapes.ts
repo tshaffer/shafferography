@@ -3,7 +3,7 @@ import {
   GoogleUserProfile,
   MediaItem,
   UndecidedGroup,
-  AlbumNode,
+  MediaContentNode,
   MediaItemCountByPhotoStateByAlbumNodeId,
   MediaItemCountByUndecidedGroupPerAlbumNode
 } from './entities';
@@ -31,7 +31,7 @@ export interface TedTaggerState {
 }
 
 export interface AlbumTreeState {
-  nodes: AlbumNode[];
+  nodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
 }
 

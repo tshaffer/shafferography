@@ -1,9 +1,9 @@
 import {
-  AlbumNode,
+  MediaContentNode,
   TedTaggerState
 } from '../types';
 
-export const getAlbumTree = (state: TedTaggerState): AlbumNode[] => {
+export const getAlbumTree = (state: TedTaggerState): MediaContentNode[] => {
   return state.albumTreeState.nodes;
 };
 

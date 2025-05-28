@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { AlbumNode, GroupNode, LeafAlbumNode } from '../types';
+import { MediaContentNode, GroupNode, AlbumNode } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
@@ -24,7 +24,7 @@ import GroupTreeNode from './GroupTreeNode';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 
 interface AlbumTreeViewProps {
-  nodes: AlbumNode[];
+  nodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (name: string, parentId?: string) => void;
@@ -53,12 +53,12 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
 
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
-  const [contextMenuNode, setContextMenuNode] = useState<AlbumNode | null>(null);
+  const [contextMenuNode, setContextMenuNode] = useState<MediaContentNode | null>(null);
 
-  const getAllGroupNodes = (nodes: AlbumNode[]): AlbumNode[] => {
-    const result: AlbumNode[] = [];
+  const getAllGroupNodes = (nodes: MediaContentNode[]): MediaContentNode[] => {
+    const result: MediaContentNode[] = [];
 
-    const traverse = (nodeList: AlbumNode[]) => {
+    const traverse = (nodeList: MediaContentNode[]) => {
       for (const node of nodeList) {
         if (node.type === 'group') {
           result.push(node);
@@ -95,7 +95,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     }
   };
 
-  const getAlbumNodeJsx = (node: LeafAlbumNode): JSX.Element => {
+  const getAlbumNodeJsx = (node: AlbumNode): JSX.Element => {
     return (
       <AlbumTreeNode item={node} />
     );
@@ -107,16 +107,16 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     );
   };
 
-  const getNodeLabel = (node: AlbumNode): JSX.Element | null => {
+  const getNodeLabel = (node: MediaContentNode): JSX.Element | null => {
     if (node.type === 'group') {
       return getGroupNodeJsx(node as GroupNode);
     } else if (node.type === 'album') {
-      return getAlbumNodeJsx(node as LeafAlbumNode);
+      return getAlbumNodeJsx(node as AlbumNode);
     }
     return null;
   };
 
-  const renderTree = (node: AlbumNode): React.ReactNode => {
+  const renderTree = (node: MediaContentNode): React.ReactNode => {
     return (
       <TreeItem
         key={node.id}
@@ -153,7 +153,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
     );
   };
 
-  const findNodeById = (nodes: AlbumNode[], id: string): AlbumNode | null => {
+  const findNodeById = (nodes: MediaContentNode[], id: string): MediaContentNode | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
       if (node.type === 'group') {

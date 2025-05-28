@@ -14,7 +14,7 @@ import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
 import { addGroupToTree, deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
-import { AlbumNode, MediaItemCountByPhotoStateByAlbumNodeId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
+import { MediaContentNode, MediaItemCountByPhotoStateByAlbumNodeId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
 import { setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
 import { getDisplayedAlbumNodeIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getUndecidedGroups, getMediaItemCountByAlbumNode, getMediaItemCountByPhotoStateByAlbumNodeId, getAlbumTree } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
@@ -43,7 +43,7 @@ export interface SidebarDerivedStateProps {
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];
   displayedUndecidedGroups: UndecidedGroup[];
-  albumNodes: AlbumNode[];
+  albumNodes: MediaContentNode[];
   undecidedGroups: UndecidedGroup[];
   mediaItemCountByAlbumNode: StringToNumberLUT;
   mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId;
@@ -79,14 +79,14 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     mouseY: number;
   } | null>(null);
 
-  const getAlbumNodeById = (albumNodeId: string): AlbumNode | undefined => {
-    return props.albumNodes.find((albumNode: AlbumNode) => albumNode.id === albumNodeId);
+  const getAlbumNodeById = (albumNodeId: string): MediaContentNode | undefined => {
+    return props.albumNodes.find((albumNode: MediaContentNode) => albumNode.id === albumNodeId);
   }
 
   const getUndecidedGroupName = (albumNodeIds: string[]): string => {
     const names = albumNodeIds
       .map(id => getAlbumNodeById(id))
-      .filter((album): album is AlbumNode => album !== undefined)
+      .filter((album): album is MediaContentNode => album !== undefined)
       .map(album => album.name);
 
     return `${names.join('_')}`;
@@ -163,7 +163,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 
-  const getItemCountByAlbumNode = (item: AlbumNode): string => {
+  const getItemCountByAlbumNode = (item: MediaContentNode): string => {
     if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
       return '0';
     }
@@ -239,27 +239,27 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
             </Box>
           )}
         </Box>
-      <Dialog open={addGroupDialogOpen} onClose={() => setAddGroupDialogOpen(false)}>
-        <DialogTitle>Add New Group</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            fullWidth
-            label="Group Name"
-            value={newGroupName}
-            onChange={(e) => setNewGroupName(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setAddGroupDialogOpen(false)}>Cancel</Button>
-          <Button
-            onClick={handleAddGroup}
-            disabled={!newGroupName.trim()}
-          >
-            Add
-          </Button>
-        </DialogActions>
-      </Dialog>
+        <Dialog open={addGroupDialogOpen} onClose={() => setAddGroupDialogOpen(false)}>
+          <DialogTitle>Add New Group</DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              fullWidth
+              label="Group Name"
+              value={newGroupName}
+              onChange={(e) => setNewGroupName(e.target.value)}
+            />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={() => setAddGroupDialogOpen(false)}>Cancel</Button>
+            <Button
+              onClick={handleAddGroup}
+              disabled={!newGroupName.trim()}
+            >
+              Add
+            </Button>
+          </DialogActions>
+        </Dialog>
       </React.Fragment>
     )
   }

@@ -9,12 +9,12 @@ import {
 } from '@mui/material';
 
 import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { LeafAlbumNode, StringToNumberLUT } from '../types';
+import { AlbumNode, StringToNumberLUT } from '../types';
 import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedAlbumNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
-  item: LeafAlbumNode;
+  item: AlbumNode;
   displayedAlbumNodeIds: string[];
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
@@ -26,7 +26,7 @@ export interface AlbumTreeNodeProps {
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
   const { item, displayedAlbumNodeIds, onSetDisplayedAlbumNodeIds, onReloadMediaItemsByViewSpec } = props;
 
-  const getItemLabel = (item: LeafAlbumNode) => item.name;
+  const getItemLabel = (item: AlbumNode) => item.name;
 
   const isChecked = displayedAlbumNodeIds.includes(item.id);
 
@@ -46,7 +46,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
     localStorage.setItem('displayedAlbumNodeIds', newDisplayedAlbumNodeIds.join(','));
   };
 
-  const getItemCount = (item: LeafAlbumNode): string => {
+  const getItemCount = (item: AlbumNode): string => {
     if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
       return '0';
     }

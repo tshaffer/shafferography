@@ -1,4 +1,4 @@
-export * from './albumTree';
+export * from './mediaContentTree';
 export * from './app';
 export * from './dbInterface';
 export * from './googlePhotos';

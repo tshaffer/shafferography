@@ -1,14 +1,14 @@
-import { AlbumNode } from 'entities';
+import { MediaContentNode } from 'entities';
 import { Request, Response } from 'express';
-import { getAlbumNodesFromDb, moveAlbumNodeInDb, saveAlbumTreeToDb } from './dbInterface';
+import { getMediaContentNodesFromDb, moveAlbumNodeInDb, saveAlbumTreeToDb } from './dbInterface';
 
 export const getAlbumNodes = async (request: Request, response: Response) => {
-  const albumNodes: AlbumNode[] = await getAlbumNodesFromDb();
+  const albumNodes: MediaContentNode[] = await getMediaContentNodesFromDb();
   response.json(albumNodes);
 }
 
 export const saveAlbumNodes = async (request: Request, response: Response) => {
-  const { nodes }: { nodes: AlbumNode[] } = request.body;
+  const { nodes }: { nodes: MediaContentNode[] } = request.body;
   await saveAlbumTreeToDb(nodes);
   response.sendStatus(204);
 };

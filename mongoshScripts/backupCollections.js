@@ -6,7 +6,7 @@ const collections = [
   "albumtrees",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-05-28-2";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-05-28-3";
 
 const fs = require("fs");
 

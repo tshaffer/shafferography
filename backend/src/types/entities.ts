@@ -124,23 +124,22 @@ export interface MediaItemCounts {
   mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[];
 }
 
-export type AlbumNode = GroupNode | LeafAlbumNode;
+export type MediaContentNode = GroupNode | AlbumNode;
 
 export interface GroupNode {
   id: string;
   name: string;
   type: 'group';
-  children: AlbumNode[];
+  children: MediaContentNode[];
 }
 
-export interface LeafAlbumNode {
+export interface AlbumNode {
   id: string;
   name: string;
   type: 'album';
-  mediaCount: number;
 }
 
-export interface AlbumTree {
+export interface MediaContentTree {
   // _id: string;
-  nodes: AlbumNode[];
+  nodes: MediaContentNode[];
 }

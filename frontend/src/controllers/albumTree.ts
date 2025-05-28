@@ -1,6 +1,6 @@
 import axios from 'axios';
 import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch } from '../models';
-import { serverUrl, apiUrlFragment, AlbumNode } from '../types';
+import { serverUrl, apiUrlFragment, MediaContentNode } from '../types';
 import { addAlbumToTreeRedux, addGroupToTreeRedux, deleteNodesRedux, moveNodeInTreeRedux, renameNodeRedux, setAlbumNodesRedux } from '../models/albumTree';
 import { getAlbumTree } from '../selectors';
 
@@ -9,7 +9,7 @@ export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
     const path = serverUrl + apiUrlFragment + 'album-tree';
     return axios.get(path)
       .then((response: any) => {
-        const albumNodes: AlbumNode[] = response.data[0].nodes;
+        const albumNodes: MediaContentNode[] = response.data[0].nodes;
         dispatch(setAlbumNodesRedux(albumNodes));
         return Promise.resolve();
       }).catch((error) => {
@@ -21,8 +21,8 @@ export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
 };
 
 const saveAlbumNodesToBackend = (state: any): Promise<string | void> => {
-  
-  const nodes: AlbumNode[] = getAlbumTree(state);
+
+  const nodes: MediaContentNode[] = getAlbumTree(state);
 
   const path = serverUrl + apiUrlFragment + 'album-tree';
   const nodesBody = {

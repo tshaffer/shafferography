@@ -15,7 +15,7 @@ import { bindActionCreators } from 'redux';
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 
 import { getAlbumTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
-import { AlbumNode, apiUrlFragment, FileToImport, serverUrl } from '../types';
+import { MediaContentNode, apiUrlFragment, FileToImport, serverUrl } from '../types';
 import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
@@ -28,7 +28,7 @@ export interface ImportFromDriveDialogPropsFromParent {
 export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFromParent {
   appInitialized: boolean;
   displayedAlbumNodeIds: string[];
-  albumNodes: AlbumNode[];
+  albumNodes: MediaContentNode[];
   onAddAlbumNode: (name: string, parentId?: string) => any;
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => any;
   onReloadMediaItemsByViewSpec: () => void;
@@ -84,10 +84,10 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     }
   };
 
-  const createAlbum = async (): Promise<AlbumNode | undefined> => {
+  const createAlbum = async (): Promise<MediaContentNode | undefined> => {
     if (!newAlbumName.trim()) return Promise.resolve(undefined);
 
-    const newAlbum: AlbumNode = {
+    const newAlbum: MediaContentNode = {
       id: uuidv4(),
       name: newAlbumName,
       type: 'album',
@@ -149,7 +149,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           setErrorMessage('AlbumNode already exists');
           return;
         }
-        const newAlbum: AlbumNode | undefined = await createAlbum();
+        const newAlbum: MediaContentNode | undefined = await createAlbum();
         if (!newAlbum) return;
         albumNodeId = newAlbum.id;
       } else if (!albumNodeId) {

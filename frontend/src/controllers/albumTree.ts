@@ -48,31 +48,9 @@ export const addGroupToTree = (name: string, parentId?: string): TedTaggerAnyPro
 
 export const addAlbumToTree = (name: string, parentId?: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-
     debugger;
-    
     dispatch(addAlbumToTreeRedux(name, parentId));
     return Promise.resolve();
-
-    //   const path = serverUrl + apiUrlFragment + 'album-tree';
-    //   const album: AlbumNode = {
-    //     id: '',
-    //     name: name,
-    //     parentId: parentId,
-    //     children: [],
-    //     isExpanded: false,
-    //     isSelected: false,
-    //   };
-    //   return axios.post(path, album)
-    //     .then((response: any) => {
-    //       dispatch(addAlbumToTreeRedux(name, parentId));
-    //       return Promise.resolve();
-    //     }).catch((error) => {
-    //       console.log('error');
-    //       console.log(error);
-    //       return '';
-    //     });
-    // };
   }
 };
 

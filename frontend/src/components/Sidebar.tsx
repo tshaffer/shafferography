@@ -229,7 +229,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
           >
             Add Group
           </MenuItem>
-          <MenuItem onClick={() => handleMenuAction('AddGroup')}>Add Group Placeholder</MenuItem>
         </Menu>
         <Box>
           {props.albumNodes.length === 0 ? (

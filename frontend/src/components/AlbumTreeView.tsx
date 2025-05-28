@@ -172,21 +172,23 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             : undefined
         }
       >
-        {contextMenuNode && contextMenuNode.type === 'group' && <MenuItem
+        <MenuItem
           onClick={() => {
             setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
             // setAddDialogOpen(true);
             // setContextMenuPosition(null);
           }}
+          disabled={contextMenuNode?.type !== 'group'}
         >
           Import Album
-        </MenuItem>}
+        </MenuItem>
         <MenuItem
           onClick={() => {
             setAddGroupDialogOpen(true);
             setContextMenuPosition(null);
           }}
+          disabled={contextMenuNode?.type !== 'group'}
         >
           Add Group
         </MenuItem>
@@ -195,6 +197,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             setMoveDialogOpen(true);
             setContextMenuPosition(null);
           }}
+          disabled={props.selectedNodeIds.size === 0}
         >
           Move To...
         </MenuItem>
@@ -203,6 +206,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             setRenameDialogOpen(true);
             setContextMenuPosition(null);
           }}
+          disabled={props.selectedNodeIds.size !== 1}
         >
           Rename
         </MenuItem>
@@ -211,6 +215,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             props.onDeleteNodes(Array.from(props.selectedNodeIds));
             setContextMenuPosition(null);
           }}
+          disabled={props.selectedNodeIds.size === 0}
         >
           Delete
         </MenuItem>
@@ -231,7 +236,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
         open={importFromDriveDialogOpen}
         onClose={() => setImportFromDriveDialogOpen(false)}
       />
-      
+
       <Dialog open={addDialogOpen} onClose={() => setAddDialogOpen(false)}>
         <DialogTitle>Add New Album</DialogTitle>
         <DialogContent>

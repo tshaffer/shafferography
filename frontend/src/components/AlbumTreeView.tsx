@@ -135,9 +135,13 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
             style={{
               cursor: 'pointer',
               backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
-              borderRadius: 4,
-              padding: '2px 6px',
-              display: 'inline-block'
+              border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
+              borderRadius: 8,
+              padding: '4px 8px',
+              fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
+              color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
+              boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+              display: 'inline-block',
             }}
           >
             {getNodeLabel(node)}

@@ -1,7 +1,7 @@
-import React from "react";
+import React, { useState } from "react";
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { List, ListItemText, Divider, Typography, Box, Drawer, IconButton, styled, ListItemButton, Checkbox, FormControlLabel } from "@mui/material";
+import { List, ListItemText, Divider, Typography, Box, Drawer, IconButton, styled, ListItemButton, Checkbox, FormControlLabel, Menu, MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 // import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -12,7 +12,7 @@ import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 import MergePeopleDialog from './MergePeopleDialog';
 import RetrievePeopleDialog from "./RetrievePeopleDialog";
-import { deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
+import { addGroupToTree, deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrieved, mergePeopleTakeout, reloadMediaItemsByViewSpec, setPhotoState } from "../controllers";
 import CheckboxListSelector from "./CheckboxListSelector";
 import { AlbumNode, MediaItemCountByPhotoStateByAlbumNodeId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
 import { setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
@@ -56,7 +56,9 @@ export interface SidebarDerivedActionCreatorProps {
   onSetGroupUndecidedPhotos: (groupUndecidedPhotos: boolean) => void;
   onSetDisplayedUndecidedGroupIds: (displayedUndecidedGroupIds: string[]) => void;
   onDeleteUndecidedGroup: (undecidedGroupId: string) => void;
+  onAddGroupToTree: (name: string, parentId?: string) => void;
 }
+
 export interface SidebarProps extends SidebarDerivedStateProps, SidebarDerivedActionCreatorProps, SidebarPropsFromParent { }
 
 const Sidebar: React.FC<any> = (props: SidebarProps) => {
@@ -68,6 +70,14 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
   const [mergingPeople, setMergingPeople] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
+
+  const [addGroupDialogOpen, setAddGroupDialogOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+
+  const [contextMenu, setContextMenu] = useState<{
+    mouseX: number;
+    mouseY: number;
+  } | null>(null);
 
   const getAlbumNodeById = (albumNodeId: string): AlbumNode | undefined => {
     return props.albumNodes.find((albumNode: AlbumNode) => albumNode.id === albumNodeId);
@@ -96,6 +106,13 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     }
 
     return groupedUndecidedGroups;
+  };
+
+  const handleAddGroup = () => {
+    if (!newGroupName.trim()) return;
+    props.onAddGroupToTree(newGroupName, undefined);
+    setNewGroupName('');
+    setAddGroupDialogOpen(false);
   };
 
   const handleRetrievePeople = async () => {
@@ -162,10 +179,59 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     return itemCount.toString();
   }
 
+  const handleContextMenu = (event: React.MouseEvent) => {
+    event.preventDefault();
+    setContextMenu(
+      contextMenu === null
+        ? {
+          mouseX: event.clientX - 2,
+          mouseY: event.clientY - 4,
+        }
+        : // Close the menu if it's already open
+        null,
+    );
+  };
+
+  const handleClose = () => {
+    setContextMenu(null);
+  };
+
+  const handleMenuAction = (action: string) => {
+    console.log(`Action selected: ${action}`);
+    handleClose();
+  };
+
   const renderAlbumTreeView = () => {
     return (
       <React.Fragment>
         <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Album Tree View</Typography>
+        <Typography
+          variant="subtitle1"
+          sx={{ px: 2, mt: 2 }}
+          onContextMenu={handleContextMenu}
+        >
+          Album Tree View
+        </Typography>
+        <Menu
+          open={contextMenu !== null}
+          onClose={handleClose}
+          anchorReference="anchorPosition"
+          anchorPosition={
+            contextMenu !== null
+              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
+              : undefined
+          }
+        >
+          <MenuItem
+            onClick={() => {
+              setAddGroupDialogOpen(true);
+              setContextMenu(null);
+            }}
+          >
+            Add Group
+          </MenuItem>
+          <MenuItem onClick={() => handleMenuAction('AddGroup')}>Add Group Placeholder</MenuItem>
+        </Menu>
         <Box>
           {props.albumNodes.length === 0 ? (
             <Typography variant="body2">No Albums Available</Typography>
@@ -175,6 +241,27 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
             </Box>
           )}
         </Box>
+      <Dialog open={addGroupDialogOpen} onClose={() => setAddGroupDialogOpen(false)}>
+        <DialogTitle>Add New Group</DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            fullWidth
+            label="Group Name"
+            value={newGroupName}
+            onChange={(e) => setNewGroupName(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setAddGroupDialogOpen(false)}>Cancel</Button>
+          <Button
+            onClick={handleAddGroup}
+            disabled={!newGroupName.trim()}
+          >
+            Add
+          </Button>
+        </DialogActions>
+      </Dialog>
       </React.Fragment>
     )
   }
@@ -302,7 +389,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
           <Divider sx={{ my: 2 }} />
 
           {renderAlbumTreeView()}
-          
+
           {renderPhotoStatesToDisplayChooser()}
         </List>
 
@@ -343,6 +430,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetDisplayedUndecidedGroupIds: setDisplayedUndecidedGroupIds,
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onDeleteUndecidedGroup: deleteUndecidedGroup,
+    onAddGroupToTree: addGroupToTree,
   }, dispatch);
 };
 

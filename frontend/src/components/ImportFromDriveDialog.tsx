@@ -15,7 +15,7 @@ import { bindActionCreators } from 'redux';
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 
 import { getAlbumTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
-import { MediaContentNode, apiUrlFragment, FileToImport, serverUrl } from '../types';
+import { MediaContentNode, apiUrlFragment, FileToImport, serverUrl, MediaContentNodeType } from '../types';
 import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
@@ -90,7 +90,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     const newAlbum: MediaContentNode = {
       id: uuidv4(),
       name: newAlbumName,
-      type: 'album',
+      type: MediaContentNodeType.Album,
     };
 
     return props.onAddAlbumNode(newAlbumName).then(() => {

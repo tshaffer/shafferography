@@ -1,4 +1,4 @@
-import { PhotoState } from "./enums";
+import { MediaContentNodeType, PhotoState } from "./enums";
 
 export interface GeoData {
   latitude: number;
@@ -145,14 +145,14 @@ export type MediaContentNode = GroupNode | AlbumNode;
 export interface GroupNode {
   id: string;
   name: string;
-  type: 'group';
+  type: MediaContentNodeType.Group;
   children: MediaContentNode[];
 }
 
 export interface AlbumNode {
   id: string;
   name: string;
-  type: 'album';
+  type: MediaContentNodeType.Album;
 }
 
 export interface MediaContentTree {

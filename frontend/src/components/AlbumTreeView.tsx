@@ -16,7 +16,7 @@ import {
   MenuItem,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
-import { MediaContentNode, GroupNode, AlbumNode } from '../types';
+import { MediaContentNode, GroupNode, AlbumNode, MediaContentNodeType } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
 import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
@@ -108,9 +108,9 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
   };
 
   const getNodeLabel = (node: MediaContentNode): JSX.Element | null => {
-    if (node.type === 'group') {
+    if (node.type === MediaContentNodeType.Group) {
       return getGroupNodeJsx(node as GroupNode);
-    } else if (node.type === 'album') {
+    } else if (node.type === MediaContentNodeType.Album) {
       return getAlbumNodeJsx(node as AlbumNode);
     }
     return null;

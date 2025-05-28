@@ -27,3 +27,8 @@ export enum PhotoState {
   Uploaded = 'uploaded',
   Deleted='deleted',
 }
+
+export enum MediaContentNodeType {
+  Album = 'album',
+  Group = 'group',
+}

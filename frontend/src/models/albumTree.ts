@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { MediaContentNode, AlbumTreeState } from '../types';
+import { MediaContentNode, AlbumTreeState, MediaContentNodeType } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 import { cloneDeep } from 'lodash';
 
@@ -253,7 +253,7 @@ export const albumTreeStateReducer = (
       const newAlbum: MediaContentNode = {
         id: uuidv4(),
         name: action.payload.name,
-        type: 'album',
+        type: MediaContentNodeType.Album,
       };
       const newState = cloneDeep(state);
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
@@ -264,7 +264,7 @@ export const albumTreeStateReducer = (
       const newGroup: MediaContentNode = {
         id: uuidv4(),
         name: action.payload.name,
-        type: 'group',
+        type: MediaContentNodeType.Group,
         children: [],
       };
       const newState = cloneDeep(state);

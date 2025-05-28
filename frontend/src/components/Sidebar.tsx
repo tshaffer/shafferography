@@ -204,7 +204,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
   const renderAlbumTreeView = () => {
     return (
       <React.Fragment>
-        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>Album Tree View</Typography>
         <Typography
           variant="subtitle1"
           sx={{ px: 2, mt: 2 }}

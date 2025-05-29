@@ -287,7 +287,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     <React.Fragment>
       <Typography
         variant="subtitle1"
-        sx={{ px: 2, mt: 2 }}
+        sx={{ px: 2, mt: 2, fontWeight: 'bold' }}
         onContextMenu={(e) => {
           e.preventDefault();
           setContextMenuNodeId(null);
@@ -295,7 +295,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
           setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
         }}
       >
-        Album Tree View
+        Photos
       </Typography>
       <Box>
         {props.mediaContentNodes.length === 0 ? (

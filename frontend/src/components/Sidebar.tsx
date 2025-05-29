@@ -167,7 +167,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
     return (
       <React.Fragment>
-        <Typography variant="subtitle1" sx={{ px: 2, mt: 2 }}>
+        <Typography variant="subtitle1" sx={{ px: 2, mt: 2, fontWeight: 'bold' }}>
           Photo States
         </Typography>
 

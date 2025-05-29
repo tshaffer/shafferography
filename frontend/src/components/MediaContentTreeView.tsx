@@ -15,6 +15,8 @@ import {
   Button,
   Menu,
   MenuItem,
+  Box,
+  ButtonGroup,
 } from '@mui/material';
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { MediaContentNode, GroupNode, AlbumNode, MediaContentNodeType } from '../types';
@@ -200,6 +202,17 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
   return (
     <>
+      <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '10px', marginBottom: 0, marginTop: 1 }}>
+        <ButtonGroup size="small">
+          <Button
+            variant="outlined"
+            disabled={props.selectedNodeIds.size === 0}
+            onClick={() => props.onSetSelectedNodeIds(new Set())}
+          >
+            Deselect All
+          </Button>
+        </ButtonGroup>
+      </Box>
       <Menu
         open={!!contextMenuPosition}
         onClose={() => setContextMenuPosition(null)}

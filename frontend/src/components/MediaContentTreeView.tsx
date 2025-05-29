@@ -165,7 +165,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
   const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
     '& .MuiTreeItem-content': {
-      paddingLeft: '2px !important',
       paddingTop: '0px !important',
       paddingBottom: '0px !important',
       paddingRight: '0px !important',
@@ -178,9 +177,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     '& .MuiTreeItem-iconContainer': {
       marginLeft: 0,
       marginRight: 0,
-    },
-    '& [style*="--TreeView-itemDepth"]': {
-      '--TreeView-itemDepth': '0 !important',
     },
   }));
 

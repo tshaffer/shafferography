@@ -169,7 +169,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
           </span>
         }
       >
-        {node.type === 'group' && node.children.map(renderTree)}
+        {node.type === 'group' && sortNodes(node.children).map(renderTree)}
       </CustomTreeItem>
     );
   };
@@ -183,6 +183,19 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
       }
     }
     return null;
+  };
+
+  const sortNodes = (nodes: MediaContentNode[]): MediaContentNode[] => {
+    return nodes
+      .slice() // avoid mutating original array
+      .sort((a, b) => {
+        // Sort by type: groups before albums
+        if (a.type === 'group' && b.type !== 'group') return -1;
+        if (a.type !== 'group' && b.type === 'group') return 1;
+
+        // Both are groups or both are albums: sort by name (case-insensitive)
+        return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
+      });
   };
 
   return (
@@ -255,7 +268,7 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
           collapseIcon: ExpandMore as React.ComponentType<SvgIconProps>,
         }}
       >
-        {props.nodes.map(renderTree)}
+        {sortNodes(props.nodes).map(renderTree)}
       </SimpleTreeView>
 
       <ImportFromDriveDialog

@@ -47,12 +47,24 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
     localStorage.setItem('displayedAlbumNodeIds', newDisplayedAlbumNodeIds.join(','));
   };
 
-  const getItemCount = (item: AlbumNode): string => {
+  const getItemCount = (): string => {
     if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
       return '0';
     }
     const count = props.mediaItemCountByAlbumNode[item.id];
     return count ? count.toString() : '0';
+  };
+
+  const getListItemTextContent = () => {
+    const count: string = '(' + getItemCount() + ')';
+    const label: string = getItemLabel(item);
+
+    return (
+      <span style={{ display: 'flex', justifyContent: 'space-between', width: '154px' }}> {/* Adjust width as needed */}
+        <span style={{ textAlign: 'left' }}>{label}</span>
+        <span style={{ textAlign: 'right' }}>{count}</span>
+      </span>
+    );
   };
 
   return (
@@ -66,7 +78,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
         onChange={toggleSelection}
       />
       <ListItemText
-        primary={getItemLabel(item)}
+        primary={getListItemTextContent()}
         onClick={(e) => {
           const newSet = new Set(props.selectedNodeIds);
           if (newSet.has(props.item.id)) {
@@ -77,9 +89,6 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
           props.onSetSelectedNodeIds(newSet);
         }}
       />
-      <Typography variant="body2" component="span">
-        ({getItemCount(item)})
-      </Typography>
     </ListItemButton>
   );
 }

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { List, ListItemText, Divider, Typography, Box, Drawer, IconButton, styled, ListItemButton, Checkbox, FormControlLabel, Menu, MenuItem, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import { List, ListItemText, Divider, Typography, Box, Drawer, IconButton, styled, ListItemButton, Checkbox, FormControlLabel } from "@mui/material";
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 // import HourglassEmptyIcon from '@mui/icons-material/HourglassEmpty';
@@ -43,7 +43,7 @@ export interface SidebarDerivedStateProps {
   groupUndecidedPhotos: boolean;
   displayedUndecidedGroupIds: string[];
   displayedUndecidedGroups: UndecidedGroup[];
-  albumNodes: MediaContentNode[];
+  mediaContentNodes: MediaContentNode[];
   undecidedGroups: UndecidedGroup[];
   mediaItemCountByAlbumNode: StringToNumberLUT;
   mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId;
@@ -71,16 +71,8 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
   const [error, setError] = React.useState<string | null>(null);
   const [successMessage, setSuccessMessage] = React.useState<string | null>(null);
 
-  const [addGroupDialogOpen, setAddGroupDialogOpen] = useState(false);
-  const [newGroupName, setNewGroupName] = useState('');
-
-  const [contextMenu, setContextMenu] = useState<{
-    mouseX: number;
-    mouseY: number;
-  } | null>(null);
-
   const getAlbumNodeById = (albumNodeId: string): MediaContentNode | undefined => {
-    return props.albumNodes.find((albumNode: MediaContentNode) => albumNode.id === albumNodeId);
+    return props.mediaContentNodes.find((albumNode: MediaContentNode) => albumNode.id === albumNodeId);
   }
 
   const getUndecidedGroupName = (albumNodeIds: string[]): string => {
@@ -106,13 +98,6 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     }
 
     return groupedUndecidedGroups;
-  };
-
-  const handleAddGroup = () => {
-    if (!newGroupName.trim()) return;
-    props.onAddGroupToTree(newGroupName, undefined);
-    setNewGroupName('');
-    setAddGroupDialogOpen(false);
   };
 
   const handleRetrievePeople = async () => {
@@ -163,100 +148,12 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     props.onDeleteUndecidedGroup(undecidedGroup.id);
   }
 
-  const getItemCountByAlbumNode = (item: MediaContentNode): string => {
-    if (!props.mediaItemCountByAlbumNode || !props.mediaItemCountByAlbumNode[item.id]) {
-      return '0';
-    }
-    const count = props.mediaItemCountByAlbumNode[item.id];
-    return count ? count.toString() : '0';
-  };
-
   function getItemCountByPhotoStateByAlbumNodeId(item: PhotoStateOption): string {
     let itemCount = 0;
     for (const albumId of props.displayedAlbumNodeIds) {
       itemCount += props.mediaItemCountByPhotoStateByAlbumNodeId[albumId]?.[item.value] ?? 0;
     }
     return itemCount.toString();
-  }
-
-  const handleContextMenu = (event: React.MouseEvent) => {
-    event.preventDefault();
-    setContextMenu(
-      contextMenu === null
-        ? {
-          mouseX: event.clientX - 2,
-          mouseY: event.clientY - 4,
-        }
-        : // Close the menu if it's already open
-        null,
-    );
-  };
-
-  const handleClose = () => {
-    setContextMenu(null);
-  };
-
-  const renderMediaContentTreeView = () => {
-    return (
-      <React.Fragment>
-        <Typography
-          variant="subtitle1"
-          sx={{ px: 2, mt: 2 }}
-          onContextMenu={handleContextMenu}
-        >
-          Album Tree View
-        </Typography>
-        <Menu
-          open={contextMenu !== null}
-          onClose={handleClose}
-          anchorReference="anchorPosition"
-          anchorPosition={
-            contextMenu !== null
-              ? { top: contextMenu.mouseY, left: contextMenu.mouseX }
-              : undefined
-          }
-        >
-          <MenuItem
-            onClick={() => {
-              setAddGroupDialogOpen(true);
-              setContextMenu(null);
-            }}
-          >
-            Add Group
-          </MenuItem>
-        </Menu>
-        <Box>
-          {props.albumNodes.length === 0 ? (
-            <Typography variant="body2">No Albums Available</Typography>
-          ) : (
-            <Box>
-              <MediaContentTreeView />
-            </Box>
-          )}
-        </Box>
-        <Dialog open={addGroupDialogOpen} onClose={() => setAddGroupDialogOpen(false)}>
-          <DialogTitle>Add New Group</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              fullWidth
-              label="Group Name"
-              value={newGroupName}
-              onChange={(e) => setNewGroupName(e.target.value)}
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setAddGroupDialogOpen(false)}>Cancel</Button>
-            <Button
-              onClick={handleAddGroup}
-              disabled={!newGroupName.trim()}
-            >
-              Add
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </React.Fragment>
-    )
   }
 
   const renderPhotoStatesToDisplayChooser = () => {
@@ -381,7 +278,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
           <Divider sx={{ my: 2 }} />
 
-          {renderMediaContentTreeView()}
+          <MediaContentTreeView />
 
           {renderPhotoStatesToDisplayChooser()}
         </List>
@@ -402,7 +299,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
 function mapStateToProps(state: TedTaggerState): SidebarDerivedStateProps {
   return {
-    albumNodes: getMediaContentTree(state),
+    mediaContentNodes: getMediaContentTree(state),
     undecidedGroups: getUndecidedGroups(state),
     groupUndecidedPhotos: getGroupUndecidedPhotos(state),
     displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),

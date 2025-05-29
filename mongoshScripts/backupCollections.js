@@ -1,8 +1,8 @@
 use pgPhotos;
 
 const collections = [
-  "mediaitems",
-  "undecidedgroups",
+  // "mediaitems",
+  // "undecidedgroups",
   "albumtrees",
 ];
 

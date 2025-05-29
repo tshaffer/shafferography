@@ -14,7 +14,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import { bindActionCreators } from 'redux';
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 
-import { getAlbumTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
+import { getMediaContentTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
 import { MediaContentNode, apiUrlFragment, FileToImport, serverUrl, MediaContentNodeType } from '../types';
 import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
@@ -334,7 +334,7 @@ function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
     displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-    albumNodes: getAlbumTree(state),
+    albumNodes: getMediaContentTree(state),
   };
 }
 

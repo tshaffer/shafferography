@@ -1,4 +1,4 @@
-export * from './albumTree';
+export * from './mediaContentTree';
 export * from './appState';
 export * from './keywords';
 export * from './mediaItems';

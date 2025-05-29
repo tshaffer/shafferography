@@ -4,6 +4,6 @@ export * from './keywords';
 export * from './mergePeopleTakeout';
 export * from './surveyView';
 export * from './authenticate';
-export * from './albumTree';
+export * from './mediaContentTree';
 export * from './googleUploader';
 export * from './undecidedGroups';

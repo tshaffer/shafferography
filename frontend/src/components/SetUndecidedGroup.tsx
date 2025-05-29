@@ -7,7 +7,7 @@ import { TextField, Button, Collapse, List, ListItem, ListItemText, Popover, Lis
 
 import { addUndecidedGroup, assignMediaItemsToUndecidedGroup } from '../controllers';
 import { TedTaggerDispatch } from '../models';
-import { getSelectedMediaItemIds, getDisplayedAlbumNodeIds, getUndecidedGroups, getAlbumTree } from '../selectors';
+import { getSelectedMediaItemIds, getDisplayedAlbumNodeIds, getUndecidedGroups, getMediaContentTree } from '../selectors';
 import { MediaContentNode, PhotoState, TedTaggerState, UndecidedGroup } from '../types';
 import { ExpandLess, ExpandMore } from '@mui/icons-material';
 
@@ -176,7 +176,7 @@ function mapStateToProps(state: TedTaggerState): Partial<SetUndecidedGroupDerive
   return {
     selectedMediaItemIds: getSelectedMediaItemIds(state),
     displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-    albumNodes: getAlbumTree(state),
+    albumNodes: getMediaContentTree(state),
     undecidedGroups: getUndecidedGroups(state),
   };
 }

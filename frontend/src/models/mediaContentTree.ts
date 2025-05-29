@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from 'uuid';
-import { MediaContentNode, AlbumTreeState, MediaContentNodeType } from '../types';
+import { MediaContentNode, MediaContentTreeState, MediaContentNodeType } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 import { cloneDeep } from 'lodash';
 
@@ -8,11 +8,11 @@ import { cloneDeep } from 'lodash';
 // ------------------------------------
 export const ADD_ALBUM_NODE = 'ADD_ALBUM_NODE';
 export const ADD_GROUP_NODE = 'ADD_GROUP_NODE';
-export const MOVE_NODE_IN_TREE = 'MOVE_NODE_IN_TREE';
+export const MOVE_NODE = 'MOVE_NODE';
 export const DELETE_NODES = 'DELETE_NODES';
 export const RENAME_NODE = 'RENAME_NODE';
-export const SET_ALBUM_NODES = 'SET_ALBUM_NODES';
-export const SET_SELECTED_ALBUM_NODE_IDS = 'SET_SELECTED_ALBUM_NODE_IDS';
+export const SET_MEDIA_CONTENT_NODES = 'SET_MEDIA_CONTENT_NODES';
+export const SET_SELECTED_MEDIA_CONTENT_NODE_IDS = 'SET_SELECTED_MEDIA_CONTENT_NODE_IDS';
 
 // ------------------------------------
 // Actions
@@ -96,7 +96,7 @@ export const moveNodeInTreeRedux = (
   newParentId: string
 ): any => {
   return {
-    type: 'MOVE_NODE_IN_TREE',
+    type: 'MOVE_NODE',
     payload: {
       nodeId,
       newParentId,
@@ -113,7 +113,7 @@ export const setAlbumNodesRedux = (
 ): any => {
   console.log('albums.ts: setAlbumNodesRedux', albumNodes);
   return {
-    type: SET_ALBUM_NODES,
+    type: SET_MEDIA_CONTENT_NODES,
     payload: {
       albumNodes
     }
@@ -127,7 +127,7 @@ export const setSelectedAlbumNodeIdsRedux = (
   selectedNodeIds: Set<string>
 ): any => {
   return {
-    type: SET_SELECTED_ALBUM_NODE_IDS,
+    type: SET_SELECTED_MEDIA_CONTENT_NODE_IDS,
     payload: {
       selectedNodeIds
     }
@@ -228,18 +228,18 @@ export const moveNodeInTreeHelper = (
 // Reducer
 // ------------------------------------
 
-const initialState: AlbumTreeState =
+const initialState: MediaContentTreeState =
 {
   nodes: [],
   selectedNodeIds: new Set(),
 };
 
 export const albumTreeStateReducer = (
-  state: AlbumTreeState = initialState,
+  state: MediaContentTreeState = initialState,
   action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload & RenameNodePayload>
-): AlbumTreeState => {
+): MediaContentTreeState => {
   switch (action.type) {
-    case SET_ALBUM_NODES: {
+    case SET_MEDIA_CONTENT_NODES: {
       const { albumNodes } = action.payload;
       // Prevent duplicates
       const existingNodeIds = new Set(state.nodes.map(node => node.id));
@@ -272,7 +272,7 @@ export const albumTreeStateReducer = (
       if (!added) newState.nodes.push(newGroup);
       return newState;
     }
-    case MOVE_NODE_IN_TREE: {
+    case MOVE_NODE: {
       const { nodeId, newParentId } = action.payload;
       const newNodes = moveNodeInTreeHelper(state.nodes, nodeId, newParentId);
       return {
@@ -315,7 +315,7 @@ export const albumTreeStateReducer = (
         nodes: filterTree(state.nodes),
       };
     }
-    case SET_SELECTED_ALBUM_NODE_IDS: {
+    case SET_SELECTED_MEDIA_CONTENT_NODE_IDS: {
       return {
         ...state,
         selectedNodeIds: action.payload.selectedNodeIds,

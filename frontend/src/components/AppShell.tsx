@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadAlbumTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
+import { loadMediaItems, loadMediaContentTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
 import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
 import { MediaItem, PhotoLayout, PhotoState } from "../types";
@@ -333,7 +333,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     onLoadMediaItemCounts: loadMediaItemCounts,
     onLoadMediaItems: loadMediaItems,
-    onLoadAlbumTree: loadAlbumTree,
+    onLoadAlbumTree: loadMediaContentTree,
     onLoadUndecidedGroups: loadUndecidedGroups,
     onSetAppInitialized: setAppInitialized,
     onSetGoogleUserProfile: setGoogleUserProfile,

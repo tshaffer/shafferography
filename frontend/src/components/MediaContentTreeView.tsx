@@ -19,12 +19,12 @@ import {
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { MediaContentNode, GroupNode, AlbumNode, MediaContentNodeType } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
-import { getAlbumTree, getSelectedAlbumNodeIds } from '../selectors';
+import { getMediaContentTree, getSelectedMediaContentNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
 import GroupTreeNode from './GroupTreeNode';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 
-interface AlbumTreeViewProps {
+interface MediaContentTreeViewProps {
   nodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
@@ -35,7 +35,7 @@ interface AlbumTreeViewProps {
   onRenameNode: (nodeId: string, newName: string) => void;
 }
 
-function AlbumTreeView(props: AlbumTreeViewProps) {
+function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
@@ -382,8 +382,8 @@ function AlbumTreeView(props: AlbumTreeViewProps) {
 
 function mapStateToProps(state: any) {
   return {
-    nodes: getAlbumTree(state),
-    selectedNodeIds: getSelectedAlbumNodeIds(state),
+    nodes: getMediaContentTree(state),
+    selectedNodeIds: getSelectedMediaContentNodeIds(state),
   };
 }
 
@@ -398,4 +398,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   }, dispatch);
 };
 
-export default connect(mapStateToProps, mapDispatchToProps)(AlbumTreeView);
+export default connect(mapStateToProps, mapDispatchToProps)(MediaContentTreeView);

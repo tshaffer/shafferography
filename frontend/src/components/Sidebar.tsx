@@ -16,10 +16,10 @@ import { addGroupToTree, deleteUndecidedGroup, getAlbumNamesWherePeopleNotRetrie
 import CheckboxListSelector from "./CheckboxListSelector";
 import { MediaContentNode, MediaItemCountByPhotoStateByAlbumNodeId, PhotoState, PhotoStateOption, StringToNumberLUT, TedTaggerState, UndecidedGroup } from "../types";
 import { setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setDisplayedUndecidedGroupIds, setGroupUndecidedPhotos, TedTaggerDispatch } from "../models";
-import { getDisplayedAlbumNodeIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getUndecidedGroups, getMediaItemCountByAlbumNode, getMediaItemCountByPhotoStateByAlbumNodeId, getAlbumTree } from "../selectors";
+import { getDisplayedAlbumNodeIds, getDisplayedPhotoStates, getDisplayedUndecidedGroupIds, getDisplayedUndecidedGroups, getGroupUndecidedPhotos, getUndecidedGroups, getMediaItemCountByAlbumNode, getMediaItemCountByPhotoStateByAlbumNodeId, getMediaContentTree } from "../selectors";
 import AlbumExpandableList from "./AlbumExpandableList";
 import { photoStateOptions } from "../constants";
-import AlbumTreeView from "./AlbumTreeView";
+import MediaContentTreeView from "./MediaContentTreeView";
 
 const drawerWidth = 240;
 
@@ -196,12 +196,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
     setContextMenu(null);
   };
 
-  const handleMenuAction = (action: string) => {
-    console.log(`Action selected: ${action}`);
-    handleClose();
-  };
-
-  const renderAlbumTreeView = () => {
+  const renderMediaContentTreeView = () => {
     return (
       <React.Fragment>
         <Typography
@@ -235,7 +230,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
             <Typography variant="body2">No Albums Available</Typography>
           ) : (
             <Box>
-              <AlbumTreeView />
+              <MediaContentTreeView />
             </Box>
           )}
         </Box>
@@ -386,7 +381,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
           <Divider sx={{ my: 2 }} />
 
-          {renderAlbumTreeView()}
+          {renderMediaContentTreeView()}
 
           {renderPhotoStatesToDisplayChooser()}
         </List>
@@ -407,7 +402,7 @@ const Sidebar: React.FC<any> = (props: SidebarProps) => {
 
 function mapStateToProps(state: TedTaggerState): SidebarDerivedStateProps {
   return {
-    albumNodes: getAlbumTree(state),
+    albumNodes: getMediaContentTree(state),
     undecidedGroups: getUndecidedGroups(state),
     groupUndecidedPhotos: getGroupUndecidedPhotos(state),
     displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),

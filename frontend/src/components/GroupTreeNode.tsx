@@ -8,7 +8,7 @@ import {
 
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { GroupNode } from '../types';
-import { getSelectedAlbumNodeIds } from '../selectors';
+import { getSelectedMediaContentNodeIds } from '../selectors';
 
 export interface GroupTreeNodeProps {
   item: GroupNode;
@@ -44,7 +44,7 @@ function GroupTreeNode(props: GroupTreeNodeProps) {
 }
 
 const mapStateToProps = (state: any) => ({
-  selectedNodeIds: getSelectedAlbumNodeIds(state),
+  selectedNodeIds: getSelectedMediaContentNodeIds(state),
 });
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>

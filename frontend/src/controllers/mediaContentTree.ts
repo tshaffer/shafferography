@@ -1,10 +1,10 @@
 import axios from 'axios';
 import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch } from '../models';
 import { serverUrl, apiUrlFragment, MediaContentNode } from '../types';
-import { addAlbumToTreeRedux, addGroupToTreeRedux, deleteNodesRedux, moveNodeInTreeRedux, renameNodeRedux, setAlbumNodesRedux } from '../models/albumTree';
-import { getAlbumTree } from '../selectors';
+import { addAlbumToTreeRedux, addGroupToTreeRedux, deleteNodesRedux, moveNodeInTreeRedux, renameNodeRedux, setAlbumNodesRedux } from '../models/mediaContentTree';
+import { getMediaContentTree } from '../selectors';
 
-export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
+export const loadMediaContentTree = (): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
     const path = serverUrl + apiUrlFragment + 'album-tree';
     return axios.get(path)
@@ -20,9 +20,9 @@ export const loadAlbumTree = (): TedTaggerAnyPromiseThunkAction => {
   };
 };
 
-const saveAlbumNodesToBackend = (state: any): Promise<string | void> => {
+const saveMediaContentNodesToBackend = (state: any): Promise<string | void> => {
 
-  const nodes: MediaContentNode[] = getAlbumTree(state);
+  const nodes: MediaContentNode[] = getMediaContentTree(state);
 
   const path = serverUrl + apiUrlFragment + 'album-tree';
   const nodesBody = {
@@ -42,7 +42,7 @@ export const addGroupToTree = (name: string, parentId?: string): TedTaggerAnyPro
   return (dispatch: TedTaggerDispatch, getState: any) => {
     dispatch(addGroupToTreeRedux(name, parentId));
     const state = getState();
-    return saveAlbumNodesToBackend(state);
+    return saveMediaContentNodesToBackend(state);
   }
 };
 
@@ -58,7 +58,7 @@ export const moveNodeInTree = (nodeId: string, newParentId: string): TedTaggerAn
   return (dispatch: TedTaggerDispatch, getState: any) => {
     dispatch(moveNodeInTreeRedux(nodeId, newParentId));
     const state = getState();
-    return saveAlbumNodesToBackend(state);
+    return saveMediaContentNodesToBackend(state);
   }
 }
 
@@ -66,7 +66,7 @@ export const deleteNodes = (nodeIds: string[]): TedTaggerAnyPromiseThunkAction =
   return (dispatch: TedTaggerDispatch, getState: any) => {
     dispatch(deleteNodesRedux(nodeIds));
     const state = getState();
-    return saveAlbumNodesToBackend(state);
+    return saveMediaContentNodesToBackend(state);
   }
 }
 
@@ -74,6 +74,6 @@ export const renameNode = (nodeId: string, newName: string): TedTaggerAnyPromise
   return (dispatch: TedTaggerDispatch, getState: any) => {
     dispatch(renameNodeRedux(nodeId, newName));
     const state = getState();
-    return saveAlbumNodesToBackend(state);
+    return saveMediaContentNodesToBackend(state);
   }
 }

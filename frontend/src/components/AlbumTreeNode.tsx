@@ -11,7 +11,7 @@ import {
 
 import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { AlbumNode, StringToNumberLUT } from '../types';
-import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedAlbumNodeIds } from '../selectors';
+import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedMediaContentNodeIds } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
@@ -86,7 +86,7 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
 
 const mapStateToProps = (state: any) => ({
   displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-  selectedNodeIds: getSelectedAlbumNodeIds(state),
+  selectedNodeIds: getSelectedMediaContentNodeIds(state),
   mediaItemCountByAlbumNode: getMediaItemCountByAlbumNode(state),
 });
 

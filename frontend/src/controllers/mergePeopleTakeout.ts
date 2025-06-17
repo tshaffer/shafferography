@@ -1,9 +1,9 @@
-import { serverUrl, apiUrlFragment } from '../types';
+import { getServerUrl, apiUrlFragment } from '../types';
 import axios from 'axios';
 
 export const mergePeopleTakeout = async (albumName: string): Promise<any> => {
   
-  const mergePeopleTakeoutUrl = serverUrl + apiUrlFragment + 'mergePeopleTakeout';
+  const mergePeopleTakeoutUrl = getServerUrl() + apiUrlFragment + 'mergePeopleTakeout';
 
   const mergePeopleTakeoutBody = {
     albumName,

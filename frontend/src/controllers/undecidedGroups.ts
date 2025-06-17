@@ -1,11 +1,11 @@
 import axios from 'axios';
 import { TedTaggerAnyPromiseThunkAction, TedTaggerDispatch, addUndecidedGroupRedux, addUndecidedGroups, deleteMediaItemsRedux, deleteUndecidedGroupRedux, removeUndecidedGroupIdFromMediaItems } from '../models';
-import { serverUrl, apiUrlFragment, UndecidedGroup } from '../types';
+import { getServerUrl, apiUrlFragment, UndecidedGroup } from '../types';
 import { getMediaItemIdsByUndecidedGroupId } from '../selectors';
 
 export const loadUndecidedGroups = (): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-    const path = serverUrl + apiUrlFragment + 'undecidedGroups';
+    const path = getServerUrl() + apiUrlFragment + 'undecidedGroups';
     return axios.get(path)
       .then((response: any) => {
         const undecidedGroups: UndecidedGroup[] = response.data;
@@ -21,7 +21,7 @@ export const loadUndecidedGroups = (): TedTaggerAnyPromiseThunkAction => {
 
 export const assignMediaItemsToUndecidedGroup = (undecidedGroupId: string, mediaItemIds: string[]): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-    const path = serverUrl + apiUrlFragment + 'undecidedGroup/undecided-group';
+    const path = getServerUrl() + apiUrlFragment + 'undecidedGroup/undecided-group';
     const assignMediaItemsToUndecidedGroupBody = { undecidedGroupId, mediaItemIds };
     return axios.put(path, assignMediaItemsToUndecidedGroupBody)
       .then((response: any) => {
@@ -37,7 +37,7 @@ export const assignMediaItemsToUndecidedGroup = (undecidedGroupId: string, media
 export const addUndecidedGroup = (albumNodeIds: string[], undecidedGroupName: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const path = serverUrl + apiUrlFragment + 'undecidedGroup';
+    const path = getServerUrl() + apiUrlFragment + 'undecidedGroup';
 
     const undecidedGroupBody: Partial<UndecidedGroup> = { albumNodeIds, name: undecidedGroupName };
     return axios.post(path, undecidedGroupBody)
@@ -56,7 +56,7 @@ export const addUndecidedGroup = (albumNodeIds: string[], undecidedGroupName: st
 export const deleteUndecidedGroup = (undecidedGroupId: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const path = serverUrl + apiUrlFragment + 'undecidedGroups/' + undecidedGroupId;
+    const path = getServerUrl() + apiUrlFragment + 'undecidedGroups/' + undecidedGroupId;
 
     return axios.delete(path)
       .then((response: any) => {

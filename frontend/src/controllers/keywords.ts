@@ -11,13 +11,13 @@ import {
   setKeywordRootNodeIdRedux,
   clearKeywordData,
 } from '../models';
-import { KeywordData, KeywordNode, StringToKeywordLUT, TedTaggerState, apiUrlFragment, serverUrl } from '../types';
+import { KeywordData, KeywordNode, StringToKeywordLUT, TedTaggerState, apiUrlFragment, getServerUrl } from '../types';
 import { getKeywordsById, getNodeByNodeId } from '../selectors';
 import { cloneDeep, isNil } from 'lodash';
 
 export const loadKeywordData = (): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-    const path = serverUrl
+    const path = getServerUrl()
       + apiUrlFragment
       + 'allKeywordData';
 
@@ -84,7 +84,7 @@ const addKeywordServerAndRedux = (keywordId: string, label: string, type: string
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const path = serverUrl + apiUrlFragment + 'addKeyword';
+    const path = getServerUrl() + apiUrlFragment + 'addKeyword';
 
     const addKeywordBody = {
       keywordId,
@@ -111,7 +111,7 @@ const addKeywordNodeServerAndRedux = (keywordId: string, parentNodeId: string): 
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const path = serverUrl + apiUrlFragment + 'addKeywordNode';
+    const path = getServerUrl() + apiUrlFragment + 'addKeywordNode';
 
     const nodeId = uuidv4();
 
@@ -139,7 +139,7 @@ const updateKeywordNodeServerAndRedux = (childKeywordNode: KeywordNode): TedTagg
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    const path = serverUrl + apiUrlFragment + 'updateKeywordNode';
+    const path = getServerUrl() + apiUrlFragment + 'updateKeywordNode';
 
     const state: TedTaggerState = getState();
 

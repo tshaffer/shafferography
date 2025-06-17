@@ -2,7 +2,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import axios from 'axios';
-import { serverUrl, apiUrlFragment, FileToImport, MediaItem } from '../types';
+import { getServerUrl, apiUrlFragment, FileToImport, MediaItem } from '../types';
 import { isNil, isEmpty, isString } from 'lodash';
 
 import DialogTitle from '@mui/material/DialogTitle';
@@ -90,7 +90,7 @@ const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
     setFileStatuses({});
     setProcessingComplete(false);
 
-    const uploadUrl = serverUrl + apiUrlFragment + 'uploadToGoogle';
+    const uploadUrl = getServerUrl() + apiUrlFragment + 'uploadToGoogle';
 
     const files: FileToImport[] = [];
     for (const key in props.mediaItems) {

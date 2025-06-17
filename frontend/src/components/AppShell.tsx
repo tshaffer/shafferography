@@ -5,7 +5,7 @@ import { Box, CssBaseline, styled } from "@mui/material";
 import { loadMediaItems, loadMediaContentTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
 import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
 import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
-import { MediaItem, PhotoLayout, PhotoState } from "../types";
+import { getServerUrl, MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';
@@ -91,8 +91,8 @@ const AppShell = (props: AppShellProps) => {
     // debugger;
     console.log('Fetching access token from /auth/token...');
     try {
-      console.log('invoke fetch on auth/token');
-      const response = await fetch('http://localhost:8080/auth/token', {  // successfully invokes server function
+      console.log('invoke fetch on auth/token from serverUrl:', getServerUrl());
+      const response = await fetch(getServerUrl() + '/auth/token', {  // successfully invokes server function
         // const response = await fetch('http://localhost:5173/auth/token', {  // fails to invoke server function
         // const response = await fetch('/auth/token', { // fails to invoke server function
         method: 'GET',
@@ -137,7 +137,7 @@ const AppShell = (props: AppShellProps) => {
     }
 
     try {
-      const response = await fetch('http://localhost:8080/refresh-token', {
+      const response = await fetch(getServerUrl() + '/refresh-token', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ googleId }),
@@ -217,7 +217,7 @@ const AppShell = (props: AppShellProps) => {
 
   const fetchUserProfile = async () => {
     try {
-      const response = await fetch('http://localhost:8080/user-profile', { credentials: 'include' });
+      const response = await fetch(getServerUrl() + '/user-profile', { credentials: 'include' });
       // if (!response.ok) throw new Error('Failed to fetch user profile');
       const data = await response.json();
       // console.log('User Profile:', data);
@@ -271,9 +271,10 @@ const AppShell = (props: AppShellProps) => {
   }, []);
 
   if (!isLoggedIn) {
+    const href = getServerUrl() + '/auth/token'; // Use the server URL for the auth endpoint
     return (
       // const response = await fetch('http://localhost:8080/auth/token', {
-      <a href="http://localhost:8080/auth/google">Login with Google</a>
+      <a href={href}>Login with Google</a>
       // <a href="/auth/google">Login with Google</a>
     );
   }

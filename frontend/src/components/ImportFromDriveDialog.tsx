@@ -15,7 +15,7 @@ import { bindActionCreators } from 'redux';
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 
 import { getMediaContentTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
-import { MediaContentNode, apiUrlFragment, FileToImport, serverUrl, MediaContentNodeType } from '../types';
+import { MediaContentNode, apiUrlFragment, FileToImport, MediaContentNodeType, getServerUrl } from '../types';
 import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
@@ -167,7 +167,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     setFileStatuses({});
     setProcessingComplete(false);
 
-    const uploadUrl = serverUrl + apiUrlFragment + 'importPhotos';
+    const uploadUrl = getServerUrl() + apiUrlFragment + 'importPhotos';
 
     const files: FileToImport[] = [];
     for (const key in selectedFiles) {

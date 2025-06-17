@@ -30,16 +30,25 @@ const startServer = async () => {
 
   // app.use(cors());
   // const cors = require('cors');
-  // app.use(cors({
-  //   origin: 'http://localhost:5173', // Vite's dev server URL
-  //   credentials: true
-  // }));
+  app.use(cors({
+    // origin: 'http://localhost:5173', // Vite's dev server URL
+    origin: 'http://192.168.86.46:8080', //localHost network IP address. required??
+    credentials: true
+  }));
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
 
   // add routes
   createRoutes(app);
+
+  // === Environment Configuration Endpoint ===
+  app.get('/env-config.json', (req, res) => {
+    res.json({
+      BACKEND_URL: process.env.BACKEND_URL || 'http://localhost:8080',
+      // Add more config values here as needed
+    });
+  });
 
   // === Express Session Setup ===
   app.use(

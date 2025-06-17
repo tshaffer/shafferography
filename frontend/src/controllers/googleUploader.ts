@@ -1,9 +1,9 @@
 import axios from 'axios';
-import { serverUrl, apiUrlFragment } from '../types';
+import { getServerUrl, apiUrlFragment } from '../types';
 
 export const getAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {
 
-  const path = serverUrl + apiUrlFragment + 'albumNamesWherePeopleNotRetrieved';
+  const path = getServerUrl() + apiUrlFragment + 'albumNamesWherePeopleNotRetrieved';
 
   return axios.get(path)
     .then((response: any) => {

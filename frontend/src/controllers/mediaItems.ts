@@ -13,7 +13,7 @@ import {
   setMediaItemNotesRedux
 } from '../models';
 import {
-  serverUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
+  getServerUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
   PhotoState,
   PhotoLayout,
 } from '../types';
@@ -49,7 +49,7 @@ const loadMediaItemsByViewSpecParams = (albumNodeIds: string[], photoStates: Pho
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    let path = serverUrl + apiUrlFragment + 'mediaItemsByViewSpec';
+    let path = getServerUrl() + apiUrlFragment + 'mediaItemsByViewSpec';
     path += '?albumNodeIds=' + albumNodeIds.join(',');
     path += '&photoStates=' + JSON.stringify(photoStates);
     path += '&groupUndecidedPhotos=' + JSON.stringify(groupUndecidedPhotos);
@@ -104,7 +104,7 @@ export const loadMediaItems = (): any => {
     const startDate = (new Date()).toISOString();
     const endDate = (new Date()).toISOString();
 
-    let path = serverUrl
+    let path = getServerUrl()
       + apiUrlFragment
       + 'mediaItemsToDisplay';
 
@@ -177,7 +177,7 @@ export const loadMediaItemsFromSearchSpec = (): TedTaggerAnyPromiseThunkAction =
     const matchRule: MatchRule = getMatchRule(state);
     const searchRules: SearchRule[] = getSearchRules(state);
 
-    let path = serverUrl
+    let path = getServerUrl()
       + apiUrlFragment
       + 'mediaItemsToDisplayFromSearchSpec';
 
@@ -212,7 +212,7 @@ export const addKeywordToMediaItems = (
 ): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    // const path = serverUrl + apiUrlFragment + 'addKeywordToMediaItems';
+    // const path = getServerUrl() + apiUrlFragment + 'addKeywordToMediaItems';
 
     // const uniqueIds: string[] = mediaItems.map((mediaItem: MediaItem) => {
     //   return mediaItem.uniqueId;
@@ -243,7 +243,7 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
 
   return (dispatch: TedTaggerDispatch) => {
 
-    const path = serverUrl + apiUrlFragment + 'setPhotoState';
+    const path = getServerUrl() + apiUrlFragment + 'setPhotoState';
 
     const setPhotoStateBody = { mediaItemIds, photoState };
 
@@ -266,7 +266,7 @@ export const setMediaItemNotes = (uniqueId: string, notes: string): any => {
 
   return (dispatch: TedTaggerDispatch) => {
 
-    const path = serverUrl + apiUrlFragment + 'setMediaItemNotes';
+    const path = getServerUrl() + apiUrlFragment + 'setMediaItemNotes';
 
     const setMediaItemNotesBody = { uniqueId, notes };
 

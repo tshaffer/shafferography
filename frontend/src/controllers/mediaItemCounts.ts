@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 import { setMediaItemCounts, TedTaggerDispatch } from "../models"
-import { serverUrl, apiUrlFragment, MediaItemsCountState } from "../types";
+import { getServerUrl, apiUrlFragment, MediaItemsCountState } from "../types";
 
 export const loadMediaItemCounts = (): any => {
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    let path = serverUrl + apiUrlFragment + 'mediaItemCounts';
+    let path = getServerUrl() + apiUrlFragment + 'mediaItemCounts';
 
     return axios.get(path)
       .then((mediaItemCountsResponse: any) => {

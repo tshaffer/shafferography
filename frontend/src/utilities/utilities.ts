@@ -19,7 +19,13 @@ export const formatISOString = (ISOString: string): string => {
 };
 
 export const getPhotoUrl = (mediaItem: MediaItem): string => {
-  const photoUrl = mediaItem.url!;
-  return photoUrl;
-};
+  const backendUrl = (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
 
+  // Strip off the protocol and host only
+  const originalUrl = mediaItem.url!;
+  const mediaPath = originalUrl.replace(/^https?:\/\/[^/]+/, '');
+
+  // Construct the full path using the runtime backend URL
+  const url = `${backendUrl.replace(/\/$/, '')}/${mediaPath.replace(/^\//, '')}`;
+  return url;
+};

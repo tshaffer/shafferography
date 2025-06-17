@@ -1,8 +1,12 @@
 import { Keyword, KeywordNode } from './entities';
 
-export const serverUrl = 'http://localhost:8080';
+// export const serverUrl = 'http://localhost:8080';
 // export const serverUrl = 'http://localhost:5173';
 // export const serverUrl = 'https://tsmealwheel.herokuapp.com';
+// export const serverUrl = (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
+export const getServerUrl = (): string => {
+  return (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
+};
 
 export const apiUrlFragment = '/api/v1/';
 

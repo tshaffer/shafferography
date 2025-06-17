@@ -2,9 +2,27 @@ import React, { useEffect, useState } from 'react';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
-import { loadMediaItems, loadMediaContentTree, loadUndecidedGroups, reloadMediaItemsByViewSpec } from "../controllers";
-import { TedTaggerDispatch, setAppInitialized, setDisplayedAlbumNodeIds, setDisplayedPhotoStates, setGoogleUserProfile, setRightPanelOpen, setSidebarOpen } from "../models";
-import { getPhotoLayout, getRightPanelOpen, getSelectedMediaItems, getSidebarOpen } from "../selectors";
+import {
+  loadMediaItems,
+  loadMediaContentTree,
+  loadUndecidedGroups,
+  reloadMediaItemsByViewSpec
+} from "../controllers";
+import {
+  TedTaggerDispatch,
+  setAppInitialized,
+  setDisplayedAlbumNodeIds,
+  setDisplayedPhotoStates,
+  setGoogleUserProfile,
+  setRightPanelOpen,
+  setSidebarOpen
+} from "../models";
+import {
+  getPhotoLayout,
+  getRightPanelOpen,
+  getSelectedMediaItems,
+  getSidebarOpen
+} from "../selectors";
 import { getServerUrl, MediaItem, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
@@ -13,12 +31,6 @@ import RightPanel from './RightPanel';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
 
 const drawerWidth = 240;
-
-declare module 'react' {
-  interface InputHTMLAttributes<T> extends HTMLAttributes<T> {
-    webkitdirectory?: string;
-  }
-}
 
 const Main = styled('main', {
   shouldForwardProp: (prop) => prop !== 'sidebarOpen' && prop !== 'rightPanelOpen',
@@ -32,7 +44,7 @@ const Main = styled('main', {
     easing: theme.transitions.easing.sharp,
     duration: theme.transitions.duration.leavingScreen,
   }),
-  marginLeft: !sidebarOpen && !rightPanelOpen ? `-${drawerWidth}px` : !rightPanelOpen ? `0px` : !sidebarOpen ? `-${drawerWidth}px` : `0px`, // ✅ Fix marginLeft
+  marginLeft: !sidebarOpen && !rightPanelOpen ? `-${drawerWidth}px` : !rightPanelOpen ? `0px` : !sidebarOpen ? `-${drawerWidth}px` : `0px`,
   marginRight: `0px`,
 }));
 
@@ -40,10 +52,14 @@ const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
   alignItems: 'center',
   padding: theme.spacing(0, 1),
-  // necessary for content to be below app bar
   ...theme.mixins.toolbar,
   justifyContent: 'flex-end',
 }));
+
+const googleInterfaceEnabled = (): boolean => {
+  return (window as any).__ENV__?.ENABLE_GOOGLE_INTERFACE === true ||
+         (window as any).__ENV__?.ENABLE_GOOGLE_INTERFACE === 'true';
+};
 
 export interface AppShellProps {
   sidebarOpen: boolean;
@@ -64,76 +80,49 @@ export interface AppShellProps {
 }
 
 const AppShell = (props: AppShellProps) => {
-
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [accessToken, setAccessToken] = useState<string | null>(null);
 
-  // Save the access token, expiration, and Google ID in localStorage
   const saveTokens = (token: string, expiresIn: number, googleId: string) => {
-    const expirationTime = Date.now() + expiresIn * 1000; // Convert to milliseconds
+    const expirationTime = Date.now() + expiresIn * 1000;
     localStorage.setItem('googleAccessToken', token);
     localStorage.setItem('tokenExpiration', expirationTime.toString());
     localStorage.setItem('googleId', googleId);
-    console.log('Tokens saved successfully.');
   };
 
-  // Check if the access token is expired
   const isTokenExpired = (): boolean => {
     const accessToken = localStorage.getItem('googleAccessToken');
     const expiration = localStorage.getItem('tokenExpiration');
-
-    // Return true if the access token or expiration is missing, or if the token has expired
     return !accessToken || !expiration || Date.now() > parseInt(expiration);
   };
 
-  // Fetch the access token from the cookie
   const fetchAccessToken = async () => {
-    // debugger;
-    console.log('Fetching access token from /auth/token...');
     try {
-      console.log('invoke fetch on auth/token from serverUrl:', getServerUrl());
-      const response = await fetch(getServerUrl() + '/auth/token', {  // successfully invokes server function
-        // const response = await fetch('http://localhost:5173/auth/token', {  // fails to invoke server function
-        // const response = await fetch('/auth/token', { // fails to invoke server function
+      const response = await fetch(getServerUrl() + '/auth/token', {
         method: 'GET',
-        credentials: 'include', // Include HTTP-only cookies
+        credentials: 'include',
       });
-      console.log('response from fetch on auth/token', response);
-      // debugger;
 
       if (response.ok) {
         const data = await response.json();
         const { accessToken, googleId } = data;
-
-        console.log('Access token fetched:', accessToken);
-        console.log('Google ID fetched:', googleId);
-
-        const expiresIn = 3600; // 1 hour validity
-
-        // Save the token and Google ID to localStorage
+        const expiresIn = 3600;
         saveTokens(accessToken, expiresIn, googleId);
-
         setAccessToken(accessToken);
         setIsLoggedIn(true);
       } else {
-        console.warn('No valid access token found. Attempting to refresh...');
-        refreshAccessToken(); // Try refreshing if fetching fails
+        refreshAccessToken();
       }
     } catch (error) {
       console.error('Error fetching access token:', error);
-      // debugger;
-      // logout(); // Logout if fetching fails
     }
   };
 
-  // Refresh the access token using the refresh token endpoint
   const refreshAccessToken = async () => {
     const googleId = localStorage.getItem('googleId');
-
     if (!googleId) {
-      console.error('No Google ID found. Unable to refresh token.');
-      setIsLoggedIn(false); // Set user as logged out without triggering a redirect loop
-      return; // Prevent further execution
+      setIsLoggedIn(false);
+      return;
     }
 
     try {
@@ -145,13 +134,11 @@ const AppShell = (props: AppShellProps) => {
 
       if (response.ok) {
         const { accessToken, expiresIn } = await response.json();
-        console.log('Token refreshed successfully:', accessToken);
         saveTokens(accessToken, expiresIn, googleId);
         setAccessToken(accessToken);
         setIsLoggedIn(true);
         fetchUserProfile();
       } else {
-        console.warn('Failed to refresh access token. Logging out...');
         logout();
       }
     } catch (error) {
@@ -160,15 +147,18 @@ const AppShell = (props: AppShellProps) => {
     }
   };
 
-  // Logout function to clear localStorage and reload the app
   const logout = () => {
-    console.log('Logging out...');
-    localStorage.clear(); // Clear all localStorage data
-    setIsLoggedIn(false); // Set state to logged out
-    window.location.href = '/'; // Redirect to the home or login page
+    localStorage.clear();
+    setIsLoggedIn(false);
+    window.location.href = '/';
   };
 
   useEffect(() => {
+    if (!googleInterfaceEnabled()) {
+      setIsLoggedIn(true); // allow user to proceed if google auth is off
+      return;
+    }
+
     const params = new URLSearchParams(window.location.search);
     const accessToken = params.get('accessToken');
     const expiresIn = params.get('expiresIn');
@@ -176,40 +166,23 @@ const AppShell = (props: AppShellProps) => {
     const lastGoogleId = localStorage.getItem('googleId');
     const loggedOut = localStorage.getItem('loggedOut');
 
-    // console.log('useEffect triggered.');
-    // console.log('accessToken:', accessToken);
-    // console.log('expiresIn:', expiresIn);
-    // console.log('googleId:', googleId);
-    // console.log('lastGoogleId:', lastGoogleId);
-    // console.log('loggedOut:', loggedOut);
-
-    // Handle the loggedOut flag and exit if needed
     if (loggedOut === 'true') {
-      // console.log('User already logged out.');
       localStorage.removeItem('loggedOut');
       setIsLoggedIn(false);
-      return; // Prevent further execution
+      return;
     }
 
-    // Detect user switch and clear localStorage if needed
     if (googleId && googleId !== lastGoogleId) {
-      // console.log('Detected user switch. Clearing localStorage.');
       localStorage.clear();
     }
 
-    // If query parameters are present, save tokens and clear the URL
     if (accessToken && expiresIn && googleId) {
-      // console.log('Saving tokens from query params...');
       saveTokens(accessToken, parseInt(expiresIn), googleId);
       setIsLoggedIn(true);
-      window.history.replaceState({}, document.title, '/'); // Clear query params from URL
-    }
-    // If tokens are not in the query params, attempt to fetch them from cookies
-    else if (isTokenExpired()) {
-      console.warn('Token expired or missing. Attempting to fetch from server...');
-      fetchAccessToken(); // Invoke fetchAccessToken here
+      window.history.replaceState({}, document.title, '/');
+    } else if (isTokenExpired()) {
+      fetchAccessToken();
     } else {
-      // console.log('Tokens are valid. User is logged in.');
       setIsLoggedIn(true);
       fetchUserProfile();
     }
@@ -218,78 +191,55 @@ const AppShell = (props: AppShellProps) => {
   const fetchUserProfile = async () => {
     try {
       const response = await fetch(getServerUrl() + '/user-profile', { credentials: 'include' });
-      // if (!response.ok) throw new Error('Failed to fetch user profile');
       const data = await response.json();
-      // console.log('User Profile:', data);
       props.onSetGoogleUserProfile(data);
-      return data;
     } catch (error) {
-      // console.error(error);
+      console.error('Error fetching user profile:', error);
     }
   };
 
-  React.useEffect(() => {
-
+  useEffect(() => {
     const initializeDisplayedAlbumNodeIds = async (): Promise<string[]> => {
-      let displayedAlbumNodeIds: string[] = [];
-      const displayedAlbumsStr: string | null = localStorage.getItem('displayedAlbumNodeIds');
-      if (displayedAlbumsStr) {
-        displayedAlbumNodeIds = displayedAlbumsStr.split(',');
-        props.onSetDisplayedAlbumNodeIds(displayedAlbumNodeIds);
-      }
+      const displayedAlbumsStr = localStorage.getItem('displayedAlbumNodeIds');
+      const displayedAlbumNodeIds = displayedAlbumsStr ? displayedAlbumsStr.split(',') : [];
+      props.onSetDisplayedAlbumNodeIds(displayedAlbumNodeIds);
       return displayedAlbumNodeIds;
-    }
+    };
 
     const initializeDisplayedPhotoStates = async (): Promise<PhotoState[]> => {
-      let displayedPhotoStates: PhotoState[] = [];
-      const displayedPhotoStatesStr: string | null = localStorage.getItem('displayedPhotoStates');
-      if (displayedPhotoStatesStr) {
-        displayedPhotoStates = displayedPhotoStatesStr
-          .split(',')
-          .map(level => level.trim()) // Trim spaces
-          .filter((level): level is PhotoState => Object.values(PhotoState).includes(level as PhotoState)); // Ensure valid enum values
+      const displayedPhotoStatesStr = localStorage.getItem('displayedPhotoStates');
+      const displayedPhotoStates = displayedPhotoStatesStr
+        ? displayedPhotoStatesStr
+            .split(',')
+            .map(level => level.trim())
+            .filter((level): level is PhotoState => Object.values(PhotoState).includes(level as PhotoState))
+        : [];
 
-        props.onSetDisplayedPhotoStates(displayedPhotoStates);
-      }
+      props.onSetDisplayedPhotoStates(displayedPhotoStates);
       return displayedPhotoStates;
     };
 
     props.onLoadAlbumTree()
-      .then(function () {
-        return initializeDisplayedPhotoStates()
-      }).then(function () {
-        return initializeDisplayedAlbumNodeIds()
-      }).then(function () {
-        return props.onLoadUndecidedGroups();
-      }).then(function () {
-        return props.onLoadMediaItemCounts();
-      }).then(function () {
-        return props.onReloadMediaItemsByViewSpec();
-      }).then(function () {
-        return props.onSetAppInitialized();
-      });
+      .then(initializeDisplayedPhotoStates)
+      .then(initializeDisplayedAlbumNodeIds)
+      .then(props.onLoadUndecidedGroups)
+      .then(props.onLoadMediaItemCounts)
+      .then(props.onReloadMediaItemsByViewSpec)
+      .then(props.onSetAppInitialized);
   }, []);
 
   if (!isLoggedIn) {
-    const href = getServerUrl() + '/auth/token'; // Use the server URL for the auth endpoint
-    return (
-      // const response = await fetch('http://localhost:8080/auth/token', {
-      <a href={href}>Login with Google</a>
-      // <a href="/auth/google">Login with Google</a>
-    );
+    if (googleInterfaceEnabled()) {
+      const href = getServerUrl() + '/auth/token';
+      return <a href={href}>Login with Google</a>;
+    } else {
+      return <div>Google interface is disabled.</div>;
+    }
   }
 
-  const handleOpenSidebar = () => {
-    props.onSetSidebarOpen(true);
-  };
-
-  const handleCloseSidebar = () => {
-    props.onSetSidebarOpen(false);
-  };
-
-  const toggleRightPanel = () => {
-    props.onSetRightPanelOpen(!props.rightPanelOpen);
-  };
+  const handleOpenSidebar = () => props.onSetSidebarOpen(true);
+  const handleCloseSidebar = () => props.onSetSidebarOpen(false);
+  const toggleRightPanel = () => props.onSetRightPanelOpen(!props.rightPanelOpen);
 
   return (
     <Box sx={{ display: "flex" }}>
@@ -301,10 +251,7 @@ const AppShell = (props: AppShellProps) => {
         toggleRightPanel={toggleRightPanel}
         selectedItemsCount={props.selectedMediaItems.length}
       />
-      <Sidebar
-        open={props.sidebarOpen}
-        onClose={handleCloseSidebar}
-      />
+      <Sidebar open={props.sidebarOpen} onClose={handleCloseSidebar} />
       <Main sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen}>
         <DrawerHeader />
         <PhotosContainer />
@@ -327,20 +274,18 @@ function mapStateToProps(state: any) {
   };
 }
 
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    onSetSidebarOpen: setSidebarOpen,
-    onSetRightPanelOpen: setRightPanelOpen,
-    onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
-    onLoadMediaItemCounts: loadMediaItemCounts,
-    onLoadMediaItems: loadMediaItems,
-    onLoadAlbumTree: loadMediaContentTree,
-    onLoadUndecidedGroups: loadUndecidedGroups,
-    onSetAppInitialized: setAppInitialized,
-    onSetGoogleUserProfile: setGoogleUserProfile,
-    onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
-    onSetDisplayedPhotoStates: setDisplayedPhotoStates,
-  }, dispatch);
-};
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => bindActionCreators({
+  onSetSidebarOpen: setSidebarOpen,
+  onSetRightPanelOpen: setRightPanelOpen,
+  onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
+  onLoadMediaItemCounts: loadMediaItemCounts,
+  onLoadMediaItems: loadMediaItems,
+  onLoadAlbumTree: loadMediaContentTree,
+  onLoadUndecidedGroups: loadUndecidedGroups,
+  onSetAppInitialized: setAppInitialized,
+  onSetGoogleUserProfile: setGoogleUserProfile,
+  onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
+  onSetDisplayedPhotoStates: setDisplayedPhotoStates,
+}, dispatch);
 
 export default connect(mapStateToProps, mapDispatchToProps)(AppShell);

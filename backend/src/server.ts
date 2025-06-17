@@ -30,10 +30,10 @@ const startServer = async () => {
 
   // app.use(cors());
   // const cors = require('cors');
-  app.use(cors({
-    origin: 'http://localhost:5173', // Vite's dev server URL
-    credentials: true
-  }));
+  // app.use(cors({
+  //   origin: 'http://localhost:5173', // Vite's dev server URL
+  //   credentials: true
+  // }));
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));

@@ -48,7 +48,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [processingComplete, setProcessingComplete] = React.useState<boolean>(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
 
-  const [isAddingNew, setIsAddingNew] = React.useState<boolean>(false);
   const localAlbumNodeIdRef = React.useRef<string>(props.displayedAlbumNodeIds[0]);
 
   const updateLocalAlbumId = (newId: string) => {
@@ -60,7 +59,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     if (props.open) {
       updateLocalAlbumId(props.displayedAlbumNodeIds[0]);
       setProgress(0);
-      setIsAddingNew(props.albumNodes.length === 0);
       setFileProgress({});
       setFileStatuses({});
       setProcessingComplete(false);
@@ -82,6 +80,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   };
 
   const createAlbum = async (): Promise<MediaContentNode | undefined> => {
+    
     if (!newAlbumName.trim()) return Promise.resolve(undefined);
 
     const newAlbum: MediaContentNode = {
@@ -94,8 +93,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       console.log('AlbumNode added: ', newAlbum);
       updateLocalAlbumId(newAlbum.id);
       setNewAlbumName("");
-      setIsAddingNew(false);
-
       return Promise.resolve(newAlbum);
     });
   };
@@ -139,7 +136,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const handleImport = async () => {
     if (selectedFiles && (baseDirectory !== '')) {
       let albumNodeId = localAlbumNodeIdRef.current;
-      if (isAddingNew) {
+      if (!isAlbumNode(props.parentMediaContentNode)) {
         if (albumExists(newAlbumName)) {
           // Instead of logging an error, set an error message to display in a modal dialog.
           setErrorMessage('AlbumNode already exists');
@@ -284,7 +281,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
         <DialogActions>
           <Button onClick={handleClose}>Close</Button>
-          <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (isAddingNew && !newAlbumName.trim())}>
+          <Button onClick={handleImport} autoFocus disabled={!selectedFiles || selectedFiles.length === 0 || (baseDirectory === '') || (!isAlbumNode(props.parentMediaContentNode) && !newAlbumName.trim())}>
             Import
           </Button>
         </DialogActions>

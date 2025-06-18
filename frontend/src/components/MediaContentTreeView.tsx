@@ -241,6 +241,15 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         </MenuItem>
         <MenuItem
           onClick={() => {
+            setImportFromDriveDialogOpen(true);
+            setContextMenuPosition(null);
+          }}
+          disabled={!isAlbumNode(contextMenuNode)}
+        >
+          Import Photos
+        </MenuItem>
+        <MenuItem
+          onClick={() => {
             setAddGroupDialogOpen(true);
             setContextMenuPosition(null);
           }}

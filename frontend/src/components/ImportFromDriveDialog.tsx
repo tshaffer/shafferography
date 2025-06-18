@@ -19,8 +19,10 @@ import { MediaContentNode, apiUrlFragment, FileToImport, MediaContentNodeType, g
 import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
 import axios from 'axios';
 import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
+import { isAlbumNode } from '../utilities';
 
 export interface ImportFromDriveDialogPropsFromParent {
+  parentMediaContentNode: MediaContentNode;
   open: boolean;
   onClose: () => void;
 }
@@ -245,10 +247,10 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           )}
           <Box component="form" noValidate autoComplete="off">
             <Box>
-              {isAddingNew ? (
+              {!isAlbumNode(props.parentMediaContentNode) ? (
                 <Box display="flex" gap={1} alignItems="center">
                   <TextField
-                    label="New AlbumNode Name"
+                    label="New Album Name"
                     value={newAlbumName}
                     onChange={(e) => setNewAlbumName(e.target.value)}
                     fullWidth
@@ -258,25 +260,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                     <CloseIcon />
                   </IconButton>
                 </Box>
-              ) : (
-                <TextField
-                  select
-                  label="Choose an AlbumNode"
-                  value={localAlbumNodeIdRef.current}
-                  onChange={(e) => updateLocalAlbumId(e.target.value)}
-                  fullWidth
-                >
-                  <MenuItem onClick={() => setIsAddingNew(true)} key={'newAlbum'} value={''}>
-                    <AddIcon fontSize="small" sx={{ marginRight: 1 }} />
-                    Add New AlbumNode
-                  </MenuItem>
-                  {props.albumNodes.map((set) => (
-                    <MenuItem key={set.id} value={set.id}>
-                      {set.name}
-                    </MenuItem>
-                  ))}
-                </TextField>
-              )}
+              ) : null }
             </Box>
 
             {/* File Upload Section */}

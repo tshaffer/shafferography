@@ -26,6 +26,7 @@ import { getMediaContentTree, getSelectedMediaContentNodeIds } from '../selector
 import AlbumTreeNode from './AlbumTreeNode';
 import GroupTreeNode from './GroupTreeNode';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
+import { isAlbumNode } from '../utilities';
 
 interface MediaContentTreeViewProps {
   mediaContentNodes: MediaContentNode[];
@@ -54,6 +55,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   const [newParentId, setNewParentId] = useState<string | null>(null);
 
   const [importFromDriveDialogOpen, setImportFromDriveDialogOpen] = useState(false);
+  const [importMediaContentParentNode, setImportMediaContentParentNode] = useState<MediaContentNode | null>(null);
 
   const [contextMenuPosition, setContextMenuPosition] = useState<{ mouseX: number; mouseY: number } | null>(null);
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
@@ -118,14 +120,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         // Both are groups or both are albums: sort by name (case-insensitive)
         return a.name.localeCompare(b.name, undefined, { sensitivity: 'base' });
       });
-  };
-
-  const isNode = (node: MediaContentNode | null): boolean => {
-    return node !== null;
-  };
-
-  const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
-    return isNode(node) && node?.type === 'album';
   };
 
   const isNodeSelected = (contextMenuNode: MediaContentNode | null): boolean => {
@@ -230,10 +224,9 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
       >
         <MenuItem
           onClick={() => {
+            setImportMediaContentParentNode(contextMenuNode);
             setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
-            // setAddDialogOpen(true);
-            // setContextMenuPosition(null);
           }}
           disabled={isAlbumNode(contextMenuNode)}
         >
@@ -241,6 +234,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         </MenuItem>
         <MenuItem
           onClick={() => {
+            setImportMediaContentParentNode(contextMenuNode);
             setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
           }}
@@ -335,6 +329,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
               <ImportFromDriveDialog
                 open={importFromDriveDialogOpen}
+                parentMediaContentNode={importMediaContentParentNode!}
                 onClose={() => setImportFromDriveDialogOpen(false)}
               />
 

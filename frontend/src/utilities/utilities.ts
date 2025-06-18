@@ -1,4 +1,4 @@
-import { MediaItem } from '../types';
+import { AlbumNode, MediaContentNode, MediaItem } from '../types';
 
 export const formatISOString = (ISOString: string): string => {
 
@@ -29,3 +29,12 @@ export const getPhotoUrl = (mediaItem: MediaItem): string => {
   const url = `${backendUrl.replace(/\/$/, '')}/${mediaPath.replace(/^\//, '')}`;
   return url;
 };
+
+  const isNode = (node: MediaContentNode | null): boolean => {
+    return node !== null;
+  };
+
+  export const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
+    return isNode(node) && node?.type === 'album';
+  };
+

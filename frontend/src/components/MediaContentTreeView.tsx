@@ -222,26 +222,26 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
             : undefined
         }
       >
-        <MenuItem
+        {!isAlbumNode(contextMenuNode) && (<MenuItem
           onClick={() => {
             setImportMediaContentParentNode(contextMenuNode);
             setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
           }}
-          disabled={isAlbumNode(contextMenuNode)}
         >
           Import Album
         </MenuItem>
-        <MenuItem
+        )}
+        {isAlbumNode(contextMenuNode) && (<MenuItem
           onClick={() => {
             setImportMediaContentParentNode(contextMenuNode);
             setImportFromDriveDialogOpen(true);
             setContextMenuPosition(null);
           }}
-          disabled={!isAlbumNode(contextMenuNode)}
         >
           Import Photos
         </MenuItem>
+        )}
         <MenuItem
           onClick={() => {
             setAddGroupDialogOpen(true);

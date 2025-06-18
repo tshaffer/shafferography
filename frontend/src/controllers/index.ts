@@ -7,3 +7,5 @@ export * from './authenticate';
 export * from './mediaContentTree';
 export * from './googleUploader';
 export * from './undecidedGroups';
+export * from './mediaItemCounts';
+export * from './mediaItems';

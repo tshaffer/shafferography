@@ -1,24 +1,20 @@
 import * as React from 'react';
 import { connect } from 'react-redux';
+import { bindActionCreators } from 'redux';
 import { v4 as uuidv4 } from 'uuid';
+import axios from 'axios';
 
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
-import MenuItem from '@mui/material/MenuItem';
-import { Button, DialogActions, DialogContent, IconButton, Stack, Typography, Alert } from '@mui/material';
+import { Button, DialogActions, DialogContent, Stack, Typography, Alert } from '@mui/material';
 
-import AddIcon from "@mui/icons-material/Add";
-import CloseIcon from "@mui/icons-material/Close";
-import { bindActionCreators } from 'redux';
 import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 
 import { getMediaContentTree, getAppInitialized, getDisplayedAlbumNodeIds } from '../selectors';
 import { MediaContentNode, apiUrlFragment, FileToImport, MediaContentNodeType, getServerUrl } from '../types';
-import { addAlbumToTree, reloadMediaItemsByViewSpec } from '../controllers';
-import axios from 'axios';
-import { loadMediaItemCounts } from '../controllers/mediaItemCounts';
+import { addAlbumToTree, loadMediaItemCounts, reloadMediaItemsByViewSpec } from '../controllers';
 import { isAlbumNode } from '../utilities';
 
 export interface ImportFromDriveDialogPropsFromParent {
@@ -45,7 +41,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
   const [baseDirectory, setBaseDirectory] = React.useState<string>('');
   const [selectedFiles, setSelectedFiles] = React.useState<FileList | null>(null);
   const [newAlbumName, setNewAlbumName] = React.useState<string>('');
-  const [lastAddedAlbumId, setLastAddedAlbumId] = React.useState<string | null>(null);
   const [progress, setProgress] = React.useState(0);
 
   const [fileProgress, setFileProgress] = React.useState<Record<string, number>>({});
@@ -98,7 +93,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
     return props.onAddAlbumNode(newAlbumName).then(() => {
       console.log('AlbumNode added: ', newAlbum);
       updateLocalAlbumId(newAlbum.id);
-      setLastAddedAlbumId(newAlbum.id);
       setNewAlbumName("");
       setIsAddingNew(false);
 
@@ -256,9 +250,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
                     fullWidth
                     autoFocus
                   />
-                  <IconButton onClick={() => setIsAddingNew(false)} disabled={props.albumNodes.length === 0 && newAlbumName.trim() === ''}>
-                    <CloseIcon />
-                  </IconButton>
                 </Box>
               ) : null }
             </Box>

@@ -19,18 +19,21 @@ export const SET_SELECTED_MEDIA_CONTENT_NODE_IDS = 'SET_SELECTED_MEDIA_CONTENT_N
 // ------------------------------------
 
 interface AddAlbumToTreePayload {
-  name: string;
+  mediaContentNode: MediaContentNode;
+  // name: string;
   parentId?: string;
 }
 
 export const addAlbumToTreeRedux = (
-  name: string,
+  // name: string,
+  mediaContentNode: MediaContentNode,
   parentId?: string
 ): any => {
   return {
     type: ADD_ALBUM_NODE,
     payload: {
-      name,
+      mediaContentNode, 
+      // name,
       parentId,
     }
   };
@@ -250,11 +253,12 @@ export const albumTreeStateReducer = (
       };
     }
     case ADD_ALBUM_NODE: {
-      const newAlbum: MediaContentNode = {
-        id: uuidv4(),
-        name: action.payload.name,
-        type: MediaContentNodeType.Album,
-      };
+      // const newAlbum: MediaContentNode = {
+      //   id: uuidv4(),
+      //   name: action.payload.name,
+      //   type: MediaContentNodeType.Album,
+      // };
+      const newAlbum: MediaContentNode = action.payload.mediaContentNode;
       const newState = cloneDeep(state);
       const added = insertNode(newState.nodes, action.payload.parentId, newAlbum);
       if (!added) newState.nodes.push(newAlbum);

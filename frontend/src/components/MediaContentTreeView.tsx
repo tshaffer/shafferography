@@ -32,7 +32,7 @@ interface MediaContentTreeViewProps {
   mediaContentNodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
-  onAddAlbumToTree: (name: string, parentId?: string) => void;
+  onAddAlbumToTree: (mediaContentNode: MediaContentNode, parentId?: string) => void;
   onAddGroupToTree: (name: string, parentId?: string) => void;
   onMoveNodeInTree: (nodeId: string, newParentId: string) => void;
   onDeleteNodes: (nodeIds: string[]) => void;
@@ -135,7 +135,13 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
   const handleAddAlbum = () => {
     if (!newAlbumName.trim()) return;
-    props.onAddAlbumToTree(newAlbumName, selectedId ?? undefined);
+    const newAlbum: MediaContentNode = {
+      id: uuidv4(),
+      name: newAlbumName,
+      type: MediaContentNodeType.Album,
+    };
+
+    props.onAddAlbumToTree(newAlbum, selectedId ?? undefined);
     setNewAlbumName('');
     setAddDialogOpen(false);
   };
@@ -460,3 +466,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MediaContentTreeView);
+function uuidv4(): string {
+  throw new Error('Function not implemented.');
+}
+

@@ -27,7 +27,7 @@ export interface ImportFromDriveDialogProps extends ImportFromDriveDialogPropsFr
   appInitialized: boolean;
   displayedAlbumNodeIds: string[];
   albumNodes: MediaContentNode[];
-  onAddAlbumNode: (name: string, parentId?: string) => any;
+  onAddAlbumNode: (mediaContentNode: MediaContentNode, parentId?: string) => any;
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => any;
   onReloadMediaItemsByViewSpec: () => void;
   onLoadMediaItemCounts: () => any;
@@ -89,7 +89,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       type: MediaContentNodeType.Album,
     };
 
-    return props.onAddAlbumNode(newAlbumName, props.parentMediaContentNode.id).then(() => {
+    return props.onAddAlbumNode(newAlbum, props.parentMediaContentNode.id).then(() => {
       console.log('AlbumNode added: ', newAlbum);
       updateLocalAlbumId(newAlbum.id);
       setNewAlbumName("");

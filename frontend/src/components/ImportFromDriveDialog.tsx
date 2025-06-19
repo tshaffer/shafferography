@@ -179,7 +179,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
 
     const uploadBody = {
       baseDirectory,
-      albumNodeId,
+      albumId: albumNodeId,
       files,
     };
 

@@ -48,9 +48,9 @@ export const addGroupToTree = (name: string, parentId?: string): TedTaggerAnyPro
 
 export const addAlbumToTree = (name: string, parentId?: string): TedTaggerAnyPromiseThunkAction => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
-    debugger;
     dispatch(addAlbumToTreeRedux(name, parentId));
-    return Promise.resolve();
+    const state = getState();
+    return saveMediaContentNodesToBackend(state);
   }
 };
 

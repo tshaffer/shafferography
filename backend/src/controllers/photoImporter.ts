@@ -45,7 +45,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
     photoState: PhotoState.Unreviewed,
-    albumNodeId: 'albumId',
+    albumNodeId: albumId,
   }
 
   return mediaItem;

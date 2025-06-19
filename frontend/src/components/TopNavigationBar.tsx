@@ -362,15 +362,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     },
   ];
 
-  const renderImportFromDriveDialog = (): JSX.Element => {
-    return (
-      <ImportFromDriveDialog
-        open={showImportFromDriveDialog}
-        onClose={handleCloseImportFromDriveDialog}
-      />
-    );
-  }
-
   const renderUploadToGoogleDialog = (): JSX.Element => {
     return (
       <UploadToGoogleDialog
@@ -631,7 +622,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
         </Toolbar>
       </AppBar>
 
-      {renderImportFromDriveDialog()}
       {renderUploadToGoogleDialog()}
       {renderZoomDialog()}
       {renderSettingsDialog()}

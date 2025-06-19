@@ -89,7 +89,7 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
       type: MediaContentNodeType.Album,
     };
 
-    return props.onAddAlbumNode(newAlbumName).then(() => {
+    return props.onAddAlbumNode(newAlbumName, props.parentMediaContentNode.id).then(() => {
       console.log('AlbumNode added: ', newAlbum);
       updateLocalAlbumId(newAlbum.id);
       setNewAlbumName("");

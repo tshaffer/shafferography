@@ -1,12 +1,12 @@
 use pgPhotos;
 
 const collections = [
-  // "mediaitems",
+  "mediaitems",
   // "undecidedgroups",
   "mediacontenttree",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-06-19-2";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-07-11-2";
 
 const fs = require("fs");
 

@@ -88,7 +88,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   React.useEffect(() => {
 
-    console.log('GridView useEffect observer invoked');
+    // console.log('GridView useEffect observer invoked');
 
     if (!gridContainerRef.current) return;
 
@@ -96,7 +96,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
       for (const entry of entries) {
         const target = entry.target as HTMLElement;
         const width = target.clientWidth;
-        console.log('ResizeObserver clientWidth:', width);
+        // console.log('ResizeObserver clientWidth:', width);
         setGridWidth(width - 18); // Adjust for scrollbar width
       }
     });
@@ -109,7 +109,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   const getGridRowData = (): GridRowData[] => {
     if (gridWidth === 0) return [];
 
-    console.log('getGridRowData gridWidth:', gridWidth);
+    // console.log('getGridRowData gridWidth:', gridWidth);
 
     const targetHeight = targetHeights[props.numGridColumns - 2];
     const gridRows: GridRowData[] = [];
@@ -126,8 +126,8 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
         mediaItemIndex,
         props.allMediaItems.length - 1
       );
-      const sum = gridRowData.cellWidths.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
-      console.log('getGridRowData row width:', sum);
+      // const sum = gridRowData.cellWidths.reduce((accumulator, currentValue) => accumulator + currentValue, 0);
+      // console.log('getGridRowData row width:', sum);
 
       if (gridRowData.rowHeight > runningMaxRowHeight) {
         runningMaxRowHeight = gridRowData.rowHeight;
@@ -204,7 +204,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   // console.log('rowHeight:', rowHeights);
 
-  console.log('GridView render');
+  // console.log('GridView render');
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>

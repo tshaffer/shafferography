@@ -1,0 +1,19 @@
+// Connect to your database
+use pgPhotos;
+
+// Step 1: Read the deduplicated JSON file
+const filePath = '/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-07-11-1/deduplicated-file.json';
+
+const fs = require('fs');
+const rawData = fs.readFileSync(filePath, 'utf8');
+const docs = JSON.parse(rawData);
+
+// Step 2: Drop the existing collection (if it exists)
+if (db.mediaitems.countDocuments() > 0) {
+  db.mediaitems.drop();
+  print("✅ Dropped existing 'mediaitems' collection.");
+}
+
+// Step 3: Insert the new documents
+const result = db.mediaitems.insertMany(docs);
+print(`✅ Inserted ${result.insertedIds.length} documents into 'mediaitems'.`);

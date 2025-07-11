@@ -412,12 +412,20 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     setUndecidedGroupAnchorEl(event.currentTarget);
   };
 
+  const getSetPhotoStateButtonDisabled = (): boolean => {
+    if (props.photoLayout === PhotoLayout.Loupe) {
+      return false;
+    }
+    return props.selectedMediaItemsCount === 0;
+    
+  }
+
   const renderSetPhotoStateUI = () => {
     return (
       <React.Fragment>
         <Tooltip title="Set Unreviewed">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)} disabled={getSetPhotoStateButtonDisabled()}>
               <MoreHoriz />
             </IconButton>
           </span>
@@ -425,7 +433,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
         <Tooltip title="Set Undecided">
           <span>
-            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI} disabled={getSetPhotoStateButtonDisabled()}>
               <HelpOutline />
             </IconButton>
           </span>
@@ -440,21 +448,21 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
         <Tooltip title="Set Ready for Upload">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)} disabled={getSetPhotoStateButtonDisabled()}>
               <CloudUpload />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Set Uploaded">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)} disabled={getSetPhotoStateButtonDisabled()}>
               <CloudDone />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Delete Selected Photos">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Deleted)} disabled={props.selectedMediaItemsCount === 0}>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Deleted)} disabled={getSetPhotoStateButtonDisabled()}>
               <DeleteIcon />
             </IconButton>
           </span>

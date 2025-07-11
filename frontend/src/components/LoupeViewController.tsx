@@ -22,7 +22,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
   React.useEffect(() => {
 
-    console.log('NewLoupeViewController: React.useEffect - invoked');
+    // console.log('NewLoupeViewController: React.useEffect - invoked');
 
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -78,12 +78,12 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
       const nextMediaItemIndex = loupeViewMediaItemIndex + 1;
       if (nextMediaItemIndex >= props.loupeViewMediaItemIds.length) {
-        console.log('at end');
+        // console.log('at end');
         return;
       } else {
         const nextMediaItemId: string = props.loupeViewMediaItemIds[nextMediaItemIndex];
         const nextMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === nextMediaItemId);
-        console.log('nextMediaItem: ' + nextMediaItem);
+        // console.log('nextMediaItem: ' + nextMediaItem);
         props.onSetLoupeViewMediaItemId(nextMediaItem!.uniqueId);
       }
     };
@@ -107,7 +107,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     // Remove the event listener when the component unmounts
     return () => {
-      console.log('NewLoupeViewController: React.useEffect - component unmounts');
+      // console.log('NewLoupeViewController: React.useEffect - component unmounts');
       document.removeEventListener('keydown', handleKeyPress);
       document.removeEventListener('fullscreenchange', handleFullScreenChange);
     };

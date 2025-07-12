@@ -65,6 +65,9 @@ function SurveyViewImage(props: SurveyViewImageProps) {
         loading="lazy"
         onContextMenu={handleContextMenu}
       />
+      {isFocused && (
+        <div className="focusBadge">Focused</div>
+      )}
       <Menu
         anchorReference="anchorPosition"
         anchorPosition={menuPosition ? { top: menuPosition.top, left: menuPosition.left } : undefined}

@@ -4,19 +4,16 @@ import { bindActionCreators } from 'redux';
 
 import { CardMedia, IconButton } from '@mui/material';
 
-
 import SurveyViewImage from './SurveyViewImage';
 
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
-import DeleteIcon from '@mui/icons-material/Delete';
 import { surveyRowHeights } from '../constants';
-import { deleteSurveyViewImageContainerItem, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
+import { loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
-import ConfirmationDialog from './ConfirmationDialog';
 
 const cardMediaStyle = {
   objectFit: 'contain',
@@ -33,14 +30,11 @@ export interface SurveyViewImageContainerPropsFromParent {
 export interface SurveyViewImageContainerProps extends SurveyViewImageContainerPropsFromParent {
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
-  onDeleteSurveyViewImageContainerItem: (mediaItemId: string) => any;
   onSetMediaItemZoomFactor: (mediaItemId: string, zoomFactor: number) => any;
   onReloadMediaItemsByViewSpec: () => any;
 }
 
 function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
-
-  const [openDialog, setOpenDialog] = React.useState(false);
 
   const handleSurveyViewImageZoomIn = () => {
     props.onSetMediaItemZoomFactor(props.mediaItem.uniqueId, props.mediaItemZoomFactor + 0.2);
@@ -50,22 +44,6 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
     props.onSetMediaItemZoomFactor(props.mediaItem.uniqueId, props.mediaItemZoomFactor - 0.2);
   };
 
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  function handleDeleteSurveyPhoto() {
-    setOpenDialog(true);
-  }
-
-  const handleConfirmDelete = () => {
-    setOpenDialog(false);
-    props.onDeleteSurveyViewImageContainerItem(props.mediaItem.uniqueId)
-      .then(() => {
-        props.onReloadMediaItemsByViewSpec();
-      });
-  };
-  
   const photoUrl = getPhotoUrl(props.mediaItem);
 
   const cardMediaHeight: number = surveyRowHeights[props.numGridRows - 1];
@@ -73,15 +51,6 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
 
   return (
     <React.Fragment>
-      <div>
-        <ConfirmationDialog
-          open={openDialog}
-          onClose={handleCloseDialog}
-          onConfirm={handleConfirmDelete}
-          title="Confirm Delete"
-          message={'Are you sure you want to delete ' + props.mediaItem.fileName + '?'}
-        />
-      </div>
       <CardMedia
         id={props.mediaItem.uniqueId}
         className='survey-image-container'
@@ -106,12 +75,6 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
               }}>
               <RemoveIcon />
             </IconButton>
-            <IconButton
-              onClick={() => {
-                handleDeleteSurveyPhoto();
-              }}>
-              <DeleteIcon />
-            </IconButton>
           </div>
         </div>
       </CardMedia>
@@ -129,7 +92,6 @@ function mapStateToProps(state: any, ownProps: any) {
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
-    onDeleteSurveyViewImageContainerItem: deleteSurveyViewImageContainerItem,
     onSetMediaItemZoomFactor: setMediaItemZoomFactor,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);

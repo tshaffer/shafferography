@@ -59,6 +59,7 @@ body,
   height: auto;
   box-sizing: border-box;
   transform-origin: 0 0;
+  transition: box-shadow 0.2s ease, border 0.2s ease;
 }
 
 .container {

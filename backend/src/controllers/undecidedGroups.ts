@@ -8,9 +8,9 @@ export const getUndecidedGroups = async (request: Request, response: Response, n
 };
 
 export const addUndecidedGroup = async (req: Request, res: Response, next: any) => {
-  const { albumIds, name } = req.body;
+  const { albumIds: albumNodeIds, name } = req.body;
   try {
-    const newGroup: UndecidedGroup = await addUndecidedGroupToDb(albumIds, name);
+    const newGroup: UndecidedGroup = await addUndecidedGroupToDb(albumNodeIds, name);
     res.status(200).json(newGroup);
   } catch (error) {
     res.status(500).json({ message: error.message });

@@ -60,7 +60,7 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/undecidedGroups', getUndecidedGroups);
   app.post('/api/v1/undecidedGroup', addUndecidedGroup);
   app.put('/api/v1/undecidedGroup/undecided-group', assignMediaItemsToUndecidedGroup);
-  app.get('/api/v1/undecidedGroups/:albumId', fetchUndecidedGroupsForAlbums);
+  app.get('/api/v1/undecidedGroups/:albumNodeId', fetchUndecidedGroupsForAlbums);
   app.delete('/api/v1/undecidedGroups/:groupId', deleteUndecidedGroup);
 
   app.get('/api/v1/mediaItemCounts', getMediaItemCounts);

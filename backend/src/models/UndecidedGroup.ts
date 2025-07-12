@@ -9,7 +9,7 @@ const UndecidedGroupSchema = new Schema({
     required: true, 
     validate: {
       validator: function (value: string[]) {
-        return value.length > 0; // Ensures at least one albumId is present
+        return value.length > 0; // Ensures at least one albumNodeId is present
       },
       message: 'An UndecidedGroup must be associated with at least one album node.'
     }

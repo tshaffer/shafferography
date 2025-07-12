@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 
 import path from 'path';
 import { v4 as uuidv4 } from 'uuid';
-import { FileToImport, GeoData, GoogleAlbum, MediaItem, 
+import { FileToImport, GeoData, MediaItem, 
   PhotoState } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
@@ -11,7 +11,6 @@ import { addMediaItemToMediaItemsDBTable,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
-import { getGoogleAlbumsByName } from './googlePhotos';
 
 async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string, fileName: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
 

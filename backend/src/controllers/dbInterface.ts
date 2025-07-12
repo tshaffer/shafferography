@@ -512,8 +512,7 @@ export const getAllUndecidedGroupsFromDb = async (): Promise<UndecidedGroup[]> =
       const ud: UndecidedGroup = {
         id: undecidedGroupDocument._id.toString(), // Ensure `id` is returned as a string
         name: undecidedGroupDocument.name,
-        albumNodeIds: [],
-        // albumIds: undecidedGroupDocument.albumIds,
+        albumNodeIds: undecidedGroupDocument.albumNodeIds,
         createdAt: undecidedGroupDocument.createdAt,
       }
       return ud;
@@ -525,14 +524,13 @@ export const getAllUndecidedGroupsFromDb = async (): Promise<UndecidedGroup[]> =
   }
 };
 
-export const addUndecidedGroupToDb = async (albumIds: string[], name: string): Promise<UndecidedGroup> => {
+export const addUndecidedGroupToDb = async (albumNodeIds: string[], name: string): Promise<UndecidedGroup> => {
   try {
     const undecidedGroupModel = getUndecidedGroupModel();
 
-    // Ensure group name is unique within at least one of the provided albumIds
     const existingGroup = await undecidedGroupModel.findOne({
       name,
-      albumIds: { $in: albumIds } // Checks for overlap between provided albumIds and existing ones
+      albumNodeIds: { $in: albumNodeIds } // Checks for overlap between provided albumNodeIds and existing ones
     });
 
     if (existingGroup) {
@@ -542,13 +540,12 @@ export const addUndecidedGroupToDb = async (albumIds: string[], name: string): P
     const createdAt: string = new Date().toISOString();
 
     // Create the new group using Mongoose's model method
-    const newGroupDoc = await undecidedGroupModel.create({ albumIds, name, createdAt });
+    const newGroupDoc = await undecidedGroupModel.create({ albumNodeIds, name, createdAt });
 
     return {
       id: newGroupDoc._id.toString(), // Convert MongoDB ObjectId to string
       name,
-      albumNodeIds: [],
-      // albumIds,
+      albumNodeIds,
       createdAt
     };
   } catch (error) {

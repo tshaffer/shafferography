@@ -114,7 +114,7 @@ interface SetAlbumNodesPayload {
 export const setAlbumNodesRedux = (
   albumNodes: MediaContentNode[],
 ): any => {
-  console.log('albums.ts: setAlbumNodesRedux', albumNodes);
+  // console.log('albums.ts: setAlbumNodesRedux', albumNodes);
   return {
     type: SET_MEDIA_CONTENT_NODES,
     payload: {

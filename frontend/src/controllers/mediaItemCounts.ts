@@ -12,7 +12,7 @@ export const loadMediaItemCounts = (): any => {
     return axios.get(path)
       .then((mediaItemCountsResponse: any) => {
         const mediaItemsCount: MediaItemsCountState = mediaItemCountsResponse.data;
-        console.log('mediaItemCounts loaded: ', mediaItemsCount);
+        // console.log('mediaItemCounts loaded: ', mediaItemsCount);
         dispatch(setMediaItemCounts(mediaItemsCount));
       });
   }

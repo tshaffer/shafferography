@@ -8,7 +8,7 @@ export const getUndecidedGroups = async (request: Request, response: Response, n
 };
 
 export const addUndecidedGroup = async (req: Request, res: Response, next: any) => {
-  const { albumIds: albumNodeIds, name } = req.body;
+  const { albumNodeIds, name } = req.body;
   try {
     const newGroup: UndecidedGroup = await addUndecidedGroupToDb(albumNodeIds, name);
     res.status(200).json(newGroup);

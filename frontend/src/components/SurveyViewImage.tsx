@@ -61,7 +61,10 @@ function SurveyViewImage(props: SurveyViewImageProps) {
         id={elementId}
         src={photoUrl}
         className='surveyImageStyle'
-        style={{ border: `${borderSizeStr} solid ${isFocused ? 'black' : 'white'}` }}
+        style={{
+          border: isFocused ? '4px solid #1976d2' : '2px solid #ccc',
+          filter: isFocused ? 'none' : 'grayscale(70%) opacity(70%)',
+        }}
         loading="lazy"
         onContextMenu={handleContextMenu}
       />

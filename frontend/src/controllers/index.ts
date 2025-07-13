@@ -9,3 +9,4 @@ export * from './googleUploader';
 export * from './undecidedGroups';
 export * from './mediaItemCounts';
 export * from './mediaItems';
+export * from './photoImporter';

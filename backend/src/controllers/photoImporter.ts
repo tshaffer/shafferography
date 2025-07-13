@@ -1,13 +1,19 @@
-import { Request, Response } from 'express';
+import { Request, response, Response } from 'express';
 
 import path from 'path';
+import * as fse from 'fs-extra';
 import { v4 as uuidv4 } from 'uuid';
-import { FileToImport, GeoData, MediaItem, 
-  PhotoState } from '../types';
+import {
+  FileToImport, GeoData, MediaItem,
+  PhotoState
+} from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
-import { addMediaItemToMediaItemsDBTable, 
+import {
+  addMediaItemToMediaItemsDBTable,
+  getMediaItemFromDb,
+  updateMediaItemsFieldsInDb,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
@@ -132,7 +138,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
         const newFilename = path.basename(inputFilePath, fileExtension) + ".jpg"; // Replaces .heic with .jpg
         const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
         console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
-        
+
         const fileEntry = processingStatuses[importId].files.find((f) => f.filename === fileName);
 
         try {
@@ -167,4 +173,58 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
 export const getPerFileImportPhotosStatus = async (req: Request, res: Response, next: any) => {
   const { importId } = req.params;
   res.json(processingStatuses[importId] || { files: [] });
+}
+
+async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<void> {
+
+  const exifData: Tags = await retrieveExifData(filePath);
+
+  const updates: Partial<MediaItem> = {
+    width: exifData.ImageWidth,
+    height: exifData.ImageHeight,
+    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
+  };
+
+  await updateMediaItemsFieldsInDb([id], updates);
+}
+
+export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {
+
+  try {
+    console.log(request.body);
+
+    const mediaItemIds: string[] = request.body.mediaItemIds;
+    const mediaItemId: string = mediaItemIds[0];
+
+    const mediaItem: MediaItem | undefined = await getMediaItemFromDb(mediaItemId);
+    if (!mediaItem) {
+      console.error('Media item not found for ID:', mediaItemId);
+      return response.status(404).json({ error: 'Media item not found' });
+    }
+
+    console.log('mediaItem:', mediaItem);
+
+    const mediaFilePath: string = mediaItem.filePath;
+    const fileExtension = path.extname(mediaFilePath);
+    const dirname = path.dirname(mediaFilePath); // Extracts the directory path
+    const heicFileName = path.basename(mediaFilePath, fileExtension) + ".heic";
+    const heicFilePath = path.join(dirname, heicFileName);
+    if (fse.existsSync(heicFilePath)) {
+      console.log('HEIC file exists:', heicFilePath);
+      console.log('convertFilesToJpeg:', heicFilePath, mediaFilePath);
+      try {
+        await convertHEICFileToJPEGWithEXIF(heicFilePath, mediaFilePath);
+      } catch (error) {
+        console.error('Error in convertFilesToJpeg:', error);
+      }
+    } else {
+      console.error('HEIC file does not exist:', heicFilePath);
+    }
+    await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
+
+  } catch (error) {
+    console.error('Error in response:', error);
+    response.status(500).json(error);
+  }
+  response.sendStatus(200);
 }

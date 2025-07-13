@@ -25,8 +25,9 @@ import HelpOutline from '@mui/icons-material/HelpOutline';
 import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
+import ReplayIcon from '@mui/icons-material/Replay';
 
-import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
+import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
@@ -92,6 +93,7 @@ export interface TopNavigationBarDerivedActionCreatorProps {
   onReloadMediaItemsByViewSpec: () => any;
   onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
   onSetDisplayMetadata: (displayMetadata: boolean) => any;
+  onReimportMediaItems: () => any;
 }
 
 export interface TopNavigationProps extends TopNavigationBarDerivedStateProps, TopNavigationBarDerivedActionCreatorProps, TopNavigationBarPropsFromParent { }
@@ -176,7 +178,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       }
 
       props.onDeselectAllPhotos();
-      
+
       props.onSetPhotoLayout(PhotoLayout.Loupe);
 
     } else if (photoLayout === PhotoLayout.Survey) {
@@ -307,6 +309,12 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     props.onSetNumGridColumns(value as number);
   }
 
+  const handleReloadMediaItems = () => {
+    console.log('handleReloadMediaItems');
+    console.log(props.selectedMediaItems[0]);
+    props.onReimportMediaItems();
+  }
+
   /*  Prior slider version
           <DialogContent style={{ paddingTop: '34px' }}>
           <Slider
@@ -417,7 +425,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       return false;
     }
     return props.selectedMediaItemsCount === 0;
-    
+
   }
 
   const renderSetPhotoStateUI = () => {
@@ -527,6 +535,19 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
             </IconButton>
           </span>
         </Tooltip>
+
+        <Tooltip title="Reload Photo(s)">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount === 0}
+              onClick={handleReloadMediaItems}
+            >
+              <ReplayIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
       </React.Fragment>
     );
   };
@@ -535,7 +556,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     return (
       <React.Fragment>
         <Typography variant="subtitle1" sx={{ mx: 2 }}>
-          {props.loupeViewMediaItemIds.length} {props.loupeViewMediaItemIds.length === 1 ? 'item': 'items'}
+          {props.loupeViewMediaItemIds.length} {props.loupeViewMediaItemIds.length === 1 ? 'item' : 'items'}
         </Typography>
       </React.Fragment>
     )
@@ -671,7 +692,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
     onRemoveLoupeViewMediaItemId: removeLoupeViewMediaItemId,
     onSetDisplayMetadata: setDisplayMetadata,
-
+    onReimportMediaItems: reimportPhotosFromDrive,
   }, dispatch);
 };
 

@@ -29,6 +29,7 @@ import {
   getMediaItemCountByAlbumNode,
   getMediaItemCountByPhotoStateByAlbumNodeId,
   getMediaItemCountByUndecidedGroupPerAlbumNode,
+  reimportPhotosEndpoint,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -51,6 +52,7 @@ export const createRoutes = (app: express.Application) => {
 
   app.get('/api/v1/albumNamesWherePeopleNotRetrieved', getAlbumNamesWherePeopleNotRetrievedEndpoint);
   app.post('/api/v1/importPhotos', importPhotosEndpoint);
+  app.post('/api/v1/reimportPhotos', reimportPhotosEndpoint);
   app.post('/api/v1/uploadToGoogle', uploadToGoogleEndpoint);
   app.post('/api/v1/mergePeopleTakeout', mergePeopleTakeoutEndpoint);
 

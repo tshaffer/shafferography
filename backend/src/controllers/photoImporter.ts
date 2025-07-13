@@ -18,7 +18,7 @@ import {
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
 
-async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string, fileName: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
+async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: string, fileName: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
 
   const filePath = path.join(baseDirectory, fileName);
   console.log('filePath:', filePath);
@@ -50,7 +50,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumId: string
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
     photoState: PhotoState.Unreviewed,
-    albumNodeId: albumId,
+    albumNodeId,
   }
 
   return mediaItem;
@@ -95,13 +95,9 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     const importId = uuidv4();
 
     const baseDirectory: string = request.body.baseDirectory;
-    const albumId: string = request.body.albumId;
+    const albumNodeId: string = request.body.albumNodeId;
     const files: FileToImport[] = request.body.files;
     const fileNames: string[] = files.map((file) => file.name);
-
-    console.log('baseDirectory:', baseDirectory);
-    console.log('albumId:', albumId);
-    console.log('files:', files);
 
     const importFromTakeout: boolean = isImportFromTakeout(baseDirectory);
 
@@ -119,7 +115,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     let metadataAlbumName: string = '';
     let googleAlbumId: string = '';
     if (importFromTakeout) {
-      // const album: Album = await getAlbumById(albumId);
+      // const album: Album = await getAlbumById(albumNodeId);
       // metadataAlbumName = album.albumName;
       // const googleAlbums: GoogleAlbum[] = await getGoogleAlbumsByName(request.body.googleAccessToken, album.albumName);
       // if (googleAlbums.length > 0) {
@@ -155,7 +151,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
         updatedFileName = fileName;
       }
 
-      const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumId, updatedFileName, googleAlbumName, googleAlbumId);
+      const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumNodeId, updatedFileName, googleAlbumName, googleAlbumId);
       await addMediaItemsFromLocalStorage([mediaItem]);
 
     }

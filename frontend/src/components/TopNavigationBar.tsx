@@ -540,7 +540,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <span>
             <IconButton
               color="inherit"
-              disabled={props.selectedMediaItemsCount === 0}
+              disabled={props.selectedMediaItemsCount !== 1}
               onClick={handleReloadMediaItems}
             >
               <ReplayIcon />

@@ -23,6 +23,7 @@ export const reimportPhotosFromDrive = (): any => {
       }
       const updatedMediaItem: MediaItem = response.data;
       dispatch(replaceMediaItemRedux(updatedMediaItem));
+      // dispatch(reloadMediaItemsByViewSpec());
     } catch (error) {
       console.error("Upload failed", error);
     }

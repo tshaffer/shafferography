@@ -9,7 +9,6 @@ import SurveyViewImage from './SurveyViewImage';
 import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { surveyRowHeights } from '../constants';
-import { loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
 import { MediaItem } from '../types';
@@ -31,7 +30,6 @@ export interface SurveyViewImageContainerProps extends SurveyViewImageContainerP
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
   onSetMediaItemZoomFactor: (mediaItemId: string, zoomFactor: number) => any;
-  onReloadMediaItemsByViewSpec: () => any;
 }
 
 function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
@@ -93,7 +91,6 @@ function mapStateToProps(state: any, ownProps: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetMediaItemZoomFactor: setMediaItemZoomFactor,
-    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 

@@ -22,7 +22,7 @@ import {
 import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
 import { MediaContentNode, GroupNode, AlbumNode, MediaContentNodeType } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
-import { getMediaContentTree, getSelectedMediaContentNodeIds } from '../selectors';
+import { getDisplayedAlbumNodeIds, getMediaContentTree, getSelectedMediaContentNodeIds } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
 import GroupTreeNode from './GroupTreeNode';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
@@ -31,6 +31,7 @@ import { isAlbumNode } from '../utilities';
 interface MediaContentTreeViewProps {
   mediaContentNodes: MediaContentNode[];
   selectedNodeIds: Set<string>;
+  displayedAlbumNodeIds: string[];
   onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (mediaContentNode: MediaContentNode, parentId?: string) => void;
   onAddGroupToTree: (name: string, parentId?: string) => void;
@@ -61,6 +62,26 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   const [contextMenuNodeId, setContextMenuNodeId] = useState<string | null>(null);
   const [contextMenuNode, setContextMenuNode] = useState<MediaContentNode | null>(null);
 
+  const [expandedGroupIds, setExpandedGroupIds] = useState<string[] | null>(null);
+
+  React.useEffect(() => {
+    if (
+      props.mediaContentNodes.length > 0 &&
+      props.displayedAlbumNodeIds.length > 0 &&
+      expandedGroupIds === null
+    ) {
+      try {
+        const ids = getExpandedGroupIdsFromDisplayedAlbums(
+          props.mediaContentNodes,
+          props.displayedAlbumNodeIds
+        );
+        setExpandedGroupIds(ids);
+      } catch (e) {
+        console.error('Error computing expanded group IDs:', e);
+      }
+    }
+  }, [props.mediaContentNodes, props.displayedAlbumNodeIds, expandedGroupIds]);
+
   const getAllGroupNodes = (nodes: MediaContentNode[]): MediaContentNode[] => {
     const result: MediaContentNode[] = [];
 
@@ -76,6 +97,37 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     traverse(nodes);
     return result;
   };
+
+  function getExpandedGroupIdsFromDisplayedAlbums(
+    rootNodes: MediaContentNode[],
+    displayedAlbumNodeIds: string[]
+  ): string[] {
+    const groupIdsToExpand = new Set<string>();
+
+    function recurse(
+      node: MediaContentNode,
+      parent: GroupNode | null
+    ) {
+      if (node.type === MediaContentNodeType.Album) {
+        if (displayedAlbumNodeIds.includes(node.id)) {
+          if (!parent) {
+            throw new Error(`AlbumNode with id=${node.id} does not have a parent group`);
+          }
+          groupIdsToExpand.add(parent.id);
+        }
+      } else if (node.type === MediaContentNodeType.Group) {
+        for (const child of node.children) {
+          recurse(child, node);
+        }
+      }
+    }
+
+    for (const node of rootNodes) {
+      recurse(node, null);
+    }
+
+    return Array.from(groupIdsToExpand);
+  }
 
   const getAlbumNodeJsx = (node: AlbumNode): JSX.Element => {
     return (
@@ -320,18 +372,22 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
                 </ButtonGroup>
               </Box>
               {renderContextMenu(contextMenuNode)}
-              <SimpleTreeView
-                id='mediaContentTreeView'
-                onSelectedItemsChange={(event, id) => {
-                  setSelectedId(id ?? null);
-                }}
-                slots={{
-                  expandIcon: ChevronRight as React.ComponentType<SvgIconProps>,
-                  collapseIcon: ExpandMore as React.ComponentType<SvgIconProps>,
-                }}
-              >
-                {sortNodes(props.mediaContentNodes).map(renderTree)}
-              </SimpleTreeView>
+
+              {expandedGroupIds !== null && (
+                <SimpleTreeView
+                  id='mediaContentTreeView'
+                  onSelectedItemsChange={(event, id) => {
+                    setSelectedId(id ?? null);
+                  }}
+                  defaultExpandedItems={expandedGroupIds}
+                  slots={{
+                    expandIcon: ChevronRight as React.ComponentType<SvgIconProps>,
+                    collapseIcon: ExpandMore as React.ComponentType<SvgIconProps>,
+                  }}
+                >
+                  {sortNodes(props.mediaContentNodes).map(renderTree)}
+                </SimpleTreeView>
+              )}
 
               <ImportFromDriveDialog
                 open={importFromDriveDialogOpen}
@@ -451,6 +507,7 @@ function mapStateToProps(state: any) {
   return {
     mediaContentNodes: getMediaContentTree(state),
     selectedNodeIds: getSelectedMediaContentNodeIds(state),
+    displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
   };
 }
 

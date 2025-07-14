@@ -144,7 +144,7 @@ const GridCell = (props: GridCellProps) => {
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
-  console.log('render GridCell');
+  // console.log('render GridCell');
   // console.log('displayMetadata', props.displayMetadata);
   // console.log('imgHeightAttribute', imgHeightAttribute);
   // console.log('divHeightAttribute', divHeightAttribute);

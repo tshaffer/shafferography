@@ -157,6 +157,5 @@ export interface AlbumNode {
 }
 
 export interface MediaContentTree {
-  // _id: string;
   nodes: MediaContentNode[];
 }

@@ -171,7 +171,6 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
           size: selectedFile.size,
           type: selectedFile.type,
           lastModified: selectedFile.lastModified,
-          lastModifiedDate: (selectedFile as any).lastModifiedDate,
         };
         files.push(file);
       }

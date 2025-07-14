@@ -35,7 +35,7 @@ function FullScreenPhoto(props: FullScreenPhotoProps) {
     <div style={{ width: '1640px', height: '790px' }}>
       <img
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        src={src}
+        src={`${src}?v=${encodeURIComponent(props.mediaItem!.lastModified ?? "")}`}
       />
     </div>
   );

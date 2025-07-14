@@ -10,6 +10,7 @@ export const REPLACE_MEDIA_ITEMS = 'REPLACE_MEDIA_ITEMS';
 export const ADD_MEDIA_ITEMS = 'ADD_MEDIA_ITEMS';
 export const DELETE_MEDIA_ITEMS = 'DELETE_MEDIA_ITEMS';
 export const CLEAR_MEDIA_ITEMS = 'CLEAR_MEDIA_ITEMS';
+export const REPLACE_MEDIA_ITEM = 'REPLACE_MEDIA_ITEM';
 export const UPDATE_MEDIA_ITEMS = 'UPDATE_MEDIA_ITEMS';
 
 export const ADD_KEYWORD_TO_MEDIA_ITEM_IDS = 'ADD_KEYWORD_TO_MEDIA_ITEM_IDS';
@@ -55,16 +56,18 @@ interface SetMediaItemsPayload {
   mediaItems: MediaItem[];
 }
 
-// export const replaceMediaItemsRedux = (
-//   mediaItems: MediaItem[],
-// ): any => {
-//   return {
-//     type: REPLACE_MEDIA_ITEMS,
-//     payload: {
-//       mediaItems
-//     }
-//   };
-// };
+interface ReplaceMediaItemPayload {
+  mediaItem: MediaItem;
+}
+
+export const replaceMediaItemRedux = (
+  mediaItem: MediaItem,
+): any => {
+  return {
+    type: REPLACE_MEDIA_ITEM,
+    payload: { mediaItem }
+  };
+};
 
 export const updateMediaItemsRedux = (mediaItems: MediaItem[]): any => {
   return {
@@ -243,7 +246,7 @@ const initialState: MediaItemsState =
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload & SetMediaItemNotesPayload>
+  action: TedTaggerModelBaseAction<ReplaceMediaItemPayload & SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload & SetMediaItemNotesPayload>
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
@@ -258,6 +261,17 @@ export const mediaItemsStateReducer = (
       return {
         ...state,
         mediaItems: newMediaItems
+      };
+    }
+    case REPLACE_MEDIA_ITEM: {
+      const mediaItem = action.payload.mediaItem;
+      const updatedMediaItems = state.mediaItems.map(item =>
+        item.uniqueId === mediaItem.uniqueId ? mediaItem : item
+      );
+
+      return {
+        ...state,
+        mediaItems: updatedMediaItems
       };
     }
     case REPLACE_MEDIA_ITEMS: {

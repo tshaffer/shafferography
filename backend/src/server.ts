@@ -30,10 +30,7 @@ const startServer = async () => {
   app.use(cookieParser());
   app.use(express.json()); // Parse JSON requests
 
-  // app.use(cors());
-  // const cors = require('cors');
   app.use(cors({
-    // origin: 'http://localhost:5173', // Vite's dev server URL
     origin: 'http://192.168.86.46:8080', //localHost network IP address. required??
     credentials: true
   }));
@@ -283,8 +280,14 @@ const startServer = async () => {
   //    /Users/tedshaffer/Pictures/ShafferographyMedia/Boys on horseback at Bryce/img483.jpg
   // associated url
   //    http://localhost:8080/shafferographyMedia/Boys on horseback at Bryce/img483.jpg
+  // app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH, {
+  //   maxAge: 86400000 // 24 hours in milliseconds
+  // }));
   app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH, {
-    maxAge: 86400000 // 24 hours in milliseconds
+    etag: true,                // Enable ETag-based validation
+    lastModified: true,        // Enable Last-Modified header
+    maxAge: '30d',             // Cache for 30 days if not busted manually
+    immutable: false           // Allow revalidation if client adds headers like If-Modified-Since
   }));
 
 

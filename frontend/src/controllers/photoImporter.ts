@@ -1,6 +1,6 @@
 import axios from "axios";
-import { getServerUrl, apiUrlFragment, TedTaggerState } from "../types";
-import { TedTaggerDispatch } from "../models";
+import { getServerUrl, apiUrlFragment, TedTaggerState, MediaItem } from "../types";
+import { replaceMediaItemRedux, TedTaggerDispatch } from "../models";
 import { getSelectedMediaItemIds } from "../selectors";
 
 export const reimportPhotosFromDrive = (): any => {
@@ -17,18 +17,12 @@ export const reimportPhotosFromDrive = (): any => {
     };
 
     try {
-      const response = await axios.post(uploadUrl, uploadBody, {
-        onUploadProgress: (progressEvent) => {
-          const percentCompleted = Math.round(
-            (progressEvent.loaded * 100) / (progressEvent.total ?? 1)
-          );
-        },
-      });
-
-      console.log("Upload started:", response.data);
-
-      console.log("Processing is fully complete!");
-
+      const response = await axios.post(uploadUrl, uploadBody);
+      if (response.status !== 200) {
+        throw new Error(`Upload failed with status ${response.status}`);
+      }
+      const updatedMediaItem: MediaItem = response.data;
+      dispatch(replaceMediaItemRedux(updatedMediaItem));
     } catch (error) {
       console.error("Upload failed", error);
     }

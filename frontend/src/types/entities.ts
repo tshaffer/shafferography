@@ -22,6 +22,7 @@ export interface ServerMediaItem {
   url?: string,
   mimeType?: string,
   creationTime?: string,
+  lastModified?: string,
   width?: number,
   height?: number
   orientation?: number,
@@ -44,6 +45,7 @@ export interface MediaItem {
   url?: string,
   mimeType?: string,
   creationTime?: string,
+  lastModified?: string,
   width?: number,
   height?: number
   orientation?: number,
@@ -105,7 +107,6 @@ export interface FileToImport {
   size: number;
   type: string;
   lastModified: number;
-  lastModifiedDate: string;
 }
 
 export interface PhotoStateOption {
@@ -114,8 +115,8 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "width", "height", "orientation", "photoState"]
+export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

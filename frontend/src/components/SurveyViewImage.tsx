@@ -59,7 +59,7 @@ function SurveyViewImage(props: SurveyViewImageProps) {
     <>
       <img
         id={elementId}
-        src={photoUrl}
+        src={`${photoUrl}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
         className='surveyImageStyle'
         style={{
           border: isFocused ? '6px solid #1976d2' : '2px solid #ccc',

@@ -101,7 +101,6 @@ const UploadToGoogleDialog = (props: UploadToGoogleDialogProps) => {
           size: 0,
           type: '',
           lastModified: 0,
-          lastModifiedDate: '',
         };
         files.push(file);
       }

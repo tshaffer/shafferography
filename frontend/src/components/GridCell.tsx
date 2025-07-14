@@ -10,7 +10,6 @@ import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
 import { getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
-import LazyImage from './LazyImage';
 import { Icon, Typography } from '@mui/material';
 import dayjs, { Dayjs } from 'dayjs';
 
@@ -145,7 +144,7 @@ const GridCell = (props: GridCellProps) => {
 
   const metadataJsx: JSX.Element | null = getMetadataJsx();
 
-  // console.log('GridCell');
+  console.log('render GridCell');
   // console.log('displayMetadata', props.displayMetadata);
   // console.log('imgHeightAttribute', imgHeightAttribute);
   // console.log('divHeightAttribute', divHeightAttribute);
@@ -207,19 +206,12 @@ const GridCell = (props: GridCellProps) => {
       {metadataJsx}
 
       <img
-        src={photoUrl}
+        src={`${photoUrl}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
         width={widthAttribute}
         height={imgHeightAttribute}
         loading='lazy'
         style={{ display: 'block' }}
       />
-      {/* <LazyImage
-        src={photoUrl}
-        alt="..."
-        loading="lazy"
-        width={widthAttribute}
-        height={imgHeightAttribute}
-      /> */}
     </div>
   );
 };
@@ -257,6 +249,7 @@ const MemoizedGridCell = React.memo(GridCell, (prevProps, nextProps) => {
     prevProps.cellWidth === nextProps.cellWidth &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.mediaItem.uniqueId === nextProps.mediaItem.uniqueId &&
+    prevProps.mediaItem.lastModified === nextProps.mediaItem.lastModified &&
     prevProps.displayMetadata === nextProps.displayMetadata
   );
 });

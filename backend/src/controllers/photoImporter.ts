@@ -1,6 +1,7 @@
 import { Request, response, Response } from 'express';
 
 import path from 'path';
+import fs from 'fs';
 import * as fse from 'fs-extra';
 import { v4 as uuidv4 } from 'uuid';
 import {
@@ -14,11 +15,13 @@ import {
   addMediaItemToMediaItemsDBTable,
   getMediaItemFromDb,
   updateMediaItemsFieldsInDb,
+  updateSingleMediaItemFieldsInDb,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
+import { DateTime } from 'luxon';
 
-async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: string, fileName: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
+async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: string, fileName: string, isoLastModified: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
 
   const filePath = path.join(baseDirectory, fileName);
   console.log('filePath:', filePath);
@@ -39,6 +42,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
     url: `${BASE_MEDIA_URL}/${relativePath}`,
     mimeType: valueOrNull(exifData.MIMEType),
     creationTime: isoCreateDate,
+    lastModified: isoLastModified,
     width: exifData.ImageWidth, // or ExifImageWidth?
     height: exifData.ImageHeight, // or ExifImageHeight?
     orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
@@ -97,7 +101,11 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
     const baseDirectory: string = request.body.baseDirectory;
     const albumNodeId: string = request.body.albumNodeId;
     const files: FileToImport[] = request.body.files;
-    const fileNames: string[] = files.map((file) => file.name);
+
+    const filesData: any[] = files.map((file) => ({
+      fileName: file.name,
+      lastModified: file.lastModified,
+    }));
 
     const importFromTakeout: boolean = isImportFromTakeout(baseDirectory);
 
@@ -124,7 +132,9 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
       // }
     }
 
-    for (const fileName of fileNames) {
+    for (const fileData of filesData) {
+      const fileName = fileData.fileName;
+      const isoLastModified = DateTime.fromMillis(fileData.lastModified, { zone: 'utc' }).toISO();
       let updatedFileName: string = '';
       const filePath = path.join(baseDirectory, fileName);
       const fileExtension = path.extname(filePath);
@@ -135,7 +145,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
         const outputFilePath = path.join(dirname, newFilename); // Combines directory with new filename
         console.log('convertFilesToJpeg:', inputFilePath, outputFilePath);
 
-        const fileEntry = processingStatuses[importId].files.find((f) => f.filename === fileName);
+        const fileEntry: FileStatus = processingStatuses[importId].files.find((f) => f.filename === fileName);
 
         try {
           await convertHEICFileToJPEGWithEXIF(inputFilePath, outputFilePath);
@@ -151,7 +161,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
         updatedFileName = fileName;
       }
 
-      const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumNodeId, updatedFileName, googleAlbumName, googleAlbumId);
+      const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumNodeId, updatedFileName, isoLastModified, googleAlbumName, googleAlbumId);
       await addMediaItemsFromLocalStorage([mediaItem]);
 
     }
@@ -171,17 +181,26 @@ export const getPerFileImportPhotosStatus = async (req: Request, res: Response, 
   res.json(processingStatuses[importId] || { files: [] });
 }
 
-async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<void> {
 
+
+export function getLastModifiedUTCISO(filePath: string): string {
+  const stats = fs.statSync(filePath);
+  const mtime = stats.mtime; // JS Date object (local time interpreted)
+  return DateTime.fromJSDate(mtime).toUTC().toISO();
+}
+
+async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItem | null> {
   const exifData: Tags = await retrieveExifData(filePath);
 
   const updates: Partial<MediaItem> = {
     width: exifData.ImageWidth,
     height: exifData.ImageHeight,
+    lastModified: getLastModifiedUTCISO(filePath),
     orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
   };
 
-  await updateMediaItemsFieldsInDb([id], updates);
+  const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
+  return updatedItem;
 }
 
 export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {
@@ -216,11 +235,16 @@ export const reimportPhotosEndpoint = async (request: Request, response: Respons
     } else {
       console.error('HEIC file does not exist:', heicFilePath);
     }
-    await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
-
+    const updatedItem: MediaItem | null = await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
+    if (!updatedItem) {
+      console.error('Failed to update media item:', mediaItem.uniqueId);
+      return response.status(500).json({ error: 'Failed to update media item' });
+    } else {
+      console.log('Updated media item:', updatedItem);
+      return response.json(updatedItem);
+    }
   } catch (error) {
     console.error('Error in response:', error);
-    response.status(500).json(error);
+    return response.status(500).json(error);
   }
-  response.sendStatus(200);
 }

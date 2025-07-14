@@ -19,6 +19,7 @@ export interface MediaItem {
   url?: string,
   mimeType?: string,
   creationTime?: string,
+  lastModified?: string,
   width?: number,
   height?: number
   orientation?: number,
@@ -95,7 +96,6 @@ export interface FileToImport {
   size: number;
   type: string;
   lastModified: number;
-  lastModifiedDate: string;
 }
 
 export interface UndecidedGroup {

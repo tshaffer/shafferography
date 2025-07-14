@@ -42,23 +42,25 @@ const LoupeView = (props: LoupeViewProps) => {
   const src = getPhotoUrl(props.mediaItem);
 
   return (
-    <Box id='loupeViewImage' sx={{
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "100%",
-      height: "calc(100vh - 112px)",
-      backgroundColor: "black"
-    }}
+    <Box
+      id="loupeViewImage"
+      sx={{
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        width: "100%",
+        height: "calc(100vh - 112px)",
+        backgroundColor: "black"
+      }}
     >
       <Tooltip
         title={props.mediaItem.fileName}
-        placement='top'
+        placement="top"
         slotProps={{
           popper: {
             modifiers: [
               {
-                name: 'offset',
+                name: "offset",
                 options: {
                   offset: [0, -32],
                 },
@@ -68,12 +70,12 @@ const LoupeView = (props: LoupeViewProps) => {
         }}
       >
         <img
-          src={src}
+          src={`${src}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
           style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
         />
       </Tooltip>
     </Box>
-  )
+  );
 };
 
 function mapStateToProps(state: any) {

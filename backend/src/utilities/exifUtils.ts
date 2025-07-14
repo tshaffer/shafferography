@@ -8,6 +8,7 @@ import {
   Tags
 } from 'exiftool-vendored';
 
+
 // import { FilePathToExifTags } from '../types';
 
 // export let filePathsToExifTags: FilePathToExifTags = {};
@@ -62,7 +63,7 @@ export async function convertCreateDateToISO(tags: Tags): Promise<string | null>
     let isoDateString: string;
 
     if (createDate instanceof ExifDateTime) {
-      // If CreateDate is an ExifDateTime object, use its properties directly and set to UTC
+      // Interpret as local time, then convert to UTC
       const dateTime = DateTime.fromObject({
         year: createDate.year,
         month: createDate.month,
@@ -71,13 +72,13 @@ export async function convertCreateDateToISO(tags: Tags): Promise<string | null>
         minute: createDate.minute,
         second: createDate.second,
         millisecond: createDate.millisecond,
-        zone: 'utc'
-      });
+      }).toUTC(); // convert to UTC before formatting
       isoDateString = dateTime.toISO();
     } else {
-      // If CreateDate is a string, parse and format it using Luxon and set to UTC
-      // Assuming the string format is "yyyy:MM:dd HH:mm:ss"
-      const parsedDate = DateTime.fromFormat(createDate, 'yyyy:MM:dd HH:mm:ss', { zone: 'utc' });
+      // EXIF string format is usually: "yyyy:MM:dd HH:mm:ss"
+      const parsedDate = DateTime.fromFormat(createDate, 'yyyy:MM:dd HH:mm:ss', {
+        zone: 'local',
+      }).toUTC(); // convert to UTC before formatting
       isoDateString = parsedDate.toISO();
     }
 

@@ -232,7 +232,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     },
   }));
 
-  const renderTree = (node: MediaContentNode): React.ReactNode => {
+  const renderTree = (node: MediaContentNode, depth: number): React.ReactNode => {
     return (
       <CustomTreeItem
         key={node.id}
@@ -250,6 +250,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
             }}
             style={{
               cursor: 'pointer',
+              paddingLeft: `${depth * 4}px`,  // ← Manual indentation
               backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
               border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
               borderRadius: 8,
@@ -263,7 +264,8 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
           </span>
         }
       >
-        {node.type === 'group' && sortNodes(node.children).map(renderTree)}
+        {node.type === 'group' &&
+          sortNodes(node.children).map(child => renderTree(child, depth + 1))}
       </CustomTreeItem>
     );
   };
@@ -385,7 +387,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
                     collapseIcon: ExpandMore as React.ComponentType<SvgIconProps>,
                   }}
                 >
-                  {sortNodes(props.mediaContentNodes).map(renderTree)}
+                  {sortNodes(props.mediaContentNodes).map(node => renderTree(node, 0))}
                 </SimpleTreeView>
               )}
 

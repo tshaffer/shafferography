@@ -26,6 +26,7 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import ReplayIcon from '@mui/icons-material/Replay';
+import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
@@ -613,86 +614,57 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* View Mode Toggle Group */}
-          <Tooltip title="Grid View">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Grid)}
-                sx={{
-                  backgroundColor: isGridActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isGridActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isGridActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewModuleIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <ToggleButtonGroup
+            value={props.photoLayout}
+            exclusive
+            onChange={(e, newLayout) => {
+              if (newLayout !== null) handleUpdatePhotoLayout(newLayout);
+            }}
+            sx={{
+              '& .MuiToggleButton-root': {
+                borderRadius: '6px',
+                color: (theme) => theme.palette.text.secondary,
+              },
+              '& .MuiToggleButton-root.Mui-selected': {
+                backgroundColor: (theme) => theme.palette.primary.main,
+                color: '#fff',
+                '&:hover': {
+                  backgroundColor: (theme) => theme.palette.primary.dark,
+                },
+              },
+            }}
+          >
+            <ToggleButton value={PhotoLayout.Grid} aria-label="Grid View">
+              <ViewModuleIcon />
+            </ToggleButton>
+            <ToggleButton value={PhotoLayout.Loupe} aria-label="Loupe View">
+              <ViewComfyIcon />
+            </ToggleButton>
+            <ToggleButton
+              value={PhotoLayout.Survey}
+              aria-label="Survey Mode"
+              disabled={props.selectedMediaItemsCount < 2}
+            >
+              <ViewCarouselIcon />
+            </ToggleButton>
+          </ToggleButtonGroup>
 
-          <Tooltip title="Loupe View">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
-                sx={{
-                  backgroundColor: isLoupeActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isLoupeActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isLoupeActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewComfyIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-
-          <Tooltip title="Survey Mode">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Survey)}
-                disabled={isSurveyDisabled}
-                sx={{
-                  backgroundColor: isSurveyActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isSurveyActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: !isSurveyDisabled && isSurveyActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewCarouselIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Full Screen">
-            <span>
-              <IconButton
-                onClick={() => handleEnterFullScreenMode()}
-                disabled={!isFullScreenEnabled}
-                sx={{
-                  backgroundColor: isFullScreenEnabled ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isFullScreenEnabled ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isFullScreenEnabled
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <FullscreenIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <ToggleButton
+            value="fullscreen"
+            onClick={handleEnterFullScreenMode}
+            disabled={props.photoLayout !== PhotoLayout.Loupe}
+            sx={{
+              marginLeft: 2,
+              borderRadius: '6px',
+              backgroundColor: props.photoLayout === PhotoLayout.Loupe ? 'primary.main' : 'transparent',
+              color: props.photoLayout === PhotoLayout.Loupe ? '#fff' : 'text.secondary',
+              '&:hover': {
+                backgroundColor: props.photoLayout === PhotoLayout.Loupe ? 'primary.dark' : 'action.hover',
+              },
+            }}
+          >
+            <FullscreenIcon />
+          </ToggleButton>
 
           {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />

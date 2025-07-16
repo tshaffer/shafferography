@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
+import { v4 as uuidv4 } from 'uuid';
+
 import { styled } from '@mui/material/styles';
 import { SimpleTreeView, TreeItem } from '@mui/x-tree-view';
 import { ExpandMore, ChevronRight } from '@mui/icons-material';
@@ -67,7 +69,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   React.useEffect(() => {
     if (
       props.mediaContentNodes.length > 0 &&
-      props.displayedAlbumNodeIds.length > 0 &&
       expandedGroupIds === null
     ) {
       try {
@@ -215,7 +216,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     }
   };
 
-  const CustomTreeItem = styled(TreeItem)(({ theme }) => ({
+  const CustomGroupTreeItem = styled(TreeItem)(({ theme }) => ({
     '& .MuiTreeItem-content': {
       paddingTop: '0px !important',
       paddingBottom: '0px !important',
@@ -232,42 +233,124 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     },
   }));
 
-  const renderTree = (node: MediaContentNode, depth: number): React.ReactNode => {
-    return (
-      <CustomTreeItem
-        key={node.id}
-        itemId={node.id}
-        label={
-          <span
-            onContextMenu={(e) => {
-              e.preventDefault();
-              setContextMenuNodeId(node.id);
-              setContextMenuNode(node);
-              setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
-            }}
-            onClick={(e) => {
-              e.stopPropagation();
-            }}
-            style={{
-              cursor: 'pointer',
-              paddingLeft: `${depth * 4}px`,  // ← Manual indentation
-              backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
-              border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
-              borderRadius: 8,
-              fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
-              color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
-              boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
-              display: 'inline-block',
-            }}
-          >
-            {getNodeLabel(node)}
-          </span>
-        }
-      >
-        {node.type === 'group' &&
-          sortNodes(node.children).map(child => renderTree(child, depth + 1))}
-      </CustomTreeItem>
-    );
+  const OldCustomAlbumTreeItem = styled(TreeItem)(({ theme }) => ({
+    '& .MuiTreeItem-content': {
+      paddingTop: '0px !important',
+      paddingBottom: '0px !important',
+      paddingRight: '0px !important',
+      marginLeft: '10px !important',
+      gap: 0,
+    },
+    '& .MuiTreeItem-label': {
+      lineHeight: 0.5,
+    },
+    '& .MuiTreeItem-iconContainer': {
+      marginLeft: 0,
+      marginRight: 0,
+    },
+  }));
+
+  /*
+    // '& .MuiTreeItem-content': {
+    //   paddingTop: '1px !important',
+    //   paddingBottom: '2px !important',
+    //   paddingRight: '3px !important',
+    //   marginLeft: '4px !important',
+    //   gap: 0,
+    // },
+  */
+  const CustomAlbumTreeItem = styled(TreeItem)(({ theme }) => ({
+    '& .MuiSimpleTreeView-itemContent': {
+      paddingTop: '0px !important',
+      paddingBottom: '0px !important',
+      paddingRight: '0px !important',
+      marginLeft: '0px !important',
+      gap: 0,
+    },
+  }));
+
+  const renderTree = (node: MediaContentNode, depth: number): React.ReactElement => {
+    if (node.type === MediaContentNodeType.Group) {
+      console.log('Rendering group node:', node.name, 'at depth:', depth);
+      return (
+        <CustomGroupTreeItem
+          key={node.id}
+          itemId={node.id}
+          label={
+            <span
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setContextMenuNodeId(node.id);
+                setContextMenuNode(node);
+                setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              style={{
+                cursor: 'pointer',
+                paddingLeft: `${depth * 4}px`,  // ← Manual indentation
+                backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
+                border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
+                borderRadius: 8,
+                fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
+                color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
+                boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                display: 'inline-block',
+              }}
+            >
+              {getNodeLabel(node)}
+            </span>
+          }
+        >
+          {node.type === 'group' &&
+            sortNodes(node.children).map(child => renderTree(child, depth + 1))}
+        </CustomGroupTreeItem>
+      );
+    } else {
+      console.log('Rendering album node:', node.name, 'at depth:', depth);
+      return (
+        <CustomAlbumTreeItem
+          key={node.id}
+          itemId={node.id}
+          sx={{
+            '& > .MuiTreeItem-content': {
+              paddingLeft: `${(depth - 1) * 16}px`, // ← Adjust base indentation here (e.g., 16px per level)
+            },
+          }}
+          style={{
+            paddingLeft: '0px',
+          }}
+          label={
+            <span
+              onContextMenu={(e) => {
+                e.preventDefault();
+                setContextMenuNodeId(node.id);
+                setContextMenuNode(node);
+                setContextMenuPosition({ mouseX: e.clientX - 2, mouseY: e.clientY - 4 });
+              }}
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+              style={{
+                cursor: 'pointer',
+                paddingLeft: '1px',
+                backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
+                border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
+                borderRadius: 8,
+                fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
+                color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
+                boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                display: 'inline-block',
+              }}
+            >
+              {getNodeLabel(node)}
+            </span>
+          }
+        >
+        </CustomAlbumTreeItem>
+      );
+    }
   };
 
   const renderContextMenu = (contextMenuNode: MediaContentNode | null): JSX.Element => {
@@ -525,7 +608,4 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
 };
 
 export default connect(mapStateToProps, mapDispatchToProps)(MediaContentTreeView);
-function uuidv4(): string {
-  throw new Error('Function not implemented.');
-}
 

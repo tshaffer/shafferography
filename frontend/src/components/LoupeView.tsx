@@ -17,24 +17,6 @@ export interface LoupeViewProps {
 
 const LoupeView = (props: LoupeViewProps) => {
 
-  const [windowDimensions, setWindowDimensions] = React.useState(getWindowDimensions());
-
-  function getWindowDimensions() {
-    const { innerWidth: width, innerHeight: height } = window;
-    return {
-      width,
-      height
-    };
-  }
-
-  React.useEffect(() => {
-    function handleResize() {
-      setWindowDimensions(getWindowDimensions());
-    }
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   if (isNil(props.mediaItem)) {
     return null;
   }

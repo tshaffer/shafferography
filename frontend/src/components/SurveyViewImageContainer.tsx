@@ -10,7 +10,7 @@ import AddIcon from '@mui/icons-material/Add';
 import RemoveIcon from '@mui/icons-material/Remove';
 import { surveyRowHeights } from '../constants';
 import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
-import { getSurveyModeZoomFactor, getMediaItemZoomFactor } from '../selectors';
+import { getSurveyModeZoomFactor, getMediaItemZoomFactor, getFullScreenMode } from '../selectors';
 import { MediaItem } from '../types';
 import { getPhotoUrl } from '../utilities';
 
@@ -27,6 +27,7 @@ export interface SurveyViewImageContainerPropsFromParent {
 }
 
 export interface SurveyViewImageContainerProps extends SurveyViewImageContainerPropsFromParent {
+  fullScreenMode: boolean;
   surveyModeZoomFactor: number;
   mediaItemZoomFactor: number;
   onSetMediaItemZoomFactor: (mediaItemId: string, zoomFactor: number) => any;
@@ -46,6 +47,17 @@ function SurveyViewImageContainer(props: SurveyViewImageContainerProps) {
 
   const cardMediaHeight: number = surveyRowHeights[props.numGridRows - 1];
   cardMediaStyle.height = cardMediaHeight.toString() + 'px';
+
+  if (props.fullScreenMode) {
+    if (props.numGridRows > 2) {
+      cardMediaStyle.height = '33vh';
+    }
+    else if (props.numGridRows > 1) {
+      cardMediaStyle.height = '50vh';
+    } else {
+      cardMediaStyle.height = '100vh';
+    }
+  }
 
   return (
     <React.Fragment>
@@ -85,6 +97,7 @@ function mapStateToProps(state: any, ownProps: any) {
     mediaItem: ownProps.mediaItem,
     surveyModeZoomFactor: getSurveyModeZoomFactor(state),
     mediaItemZoomFactor: getMediaItemZoomFactor(state, ownProps.mediaItem.uniqueId),
+    fullScreenMode: getFullScreenMode(state),
   };
 }
 

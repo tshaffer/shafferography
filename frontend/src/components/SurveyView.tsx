@@ -5,13 +5,14 @@ import '../styles/TedTagger.css';
 import SurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Grid } from '@mui/material';
 import { setFocusedSurveyViewMediaItemId, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getFocusedSurveyViewMediaItemId, getSelectedMediaItems, getSurveyViewMediaItemIds } from '../selectors';
+import { getAppInitialized, getFocusedSurveyViewMediaItemId, getFullScreenMode, getSelectedMediaItems, getSurveyViewMediaItemIds } from '../selectors';
 import { MediaItem } from '../types';
 import React from 'react';
 
 export interface SurveyViewProps {
   appInitialized: boolean;
-  selectedMediaItems: MediaItem[],
+  selectedMediaItems: MediaItem[];
+  fullScreenMode: boolean;
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
   onSetFocusedSurveyViewMediaItemId: (id: string) => any;
@@ -124,10 +125,19 @@ const SurveyView = (props: SurveyViewProps) => {
 
 
   let numGridRows = 1;
-  if (numSurveyViewMediaItems > 10) {
-    numGridRows = 3;
-  } else if (numSurveyViewMediaItems > 3) {
-    numGridRows = 2;
+
+  if (props.fullScreenMode) {
+    if (numSurveyViewMediaItems > 10) {
+      numGridRows = 3;
+    } else if (numSurveyViewMediaItems > 4) {
+      numGridRows = 2;
+    }
+  } else {
+    if (numSurveyViewMediaItems > 10) {
+      numGridRows = 3;
+    } else if (numSurveyViewMediaItems > 3) {
+      numGridRows = 2;
+    }
   }
 
   let numGridColumns = Math.trunc(numSurveyViewMediaItems / numGridRows);
@@ -159,6 +169,7 @@ function mapStateToProps(state: any) {
     focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
     selectedMediaItems: getSelectedMediaItems(state),
+    fullScreenMode: getFullScreenMode(state),
   };
 }
 

@@ -2,6 +2,7 @@ import React from 'react';
 import { bindActionCreators } from 'redux';
 import { useState } from 'react';
 import { connect } from 'react-redux';
+import { useDispatch } from 'react-redux';
 
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
 import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider } from "@mui/material";
@@ -29,8 +30,8 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen } from '../selectors';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
@@ -79,6 +80,7 @@ export interface TopNavigationBarDerivedStateProps {
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
   displayMetadata: boolean;
+  fullScreenMode: boolean;
 }
 
 export interface TopNavigationBarDerivedActionCreatorProps {
@@ -101,6 +103,8 @@ export interface TopNavigationProps extends TopNavigationBarDerivedStateProps, T
 
 const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
+  const dispatch = useDispatch();
+
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
   const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
@@ -110,7 +114,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
-
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
 
   React.useEffect(() => {
@@ -124,6 +127,19 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       updateSurveyViewMediaItemProps();
     }
   }, [props.selectedMediaItemIds]);
+
+  React.useEffect(() => {
+    const handleFullscreenChange = () => {
+      const isFullscreen = !!document.fullscreenElement;
+      dispatch(setFullScreenMode(isFullscreen));
+    };
+
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+
+    return () => {
+      document.removeEventListener('fullscreenchange', handleFullscreenChange);
+    };
+  }, [dispatch]);
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
@@ -294,7 +310,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   }
 
   const handleEnterFullScreenMode = () => {
-    const elem = document.getElementById('loupeViewImage');
+    const elem = document.getElementById('centerColumn');
     if (elem) {
       if (elem.requestFullscreen) {
         elem.requestFullscreen();
@@ -563,13 +579,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     )
   }
 
-  const isActiveLayout = (layout: PhotoLayout) => props.photoLayout === layout;
-  const isGridActive = props.photoLayout === PhotoLayout.Grid;
-  const isLoupeActive = props.photoLayout === PhotoLayout.Loupe;
-  const isSurveyActive = props.photoLayout === PhotoLayout.Survey;
-  const isSurveyDisabled = props.selectedMediaItemsCount < 2;
-  const isFullScreenEnabled = props.photoLayout === PhotoLayout.Loupe;
-
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -652,14 +661,13 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <ToggleButton
             value="fullscreen"
             onClick={handleEnterFullScreenMode}
-            disabled={props.photoLayout !== PhotoLayout.Loupe}
             sx={{
               marginLeft: 2,
               borderRadius: '6px',
-              backgroundColor: props.photoLayout === PhotoLayout.Loupe ? 'primary.main' : 'transparent',
-              color: props.photoLayout === PhotoLayout.Loupe ? '#fff' : 'text.secondary',
+              backgroundColor: props.fullScreenMode ? 'primary.main' : 'transparent',
+              color: props.fullScreenMode ? '#fff' : 'text.secondary',
               '&:hover': {
-                backgroundColor: props.photoLayout === PhotoLayout.Loupe ? 'primary.dark' : 'action.hover',
+                backgroundColor: props.fullScreenMode ? 'primary.dark' : 'action.hover',
               },
             }}
           >
@@ -717,6 +725,7 @@ function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStatePro
     focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
     displayMetadata: getDisplayMetadata(state),
+    fullScreenMode: getFullScreenMode(state),
   };
 }
 

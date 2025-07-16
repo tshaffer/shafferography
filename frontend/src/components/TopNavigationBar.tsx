@@ -553,7 +553,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </span>
         </Tooltip>
 
-        <Tooltip title="Reload Photo(s)">
+        <Tooltip title="Reload Photo">
           <span>
             <IconButton
               color="inherit"
@@ -658,21 +658,27 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
             </ToggleButton>
           </ToggleButtonGroup>
 
-          <ToggleButton
-            value="fullscreen"
-            onClick={handleEnterFullScreenMode}
+          <Divider
+            orientation="vertical"
+            flexItem
             sx={{
-              marginLeft: 2,
-              borderRadius: '6px',
-              backgroundColor: props.fullScreenMode ? 'primary.main' : 'transparent',
-              color: props.fullScreenMode ? '#fff' : 'text.secondary',
-              '&:hover': {
-                backgroundColor: props.fullScreenMode ? 'primary.dark' : 'action.hover',
-              },
+              mx: 2,
+              alignSelf: 'stretch',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)', // 50% opacity white
             }}
-          >
-            <FullscreenIcon />
-          </ToggleButton>
+          />
+
+
+          <Tooltip title="Full Screen Mode">
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={handleEnterFullScreenMode}
+              >
+                <FullscreenIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
 
           {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />

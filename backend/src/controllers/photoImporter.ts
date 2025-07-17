@@ -192,10 +192,15 @@ export function getLastModifiedUTCISO(filePath: string): string {
 async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItem | null> {
   const exifData: Tags = await retrieveExifData(filePath);
 
+  const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
+  const geoData: GeoData | null = await extractGeoData(exifData);
+
   const updates: Partial<MediaItem> = {
     width: exifData.ImageWidth,
     height: exifData.ImageHeight,
+    creationTime: isoCreateDate,
     lastModified: getLastModifiedUTCISO(filePath),
+    geoData,
     orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
   };
 

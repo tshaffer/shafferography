@@ -72,16 +72,43 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
       expandedGroupIds === null
     ) {
       try {
-        const ids = getExpandedGroupIdsFromDisplayedAlbums(
-          props.mediaContentNodes,
-          props.displayedAlbumNodeIds
-        );
-        setExpandedGroupIds(ids);
+        const allExpandedIds = getExpandedNodeIdsWithAncestors(props.mediaContentNodes, props.displayedAlbumNodeIds);
+        setExpandedGroupIds(allExpandedIds);
       } catch (e) {
         console.error('Error computing expanded group IDs:', e);
       }
     }
   }, [props.mediaContentNodes, props.displayedAlbumNodeIds, expandedGroupIds]);
+
+  function getExpandedNodeIdsWithAncestors(
+    nodes: MediaContentNode[],
+    initiallyExpandedIds: string[]
+  ): string[] {
+    const parentMap = new Map<string, string | null>();
+
+    const buildParentMap = (node: MediaContentNode, parentId: string | null) => {
+      parentMap.set(node.id, parentId);
+      if ((node as GroupNode).children) {
+        (node as GroupNode).children.forEach(child => buildParentMap(child, node.id));
+      }
+    };
+
+    // Build the map of child -> parent
+    nodes.forEach(root => buildParentMap(root, null));
+
+    // For each initially expanded ID, add it and all its ancestors
+    const resultSet = new Set<string>();
+
+    initiallyExpandedIds.forEach(id => {
+      let currentId: string | null | undefined = id;
+      while (currentId) {
+        resultSet.add(currentId);
+        currentId = parentMap.get(currentId);
+      }
+    });
+
+    return Array.from(resultSet);
+  }
 
   const getAllGroupNodes = (nodes: MediaContentNode[]): MediaContentNode[] => {
     const result: MediaContentNode[] = [];
@@ -98,37 +125,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     traverse(nodes);
     return result;
   };
-
-  function getExpandedGroupIdsFromDisplayedAlbums(
-    rootNodes: MediaContentNode[],
-    displayedAlbumNodeIds: string[]
-  ): string[] {
-    const groupIdsToExpand = new Set<string>();
-
-    function recurse(
-      node: MediaContentNode,
-      parent: GroupNode | null
-    ) {
-      if (node.type === MediaContentNodeType.Album) {
-        if (displayedAlbumNodeIds.includes(node.id)) {
-          if (!parent) {
-            throw new Error(`AlbumNode with id=${node.id} does not have a parent group`);
-          }
-          groupIdsToExpand.add(parent.id);
-        }
-      } else if (node.type === MediaContentNodeType.Group) {
-        for (const child of node.children) {
-          recurse(child, node);
-        }
-      }
-    }
-
-    for (const node of rootNodes) {
-      recurse(node, null);
-    }
-
-    return Array.from(groupIdsToExpand);
-  }
 
   const getAlbumNodeJsx = (node: AlbumNode): JSX.Element => {
     return (
@@ -233,23 +229,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     },
   }));
 
-  const OldCustomAlbumTreeItem = styled(TreeItem)(({ theme }) => ({
-    '& .MuiTreeItem-content': {
-      paddingTop: '0px !important',
-      paddingBottom: '0px !important',
-      paddingRight: '0px !important',
-      marginLeft: '10px !important',
-      gap: 0,
-    },
-    '& .MuiTreeItem-label': {
-      lineHeight: 0.5,
-    },
-    '& .MuiTreeItem-iconContainer': {
-      marginLeft: 0,
-      marginRight: 0,
-    },
-  }));
-
   /*
     // '& .MuiTreeItem-content': {
     //   paddingTop: '1px !important',
@@ -271,7 +250,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 
   const renderTree = (node: MediaContentNode, depth: number): React.ReactElement => {
     if (node.type === MediaContentNodeType.Group) {
-      console.log('Rendering group node:', node.name, 'at depth:', depth);
       return (
         <CustomGroupTreeItem
           key={node.id}
@@ -308,7 +286,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         </CustomGroupTreeItem>
       );
     } else {
-      console.log('Rendering album node:', node.name, 'at depth:', depth);
       return (
         <CustomAlbumTreeItem
           key={node.id}
@@ -423,6 +400,12 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         </MenuItem>
       </Menu>
     );
+  }
+
+  if (expandedGroupIds === null) {
+    console.log('expandedGroupIds is null');
+  } else {
+    console.log('expandedGroupIds is not null');
   }
 
   return (

@@ -17,7 +17,7 @@ import { getPhotoUrl } from '../utilities';
 const cardMediaStyle = {
   objectFit: 'contain',
   height: '1080px',
-  backgroundColor: 'purple',
+  backgroundColor: 'black',
 };
 
 export interface SurveyViewImageContainerPropsFromParent {

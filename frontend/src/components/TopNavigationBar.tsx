@@ -572,6 +572,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     )
   }
 
+  const isGridActive = props.photoLayout === PhotoLayout.Grid;
+  const isLoupeActive = props.photoLayout === PhotoLayout.Loupe;
+  const isSurveyActive = props.photoLayout === PhotoLayout.Survey;
+  const isSurveyDisabled = props.selectedMediaItemsCount < 2;
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -616,40 +621,65 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* View Mode Toggle Group */}
-          <ToggleButtonGroup
-            value={props.photoLayout}
-            exclusive
-            onChange={(e, newLayout) => {
-              if (newLayout !== null) handleUpdatePhotoLayout(newLayout);
-            }}
-            sx={{
-              '& .MuiToggleButton-root': {
-                borderRadius: '6px',
-                color: (theme) => theme.palette.text.secondary,
-              },
-              '& .MuiToggleButton-root.Mui-selected': {
-                backgroundColor: (theme) => theme.palette.primary.main,
-                color: '#fff',
-                '&:hover': {
-                  backgroundColor: (theme) => theme.palette.primary.dark,
-                },
-              },
-            }}
-          >
-            <ToggleButton value={PhotoLayout.Grid} aria-label="Grid View">
-              <ViewModuleIcon />
-            </ToggleButton>
-            <ToggleButton value={PhotoLayout.Loupe} aria-label="Loupe View">
-              <ViewComfyIcon />
-            </ToggleButton>
-            <ToggleButton
-              value={PhotoLayout.Survey}
-              aria-label="Survey Mode"
-              disabled={props.selectedMediaItemsCount < 2}
-            >
-              <ViewCarouselIcon />
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <Tooltip title="Grid View">
+            <span>
+              <IconButton
+                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Grid)}
+                sx={{
+                  backgroundColor: isGridActive ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isGridActive ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: isGridActive
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <ViewModuleIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Loupe View">
+            <span>
+              <IconButton
+                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
+                sx={{
+                  backgroundColor: isLoupeActive ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isLoupeActive ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: isLoupeActive
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <ViewComfyIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Survey Mode">
+            <span>
+              <IconButton
+                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Survey)}
+                disabled={isSurveyDisabled}
+                sx={{
+                  backgroundColor: isSurveyActive ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isSurveyActive ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: !isSurveyDisabled && isSurveyActive
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <ViewCarouselIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
 
           <Divider
             orientation="vertical"

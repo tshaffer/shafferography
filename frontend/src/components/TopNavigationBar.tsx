@@ -33,7 +33,6 @@ import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFr
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode } from '../selectors';
 import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
-import ImportFromDriveDialog from './ImportFromDriveDialog';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
@@ -106,11 +105,9 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const dispatch = useDispatch();
 
   const [isZoomDialogOpen, setIsZoomDialogOpen] = useState(false);
-  const [showImportFromDriveDialog, setShowImportFromDriveDialog] = React.useState(false);
   const [showUploadToGoogleDialog, setShowUploadToGoogleDialog] = React.useState(false);
   const [error, setError] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
-  const [importing, setImporting] = useState(false);
   const [uploadingToGoogle, setUploadingToGoogle] = useState(false);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
@@ -151,10 +148,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const handleCloseSpecifyUndecidedGroupUI = () => {
     setUndecidedGroupAnchorEl(null);
-  };
-
-  const handleCloseImportFromDriveDialog = () => {
-    setShowImportFromDriveDialog(false);
   };
 
   const handleCloseUploadToGoogleDialogDialog = () => {
@@ -683,10 +676,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
-          {/* Import/Export */}
-          <Tooltip title="Import from Drive">
-            <IconButton color="inherit" onClick={() => setShowImportFromDriveDialog(true)}><DownloadIcon /></IconButton>
-          </Tooltip>
+          {/* Export */}
           <Tooltip title="Upload to Google">
             <span>
               <IconButton color="inherit" onClick={() => setShowUploadToGoogleDialog(true)} disabled={props.selectedMediaItemsCount === 0}><UploadIcon /></IconButton>

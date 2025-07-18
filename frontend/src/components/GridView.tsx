@@ -2,13 +2,14 @@ import * as React from 'react';
 import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { FilteredMediaItemPicker, GridRowData, MediaItem } from '../types';
+import { FilteredMediaItemPicker, GridRowData, MediaItem, PhotoState } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getRightPanelOpen, getScrollPosition, getSidebarOpen } from '../selectors';
+import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getRightPanelOpen, getScrollPosition, getSelectedMediaItemIds, getSidebarOpen } from '../selectors';
 import { getGridRowInfo } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
 import throttle from 'lodash/throttle';
+import { loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 
 export interface GridViewProps {
   appInitialized: boolean;
@@ -16,9 +17,12 @@ export interface GridViewProps {
   rightPanelOpen: boolean;
   numGridColumns: number;
   allMediaItems: FilteredMediaItemPicker[];
+  selectedMediaItemIds: string[];
   displayMetadata: boolean;
   savedScrollOffset: number;
   onSaveScrollOffset: (offset: number) => void;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
+  onReloadMediaItemsByViewSpec: () => any;
 }
 
 const GridView = ({ setTooltip, ...props }: GridViewProps & {
@@ -105,6 +109,37 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
     return () => observer.disconnect();
   }, []);
+
+  React.useEffect(() => {
+
+    console.log('GridView: eventList React.useEffect - invoked');
+
+    const handleKeyPress = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'Delete':
+          handleDeletePhoto();
+          break;
+        default:
+          break;
+      }
+    };
+
+    const handleDeletePhoto = () => {
+      props.onSetPhotoState(props.selectedMediaItemIds, PhotoState.Deleted)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec()
+            .then(() => { });
+        });
+    }
+
+
+    document.addEventListener('keydown', handleKeyPress);
+
+    return () => {
+      document.removeEventListener('keydown', handleKeyPress);
+    };
+  }, [props.selectedMediaItemIds]);
+
 
   const getGridRowData = (): GridRowData[] => {
     if (gridWidth === 0) return [];
@@ -237,12 +272,15 @@ function mapStateToProps(state: any) {
     allMediaItems: getFilteredMediaItems(state),
     savedScrollOffset: getScrollPosition(state),
     displayMetadata: getDisplayMetadata(state),
+    selectedMediaItemIds: getSelectedMediaItemIds(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSaveScrollOffset: setScrollPositionRedux,
+    onSetPhotoState: setPhotoState,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 

@@ -15,7 +15,6 @@ import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import LabelIcon from "@mui/icons-material/Label";
 import ClearIcon from "@mui/icons-material/Clear";
-import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -27,7 +26,6 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import ReplayIcon from '@mui/icons-material/Replay';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode } from '../models';
@@ -36,6 +34,8 @@ import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
+import PhotoLayoutIconButton from './PhotoLayoutIconButton';
+import { Photo } from '@mui/icons-material';
 
 const drawerWidth = 240;
 
@@ -577,6 +577,20 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const isSurveyActive = props.photoLayout === PhotoLayout.Survey;
   const isSurveyDisabled = props.selectedMediaItemsCount < 2;
 
+  type IconButtonState = "active" | "available" | "disabled";
+
+  const getPhotoLayoutIconButtonState = (photoLayout: PhotoLayout): IconButtonState => {
+    console.log(`getPhotoLayoutIconButtonState: ${photoLayout}`);
+    if (photoLayout === PhotoLayout.Loupe) {
+      return isLoupeActive ? "active" : "available";
+    } else if (photoLayout === PhotoLayout.Grid) {
+      return isGridActive ? "active" : "available";
+    } else if (photoLayout === PhotoLayout.Survey) {
+      return isSurveyActive ? "active" : isSurveyDisabled ? "disabled" : "available";
+    }
+    return "available";
+  }
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -621,65 +635,21 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* View Mode Toggle Group */}
-          <Tooltip title="Grid View">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Grid)}
-                sx={{
-                  backgroundColor: isGridActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isGridActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isGridActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewModuleIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-          <Tooltip title="Loupe View">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
-                sx={{
-                  backgroundColor: isLoupeActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isLoupeActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isLoupeActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewComfyIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
-
-          <Tooltip title="Survey Mode">
-            <span>
-              <IconButton
-                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Survey)}
-                disabled={isSurveyDisabled}
-                sx={{
-                  backgroundColor: isSurveyActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isSurveyActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: !isSurveyDisabled && isSurveyActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
-              >
-                <ViewCarouselIcon />
-              </IconButton>
-            </span>
-          </Tooltip>
+          <PhotoLayoutIconButton
+            icon={<ViewModuleIcon />}
+            state={getPhotoLayoutIconButtonState(PhotoLayout.Grid)}
+            // onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
+          />
+          <PhotoLayoutIconButton
+            icon={<ViewComfyIcon />}
+            state={getPhotoLayoutIconButtonState(PhotoLayout.Loupe)}
+            // onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
+          />
+          <PhotoLayoutIconButton
+            icon={<ViewCarouselIcon />}
+            state={getPhotoLayoutIconButtonState(PhotoLayout.Survey)}
+            // onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
+          />
 
           <Divider
             orientation="vertical"

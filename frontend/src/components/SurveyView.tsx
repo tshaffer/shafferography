@@ -6,8 +6,9 @@ import SurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Grid } from '@mui/material';
 import { setFocusedSurveyViewMediaItemId, TedTaggerDispatch } from '../models';
 import { getAppInitialized, getFocusedSurveyViewMediaItemId, getFullScreenMode, getSelectedMediaItems, getSurveyViewMediaItemIds } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem, PhotoState } from '../types';
 import React from 'react';
+import { loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 
 export interface SurveyViewProps {
   appInitialized: boolean;
@@ -16,6 +17,8 @@ export interface SurveyViewProps {
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
   onSetFocusedSurveyViewMediaItemId: (id: string) => any;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
+  onReloadMediaItemsByViewSpec: () => any;
 }
 
 const SurveyView = (props: SurveyViewProps) => {
@@ -32,10 +35,22 @@ const SurveyView = (props: SurveyViewProps) => {
         case 'ArrowLeft':
           handleFocusPreviousPhoto();
           break;
+        case 'Delete':
+          handleDeletePhoto();
+          break;
         default:
           break;
       }
     };
+
+    const handleDeletePhoto = () => {
+      props.onSetPhotoState([props.focusedSurveyViewMediaItemId], PhotoState.Deleted)
+        .then(() => {
+          props.onReloadMediaItemsByViewSpec()
+            .then(() => { });
+        });
+    }
+
 
     const handleFocusPreviousPhoto = () => {
 
@@ -176,6 +191,8 @@ function mapStateToProps(state: any) {
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
     onSetFocusedSurveyViewMediaItemId: setFocusedSurveyViewMediaItemId,
+    onSetPhotoState: setPhotoState,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
   }, dispatch);
 };
 

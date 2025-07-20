@@ -31,7 +31,7 @@ const startServer = async () => {
   app.use(express.json()); // Parse JSON requests
 
   app.use(cors({
-    origin: 'http://192.168.86.46:8080', //localHost network IP address. required??
+    origin: 'http://192.168.86.20:8080', //localHost network IP address. required??
     credentials: true
   }));
 

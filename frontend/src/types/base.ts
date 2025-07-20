@@ -5,7 +5,9 @@ import { Keyword, KeywordNode } from './entities';
 // export const serverUrl = 'https://tsmealwheel.herokuapp.com';
 // export const serverUrl = (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
 export const getServerUrl = (): string => {
-  return (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
+  // return (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
+  const backendUrl = 'http://192.168.86.20:8080'; // Use the runtime backend URL`
+  return backendUrl
 };
 
 export const apiUrlFragment = '/api/v1/';

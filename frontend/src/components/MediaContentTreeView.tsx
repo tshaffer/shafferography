@@ -402,11 +402,11 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     );
   }
 
-  if (expandedGroupIds === null) {
-    console.log('expandedGroupIds is null');
-  } else {
-    console.log('expandedGroupIds is not null');
-  }
+  // if (expandedGroupIds === null) {
+  //   console.log('expandedGroupIds is null');
+  // } else {
+  //   console.log('expandedGroupIds is not null');
+  // }
 
   return (
     <React.Fragment>

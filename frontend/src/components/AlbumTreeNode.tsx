@@ -1,17 +1,15 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
-import React from 'react';
 
 import {
   ListItemText,
   Checkbox,
   ListItemButton,
-  Typography,
 } from '@mui/material';
 
-import { setDisplayedAlbumNodeIds, setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
+import { setDisplayedAlbumNodeIds, TedTaggerDispatch } from '../models';
 import { AlbumNode, StringToNumberLUT } from '../types';
-import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode, getSelectedMediaContentNodeIds } from '../selectors';
+import { getDisplayedAlbumNodeIds, getMediaItemCountByAlbumNode } from '../selectors';
 import { reloadMediaItemsByViewSpec } from '../controllers';
 
 export interface AlbumTreeNodeProps {
@@ -19,9 +17,7 @@ export interface AlbumTreeNodeProps {
   displayedAlbumNodeIds: string[];
   onSetDisplayedAlbumNodeIds: (displayedAlbumNodeIds: string[]) => void;
   onReloadMediaItemsByViewSpec: () => any;
-  selectedNodeIds: Set<string>;
-  mediaItemCountByAlbumNode: StringToNumberLUT;
-  onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
+  mediaItemCountByAlbumNode: StringToNumberLUT;  
 }
 
 function AlbumTreeNode(props: AlbumTreeNodeProps) {
@@ -79,15 +75,6 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
       />
       <ListItemText
         primary={getListItemTextContent()}
-        onClick={(e) => {
-          const newSet = new Set(props.selectedNodeIds);
-          if (newSet.has(props.item.id)) {
-            newSet.delete(props.item.id);
-          } else {
-            newSet.add(props.item.id);
-          }
-          props.onSetSelectedNodeIds(newSet);
-        }}
       />
     </ListItemButton>
   );
@@ -95,7 +82,6 @@ function AlbumTreeNode(props: AlbumTreeNodeProps) {
 
 const mapStateToProps = (state: any) => ({
   displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
-  selectedNodeIds: getSelectedMediaContentNodeIds(state),
   mediaItemCountByAlbumNode: getMediaItemCountByAlbumNode(state),
 });
 
@@ -103,7 +89,6 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
   bindActionCreators(
     {
       onSetDisplayedAlbumNodeIds: setDisplayedAlbumNodeIds,
-      onSetSelectedNodeIds: setSelectedAlbumNodeIdsRedux,
       onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
     },
     dispatch

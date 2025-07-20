@@ -12,7 +12,6 @@ export const MOVE_NODE = 'MOVE_NODE';
 export const DELETE_NODES = 'DELETE_NODES';
 export const RENAME_NODE = 'RENAME_NODE';
 export const SET_MEDIA_CONTENT_NODES = 'SET_MEDIA_CONTENT_NODES';
-export const SET_SELECTED_MEDIA_CONTENT_NODE_IDS = 'SET_SELECTED_MEDIA_CONTENT_NODE_IDS';
 
 // ------------------------------------
 // Actions
@@ -123,20 +122,6 @@ export const setAlbumNodesRedux = (
   };
 };
 
-interface SetSelectedAlbumNodeIdsPayload {
-  selectedNodeIds: Set<string>;
-}
-export const setSelectedAlbumNodeIdsRedux = (
-  selectedNodeIds: Set<string>
-): any => {
-  return {
-    type: SET_SELECTED_MEDIA_CONTENT_NODE_IDS,
-    payload: {
-      selectedNodeIds
-    }
-  };
-};
-
 // ------------------------------------
 // Utilities
 // ------------------------------------
@@ -234,12 +219,11 @@ export const moveNodeInTreeHelper = (
 const initialState: MediaContentTreeState =
 {
   nodes: [],
-  selectedNodeIds: new Set(),
 };
 
 export const albumTreeStateReducer = (
   state: MediaContentTreeState = initialState,
-  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & SetSelectedAlbumNodeIdsPayload & MoveNodePayload & DeleteNodesPayload & RenameNodePayload>
+  action: TedTaggerModelBaseAction<AddAlbumToTreePayload & AddGroupToTreePayload & SetAlbumNodesPayload & MoveNodePayload & DeleteNodesPayload & RenameNodePayload>
 ): MediaContentTreeState => {
   switch (action.type) {
     case SET_MEDIA_CONTENT_NODES: {
@@ -317,12 +301,6 @@ export const albumTreeStateReducer = (
       return {
         ...state,
         nodes: filterTree(state.nodes),
-      };
-    }
-    case SET_SELECTED_MEDIA_CONTENT_NODE_IDS: {
-      return {
-        ...state,
-        selectedNodeIds: action.payload.selectedNodeIds,
       };
     }
     default:

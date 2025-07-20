@@ -31,7 +31,6 @@ export interface TedTaggerState {
 
 export interface MediaContentTreeState {
   nodes: MediaContentNode[];
-  selectedNodeIds: Set<string>;
 }
 
 export interface AppState {

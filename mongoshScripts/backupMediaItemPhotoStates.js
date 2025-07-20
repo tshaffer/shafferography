@@ -2,7 +2,7 @@
 use pgPhotos;
 
 const fs = require('fs');
-const path = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/photoStateBackup-07-15-1/photoStates.json";
+const path = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/photoStateBackup-07-20-1/photoStates.json";
 const dir = path.substring(0, path.lastIndexOf('/'));
 
 if (!fs.existsSync(dir)) {

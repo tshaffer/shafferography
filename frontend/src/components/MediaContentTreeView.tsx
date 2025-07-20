@@ -21,20 +21,19 @@ import {
   ButtonGroup,
   Typography,
 } from '@mui/material';
-import { setSelectedAlbumNodeIdsRedux, TedTaggerDispatch } from '../models';
+import { TedTaggerDispatch } from '../models';
 import { MediaContentNode, GroupNode, AlbumNode, MediaContentNodeType } from '../types';
 import { addAlbumToTree, addGroupToTree, moveNodeInTree, deleteNodes, renameNode } from '../controllers';
-import { getDisplayedAlbumNodeIds, getMediaContentTree, getSelectedMediaContentNodeIds } from '../selectors';
+import { getDisplayedAlbumNodeIds, getMediaContentTree } from '../selectors';
 import AlbumTreeNode from './AlbumTreeNode';
 import GroupTreeNode from './GroupTreeNode';
 import ImportFromDriveDialog from './ImportFromDriveDialog';
 import { isAlbumNode } from '../utilities';
+import ConfirmationDialog from './ConfirmationDialog';
 
 interface MediaContentTreeViewProps {
   mediaContentNodes: MediaContentNode[];
-  selectedNodeIds: Set<string>;
   displayedAlbumNodeIds: string[];
-  onSetSelectedNodeIds: (selectedNodeIds: Set<string>) => any;
   onAddAlbumToTree: (mediaContentNode: MediaContentNode, parentId?: string) => void;
   onAddGroupToTree: (name: string, parentId?: string) => void;
   onMoveNodeInTree: (nodeId: string, newParentId: string) => void;
@@ -65,6 +64,8 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   const [contextMenuNode, setContextMenuNode] = useState<MediaContentNode | null>(null);
 
   const [expandedGroupIds, setExpandedGroupIds] = useState<string[] | null>(null);
+
+  const [confirmDeleteDialogOpen, setConfirmDeleteDialogOpen] = useState(false);
 
   React.useEffect(() => {
     if (
@@ -138,13 +139,21 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     );
   };
 
-  const getNodeLabel = (node: MediaContentNode): JSX.Element | null => {
+  const getNodeLabelJSX = (node: MediaContentNode): JSX.Element | null => {
     if (node.type === MediaContentNodeType.Group) {
       return getGroupNodeJsx(node as GroupNode);
     } else if (node.type === MediaContentNodeType.Album) {
       return getAlbumNodeJsx(node as AlbumNode);
     }
     return null;
+  };
+
+  const getNodeName = (node: MediaContentNode | null): string => {
+    if (!node) {
+      return '';
+    } else {
+      return node.name;
+    }
   };
 
   const findNodeById = (nodes: MediaContentNode[], id: string): MediaContentNode | null => {
@@ -171,17 +180,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
       });
   };
 
-  const isNodeSelected = (contextMenuNode: MediaContentNode | null): boolean => {
-    if (!contextMenuNode) {
-      return false;
-    }
-    return (props.selectedNodeIds.size > 0);
-  }
-
-  const isSingleNodeSelected = (): boolean => {
-    return props.selectedNodeIds.size === 1 && props.mediaContentNodes.some(node => props.selectedNodeIds.has(node.id));
-  };
-
   const handleAddAlbum = () => {
     if (!newAlbumName.trim()) return;
     const newAlbum: MediaContentNode = {
@@ -203,13 +201,24 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   };
 
   const handleRenameNode = (e: any) => {
-    const nodeId = Array.from(props.selectedNodeIds)[0];
+    const nodeId: string = contextMenuNodeId!;
     const node = findNodeById(props.mediaContentNodes, nodeId);
     if (node) {
       setRenameValue(renameValue);
       setRenameDialogOpen(false);
       props.onRenameNode(nodeId, renameValue);
     }
+  };
+
+  const handleDeleteNode = () => {
+    setConfirmDeleteDialogOpen(true);
+    setContextMenuPosition(null);
+  };
+
+  const handleConfirmDelete = () => {
+    setConfirmDeleteDialogOpen(false);
+    props.onDeleteNodes([contextMenuNode!.id]);
+    setContextMenuPosition(null);
   };
 
   const CustomGroupTreeItem = styled(TreeItem)(({ theme }) => ({
@@ -268,16 +277,16 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
               style={{
                 cursor: 'pointer',
                 paddingLeft: `${depth * 4}px`,  // ← Manual indentation
-                backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
-                border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
+                backgroundColor: 'transparent',
+                border: '1px solid transparent',
                 borderRadius: 8,
-                fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
-                color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
-                boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                fontWeight: 'normal',
+                color: 'inherit',
+                boxShadow: 'none',
                 display: 'inline-block',
               }}
             >
-              {getNodeLabel(node)}
+              {getNodeLabelJSX(node)}
             </span>
           }
         >
@@ -312,16 +321,16 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
               style={{
                 cursor: 'pointer',
                 paddingLeft: '1px',
-                backgroundColor: props.selectedNodeIds.has(node.id) ? '#e0f7fa' : 'transparent',
-                border: props.selectedNodeIds.has(node.id) ? '1px solid #26c6da' : '1px solid transparent',
+                backgroundColor: 'transparent',
+                border: '1px solid transparent',
                 borderRadius: 8,
-                fontWeight: props.selectedNodeIds.has(node.id) ? 'bold' : 'normal',
-                color: props.selectedNodeIds.has(node.id) ? '#006064' : 'inherit',
-                boxShadow: props.selectedNodeIds.has(node.id) ? '0 1px 3px rgba(0,0,0,0.2)' : 'none',
+                fontWeight: 'normal',
+                color: 'inherit',
+                boxShadow: 'none',
                 display: 'inline-block',
               }}
             >
-              {getNodeLabel(node)}
+              {getNodeLabelJSX(node)}
             </span>
           }
         >
@@ -331,6 +340,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
   };
 
   const renderContextMenu = (contextMenuNode: MediaContentNode | null): JSX.Element => {
+
     return (
       <Menu
         open={!!contextMenuPosition}
@@ -376,7 +386,6 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
             setMoveDialogOpen(true);
             setContextMenuPosition(null);
           }}
-          disabled={!isNodeSelected(contextMenuNode)}
         >
           Move To...
         </MenuItem>
@@ -385,16 +394,13 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
             setRenameDialogOpen(true);
             setContextMenuPosition(null);
           }}
-          disabled={!isSingleNodeSelected()}
         >
           Rename
         </MenuItem>
         <MenuItem
           onClick={() => {
-            props.onDeleteNodes(Array.from(props.selectedNodeIds));
-            setContextMenuPosition(null);
+            handleDeleteNode();
           }}
-          disabled={!isNodeSelected(contextMenuNode)}
         >
           Delete
         </MenuItem>
@@ -402,11 +408,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
     );
   }
 
-  // if (expandedGroupIds === null) {
-  //   console.log('expandedGroupIds is null');
-  // } else {
-  //   console.log('expandedGroupIds is not null');
-  // }
+  const contextMenuNodeName: string = getNodeName(contextMenuNode);
 
   return (
     <React.Fragment>
@@ -428,17 +430,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
         ) : (
           <Box>
             <>
-              <Box sx={{ display: 'flex', justifyContent: 'flex-start', paddingLeft: '10px', marginBottom: 0, marginTop: 1 }}>
-                <ButtonGroup size="small">
-                  <Button
-                    variant="outlined"
-                    disabled={props.selectedNodeIds.size === 0}
-                    onClick={() => props.onSetSelectedNodeIds(new Set())}
-                  >
-                    Deselect All
-                  </Button>
-                </ButtonGroup>
-              </Box>
+
               {renderContextMenu(contextMenuNode)}
 
               {expandedGroupIds !== null && (
@@ -508,7 +500,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
               </Dialog>
 
               <Dialog open={moveDialogOpen} onClose={() => setMoveDialogOpen(false)}>
-                <DialogTitle>Move Selected Albums or Groups</DialogTitle>
+                <DialogTitle>Move Selected Album/Group</DialogTitle>
                 <DialogContent>
                   <TextField
                     select
@@ -519,7 +511,7 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
                   >
                     <MenuItem value="" disabled>Select new parent</MenuItem>
                     {getAllGroupNodes(props.mediaContentNodes)
-                      .filter(n => !props.selectedNodeIds.has(n.id))
+                      .filter(n => contextMenuNodeId !== n.id)
                       .map(n => (
                         <MenuItem key={n.id} value={n.id}>{n.name}</MenuItem>
                       ))}
@@ -529,12 +521,9 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
                   <Button onClick={() => setMoveDialogOpen(false)}>Cancel</Button>
                   <Button
                     onClick={() => {
-                      for (const nodeId of Array.from(props.selectedNodeIds)) {
-                        props.onMoveNodeInTree(nodeId, newParentId!);
-                      }
+                      props.onMoveNodeInTree(contextMenuNodeId!, newParentId!);
                       setMoveDialogOpen(false);
                       setNewParentId(null);
-                      props.onSetSelectedNodeIds(new Set());
                     }}
                     disabled={!newParentId}
                   >
@@ -563,6 +552,15 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
                   </Button>
                 </DialogActions>
               </Dialog>
+
+              <ConfirmationDialog
+                open={confirmDeleteDialogOpen}
+                onClose={() => setConfirmDeleteDialogOpen(false)}
+                onConfirm={handleConfirmDelete}
+                title="Confirm Delete"
+                message={'Are you sure you want to delete ' + contextMenuNodeName + '?'}
+              />
+
             </>
           </Box>
         )}
@@ -574,14 +572,12 @@ function MediaContentTreeView(props: MediaContentTreeViewProps) {
 function mapStateToProps(state: any) {
   return {
     mediaContentNodes: getMediaContentTree(state),
-    selectedNodeIds: getSelectedMediaContentNodeIds(state),
     displayedAlbumNodeIds: getDisplayedAlbumNodeIds(state),
   };
 }
 
 const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
   return bindActionCreators({
-    onSetSelectedNodeIds: setSelectedAlbumNodeIdsRedux,
     onAddAlbumToTree: addAlbumToTree,
     onAddGroupToTree: addGroupToTree,
     onMoveNodeInTree: moveNodeInTree,

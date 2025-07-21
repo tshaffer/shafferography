@@ -5,8 +5,8 @@ import '../styles/TedTagger.css';
 import SurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Grid } from '@mui/material';
 import { setFocusedSurveyViewMediaItemId, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getFocusedSurveyViewMediaItemId, getFullScreenMode, getSelectedMediaItems, getSurveyViewMediaItemIds } from '../selectors';
-import { MediaItem, PhotoState } from '../types';
+import { getAppInitialized, getFocusedSurveyViewMediaItemId, getFullScreenMode, getSelectedMediaItems, getSurveyViewMediaItemIds, getSurveyViewOrientation } from '../selectors';
+import { MediaItem, PhotoState, SurveyViewOrientation, SurveyViewOrientations } from '../types';
 import React from 'react';
 import { loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 
@@ -14,6 +14,7 @@ export interface SurveyViewProps {
   appInitialized: boolean;
   selectedMediaItems: MediaItem[];
   fullScreenMode: boolean;
+  surveyViewOrientation: SurveyViewOrientation;
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
   onSetFocusedSurveyViewMediaItemId: (id: string) => any;
@@ -140,30 +141,41 @@ const SurveyView = (props: SurveyViewProps) => {
 
 
   let numGridRows = 1;
+  let numGridColumns = 1;
 
-  if (props.fullScreenMode) {
+  if (props.surveyViewOrientation === SurveyViewOrientations.Vertical) {
+    numGridRows = 1;
+
     if (numSurveyViewMediaItems > 10) {
       numGridRows = 3;
     } else if (numSurveyViewMediaItems > 4) {
       numGridRows = 2;
     }
-  } else {
-    if (numSurveyViewMediaItems > 10) {
-      numGridRows = 3;
-    } else if (numSurveyViewMediaItems > 3) {
-      numGridRows = 2;
-    }
-  }
 
-  let numGridColumns = Math.trunc(numSurveyViewMediaItems / numGridRows);
-  if ((numGridRows * numGridColumns) < numSurveyViewMediaItems) {
-    numGridColumns += 1;
+    numGridColumns = Math.trunc(numSurveyViewMediaItems / numGridRows);
+    if ((numGridRows * numGridColumns) < numSurveyViewMediaItems) {
+      numGridColumns += 1;
+    }
+  } else {
+    numGridColumns = 1;
+
+    if (numSurveyViewMediaItems > 10) {
+      numGridColumns = 3;
+    } else if (numSurveyViewMediaItems > 3) {
+      numGridColumns = 2;
+    }
+
+    numGridRows = Math.trunc(numSurveyViewMediaItems / numGridColumns);
+    if ((numGridColumns * numGridRows) < numSurveyViewMediaItems) {
+      numGridRows += 1;
+    }
   }
 
   const photoComponents: JSX.Element[] = props.selectedMediaItems.map((mediaItem) => {
     return getPhotoComponent(mediaItem, numGridRows, numGridColumns);
   });
 
+  // <Grid container spacing={2} direction='column'>
   return (
     <Box
       id='surveyView'
@@ -181,6 +193,7 @@ const SurveyView = (props: SurveyViewProps) => {
 function mapStateToProps(state: any) {
   return {
     appInitialized: getAppInitialized(state),
+    surveyViewOrientation: getSurveyViewOrientation(state),
     focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
     selectedMediaItems: getSelectedMediaItems(state),

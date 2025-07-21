@@ -1,4 +1,4 @@
-import { TedTaggerState, PhotoViewSpec, PhotoLayout, PhotoState, UndecidedGroup } from '../types';
+import { TedTaggerState, PhotoViewSpec, PhotoLayout, PhotoState, UndecidedGroup, SurveyViewOrientation } from '../types';
 import { getUndecidedGroup } from './undecidedGroups';
 
 export const getPhotoViewSpec = (state: TedTaggerState): PhotoViewSpec => {
@@ -65,4 +65,8 @@ export const getDisplayedUndecidedGroups = (state: TedTaggerState): UndecidedGro
 
 export const getGroupUndecidedPhotos = (state: TedTaggerState): boolean => {
   return state.photoViewSpec.groupUndecidedPhotos;
+};
+
+export const getSurveyViewOrientation = (state: TedTaggerState): SurveyViewOrientation => {
+  return state.photoViewSpec.surveyViewOrientation;
 };

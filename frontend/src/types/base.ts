@@ -38,3 +38,10 @@ export type Dimensions = {
   width: number;
   height: number;
 };
+
+export const SurveyViewOrientations = {
+  Horizontal: 'horizontal',
+  Vertical: 'vertical',
+} as const;
+
+export type SurveyViewOrientation = typeof SurveyViewOrientations[keyof typeof SurveyViewOrientations];

@@ -11,11 +11,9 @@ import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewComfyIcon from "@mui/icons-material/ViewComfy";
-import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import FullscreenIcon from "@mui/icons-material/Fullscreen";
 import LabelIcon from "@mui/icons-material/Label";
 import ClearIcon from "@mui/icons-material/Clear";
-import DownloadIcon from '@mui/icons-material/Download';
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
@@ -27,12 +25,13 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import ReplayIcon from '@mui/icons-material/Replay';
-import { ToggleButton, ToggleButtonGroup } from '@mui/material';
+import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
+import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
-import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoState, TedTaggerState } from '../types';
+import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode, getSurveyViewOrientation } from '../selectors';
+import { MediaItem, PhotoLayout, PhotoState, SurveyViewOrientation, SurveyViewOrientations, TedTaggerState } from '../types';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
@@ -76,6 +75,7 @@ export interface TopNavigationBarDerivedStateProps {
   mediaItems: MediaItem[];
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
+  surveyViewOrientation: SurveyViewOrientation;
   focusedSurveyViewMediaItemId: string;
   surveyViewMediaItemIds: string[];
   displayMetadata: boolean;
@@ -87,6 +87,7 @@ export interface TopNavigationBarDerivedActionCreatorProps {
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetLoupeViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetFocusedSurveyViewMediaItemId: (id: string) => any;
+  onSetSurveyViewOrientation: (orientation: SurveyViewOrientation) => any;
   onSetSurveyViewMediaItemIds: (mediaItemIds: string[]) => any;
   onSetNumGridColumns: (numGridColumns: number) => void;
   onDeselectAllPhotos: () => void;
@@ -156,6 +157,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const handleSetShowMetadata = (updatedShowMetadata: boolean) => {
     props.onSetDisplayMetadata(updatedShowMetadata);
+  };
+
+  const handleSetSurveyPhotoLayout = (surveyViewOrientation: SurveyViewOrientation) => {
+    props.onSetSurveyViewOrientation(surveyViewOrientation);
+    handleUpdatePhotoLayout(PhotoLayout.Survey);
   };
 
   function handleUpdatePhotoLayout(photoLayout: PhotoLayout): void {
@@ -517,7 +523,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
                 </IconButton>
               </span>
             </Tooltip>
-            <Typography variant="subtitle1" sx={{ mx: 2 }}>
+            <Typography variant="subtitle1" sx={{ m4: '4px' }}>
               {props.selectedMediaItemsCount} selected
             </Typography>
           </>
@@ -572,6 +578,12 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     )
   }
 
+  const isGridActive = props.photoLayout === PhotoLayout.Grid;
+  const isLoupeActive = props.photoLayout === PhotoLayout.Loupe;
+  const isSurveyViewVertical = (props.photoLayout === PhotoLayout.Survey) && (props.surveyViewOrientation === SurveyViewOrientations.Vertical);
+  const isSurveyViewHorizontal = (props.photoLayout === PhotoLayout.Survey)  && (props.surveyViewOrientation === SurveyViewOrientations.Horizontal);
+  const isSurveyDisabled = props.selectedMediaItemsCount < 2;
+
   return (
     <React.Fragment>
       <AppBar sidebarOpen={props.sidebarOpen} rightPanelOpen={props.rightPanelOpen} position="fixed">
@@ -612,44 +624,89 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
           {renderSetPhotoStateUI()}
 
-          {/* Divider for better grouping */}
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
           {/* View Mode Toggle Group */}
-          <ToggleButtonGroup
-            value={props.photoLayout}
-            exclusive
-            onChange={(e, newLayout) => {
-              if (newLayout !== null) handleUpdatePhotoLayout(newLayout);
-            }}
-            sx={{
-              '& .MuiToggleButton-root': {
-                borderRadius: '6px',
-                color: (theme) => theme.palette.text.secondary,
-              },
-              '& .MuiToggleButton-root.Mui-selected': {
-                backgroundColor: (theme) => theme.palette.primary.main,
-                color: '#fff',
-                '&:hover': {
-                  backgroundColor: (theme) => theme.palette.primary.dark,
-                },
-              },
-            }}
-          >
-            <ToggleButton value={PhotoLayout.Grid} aria-label="Grid View">
-              <ViewModuleIcon />
-            </ToggleButton>
-            <ToggleButton value={PhotoLayout.Loupe} aria-label="Loupe View">
-              <ViewComfyIcon />
-            </ToggleButton>
-            <ToggleButton
-              value={PhotoLayout.Survey}
-              aria-label="Survey Mode"
-              disabled={props.selectedMediaItemsCount < 2}
-            >
-              <ViewCarouselIcon />
-            </ToggleButton>
-          </ToggleButtonGroup>
+          <Tooltip title="Grid View">
+            <span>
+              <IconButton
+                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Grid)}
+                sx={{
+                  backgroundColor: isGridActive ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isGridActive ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: isGridActive
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <ViewModuleIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+          <Tooltip title="Loupe View">
+            <span>
+              <IconButton
+                onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
+                sx={{
+                  backgroundColor: isLoupeActive ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isLoupeActive ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: isLoupeActive
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <ViewComfyIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Survey Mode - Vertical Split">
+            <span>
+              <IconButton
+                onClick={() => handleSetSurveyPhotoLayout(SurveyViewOrientations.Vertical)}
+                disabled={isSurveyDisabled}
+                sx={{
+                  backgroundColor: isSurveyViewVertical ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isSurveyViewVertical ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: !isSurveyDisabled && isSurveyViewVertical
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <VerticalSplitIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
+
+          <Tooltip title="Survey Mode - Horizontal Split">
+            <span>
+              <IconButton
+                onClick={() => handleSetSurveyPhotoLayout(SurveyViewOrientations.Horizontal)}
+                disabled={isSurveyDisabled}
+                sx={{
+                  backgroundColor: isSurveyViewHorizontal ? (theme) => theme.palette.primary.main : 'transparent',
+                  color: isSurveyViewHorizontal ? '#fff' : (theme) => theme.palette.text.secondary,
+                  borderRadius: '6px',
+                  '&:hover': {
+                    backgroundColor: !isSurveyDisabled && isSurveyViewHorizontal
+                      ? (theme) => theme.palette.primary.dark
+                      : (theme) => theme.palette.action.hover,
+                  },
+                }}
+              >
+                <HorizontalSplitIcon />
+              </IconButton>
+            </span>
+          </Tooltip>
 
           <Divider
             orientation="vertical"
@@ -660,7 +717,6 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
               backgroundColor: 'rgba(255, 255, 255, 0.5)', // 50% opacity white
             }}
           />
-
 
           <Tooltip title="Full Screen Mode">
             <span>
@@ -718,6 +774,7 @@ function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStatePro
     mediaItems: getMediaItems(state),
     loupeViewMediaItemId: getLoupeViewMediaItemId(state),
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
+    surveyViewOrientation: getSurveyViewOrientation(state),
     focusedSurveyViewMediaItemId: getFocusedSurveyViewMediaItemId(state),
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
     displayMetadata: getDisplayMetadata(state),
@@ -731,6 +788,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
     onSetFocusedSurveyViewMediaItemId: setFocusedSurveyViewMediaItemId,
     onSetLoupeViewMediaItemIds: setLoupeViewMediaItemIds,
+    onSetSurveyViewOrientation: setSurveyViewOrientation,
     onSetSurveyViewMediaItemIds: setSurveyViewMediaItemIds,
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,

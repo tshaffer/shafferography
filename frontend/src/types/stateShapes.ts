@@ -1,4 +1,4 @@
-import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT } from './base';
+import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT, SurveyViewOrientation } from './base';
 import {
   GoogleUserProfile,
   MediaItem,
@@ -93,6 +93,7 @@ export interface PhotoViewSpec {
   numGridColumns: number;
   loupeViewMediaItemId: string;
   focusedSurveyViewMediaItemId: string;
+  surveyViewOrientation: SurveyViewOrientation;
   displayMetadata: boolean;
   surveyModeZoomFactor: number;
   scrollPosition: number;

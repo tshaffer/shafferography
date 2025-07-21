@@ -1,4 +1,4 @@
-import { PhotoLayout, PhotoViewSpec, PhotoState } from '../types';
+import { PhotoLayout, PhotoViewSpec, PhotoState, SurveyViewOrientation, SurveyViewOrientations } from '../types';
 import { TedTaggerModelBaseAction } from './baseAction';
 
 // ------------------------------------
@@ -17,7 +17,7 @@ export const SET_DISPLAYED_ALBUM_NODE_IDS = 'SET_DISPLAYED_ALBUM_NODE_IDS';
 export const SET_DISPLAYED_REVIEW_LEVELS = 'SET_DISPLAYED_REVIEW_LEVELS';
 export const SET_GROUP_UNDECIDED_PHOTOS = 'SET_GROUP_UNDECIDED_PHOTOS';
 export const SET_DISPLAYED_UNDECIDED_GROUP_IDS = 'SET_DISPLAYED_UNDECIDED_GROUP_IDS';
-
+export const SET_SURVEY_VIEW_ORIENTATION = 'SET_SURVEY_VIEW_ORIENTATION';
 // ------------------------------------
 // Actions
 // ------------------------------------
@@ -199,6 +199,19 @@ export const setDisplayedUndecidedGroupIds = (displayedUndecidedGroupIds: string
   };
 };
 
+interface SetSurveyViewOrientationPayload {
+  surveyViewOrientation: SurveyViewOrientation,
+}
+
+
+export const setSurveyViewOrientation = (surveyViewOrientation: SurveyViewOrientation): any => {
+  return {
+    type: SET_SURVEY_VIEW_ORIENTATION,
+    payload: {
+      surveyViewOrientation,
+    },
+  };
+};
 
 // ------------------------------------
 // Reducer
@@ -208,6 +221,7 @@ const initialState: PhotoViewSpec = {
   photoLayout: PhotoLayout.Grid,
   numGridColumns: 5,
   loupeViewMediaItemId: '',
+  surveyViewOrientation: SurveyViewOrientations.Vertical,
   focusedSurveyViewMediaItemId: '',
   displayMetadata: false,
   surveyModeZoomFactor: 1,
@@ -222,7 +236,7 @@ const initialState: PhotoViewSpec = {
 
 export const photoViewSpecReducer = (
   state: PhotoViewSpec = initialState,
-  action: TedTaggerModelBaseAction<SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetFocusedSurveyViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumNodeIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
+  action: TedTaggerModelBaseAction<SetSurveyViewOrientationPayload & SetPhotoLayoutPayload & SetNumGridColumnsPayload & SetSurveyModeZoomFactorPayload & SetLoupeViewMediaItemIdPayload & SetFocusedSurveyViewMediaItemIdPayload & SetDisplayMetadata & SetScrollPositionPayload & SetFullScreenModePayload & SetMediaItemZoomFactorPayload & SetDisplayedAlbumNodeIdsPayload & SetDisplayedPhotoStatesPayload & SetGroupUndecidedPhotosPayload & SetDisplayedUndecidedGroupIdsPayload>
 ): PhotoViewSpec => {
   switch (action.type) {
     case SET_PHOTO_LAYOUT:
@@ -292,6 +306,11 @@ export const photoViewSpecReducer = (
           ...state.mediaItemZoomFactorById,
           [action.payload.mediaItemId]: action.payload.zoomFactor,
         },
+      };
+    case SET_SURVEY_VIEW_ORIENTATION:
+      return {
+        ...state,
+        surveyViewOrientation: action.payload.surveyViewOrientation,
       };
     default:
       return state;

@@ -16,7 +16,8 @@ const bodyParser = require('body-parser');
 import { connectDB } from './config/db';  // ✅ Import first
 import { BASE_MEDIA_PATH } from './config';
 
-dotenv.config();
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../env.public'), override: false });
 
 const enableGoogleInterface = process.env.ENABLE_GOOGLE_INTERFACE === 'true';
 
@@ -30,10 +31,10 @@ const startServer = async () => {
   app.use(cookieParser());
   app.use(express.json()); // Parse JSON requests
 
-  app.use(cors({
-    origin: 'http://192.168.86.46:8080', //localHost network IP address. required??
-    credentials: true
-  }));
+  // app.use(cors({
+  //   origin: 'http://192.168.86.46:8080', //localHost network IP address. required??
+  //   credentials: true
+  // }));
 
   app.use(bodyParser.json());
   app.use(bodyParser.urlencoded({ extended: true }));
@@ -312,7 +313,7 @@ const startServer = async () => {
 
   // Start the server
   const server: Server<any> = app.listen(PORT, () => {
-    console.log(`Server is running at http://localhost:${PORT}`);
+    console.log(`Server is running at ${process.env.BACKEND_URL}`);
   });
 
   process.on('unhandledRejection', (err: any, promise: any) => {

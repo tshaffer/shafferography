@@ -58,7 +58,7 @@ const DrawerHeader = styled('div')(({ theme }) => ({
 
 const googleInterfaceEnabled = (): boolean => {
   return (window as any).__ENV__?.ENABLE_GOOGLE_INTERFACE === true ||
-         (window as any).__ENV__?.ENABLE_GOOGLE_INTERFACE === 'true';
+    (window as any).__ENV__?.ENABLE_GOOGLE_INTERFACE === 'true';
 };
 
 export interface AppShellProps {
@@ -210,9 +210,9 @@ const AppShell = (props: AppShellProps) => {
       const displayedPhotoStatesStr = localStorage.getItem('displayedPhotoStates');
       const displayedPhotoStates = displayedPhotoStatesStr
         ? displayedPhotoStatesStr
-            .split(',')
-            .map(level => level.trim())
-            .filter((level): level is PhotoState => Object.values(PhotoState).includes(level as PhotoState))
+          .split(',')
+          .map(level => level.trim())
+          .filter((level): level is PhotoState => Object.values(PhotoState).includes(level as PhotoState))
         : [];
 
       props.onSetDisplayedPhotoStates(displayedPhotoStates);

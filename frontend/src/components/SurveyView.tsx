@@ -26,8 +26,6 @@ const SurveyView = (props: SurveyViewProps) => {
 
   React.useEffect(() => {
 
-    console.log('SurveyView: React.useEffect - invoked');
-
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
         case 'ArrowRight':
@@ -175,14 +173,14 @@ const SurveyView = (props: SurveyViewProps) => {
     return getPhotoComponent(mediaItem, numGridRows, numGridColumns);
   });
 
-  // <Grid container spacing={2} direction='column'>
   return (
     <Box
       id='surveyView'
       sx={{
         flexGrow: 1,
         maxHeight: '100%',
-      }}>
+      }}
+    >
       <Grid container spacing={2}>
         {photoComponents}
       </Grid>

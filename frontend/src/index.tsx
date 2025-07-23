@@ -22,13 +22,16 @@ export const store = createStore(
 const container = document.getElementById('content');
 const root = createRoot(container!);
 
+// 🔒 AppShell wrapper prevents remounts caused by React Router state changes
+const AppShellWrapper = React.memo(() => <AppShell />);
+
 loadEnvConfig().then(() => {
   console.log('index.tsx, serverUrl:', (window as any).__ENV__?.BACKEND_URL);
   root.render(
     <Provider store={store}>
       <BrowserRouter>
         <Routes>
-          <Route path='/' element={<AppShell />} />
+          <Route path='/' element={<AppShellWrapper />} />
         </Routes>
       </BrowserRouter>
     </Provider>

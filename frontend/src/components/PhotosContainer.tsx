@@ -15,6 +15,7 @@ export interface PhotosContainerProps {
 }
 
 const PhotosContainer = React.memo((props: PhotosContainerProps) => {
+
   const prevProps = useRef<PhotosContainerProps | null>(null);
 
   useEffect(() => {
@@ -69,7 +70,7 @@ const PhotosContainer = React.memo((props: PhotosContainerProps) => {
   };
 
   return (
-    <div key={JSON.stringify(props.allMediaItems)}>
+    <div>
       {renderPhotoDisplay()}
     </div>
   );

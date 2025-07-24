@@ -182,7 +182,6 @@ const GridCell = (props: GridCellProps) => {
             justifyContent: 'center',
             zIndex: 10,
           }}
-          onClick={handleClicks}
         >
           {props.isSelected && <span style={{ color: 'white', fontWeight: 'bold' }}>✔</span>}
         </div>

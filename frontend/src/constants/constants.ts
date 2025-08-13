@@ -17,6 +17,7 @@ export const surveyRowHeights = [741, 350, 220];
 
 export const photoStateOptions: PhotoStateOption[] = [
   { label: "Unreviewed", value: PhotoState.Unreviewed, icon: "●" },
+  { label: "Pending Edits", value: PhotoState.PendingEdits, icon: "🔧" },
   { label: "Ready for Upload", value: PhotoState.ReadyForUpload, icon: "☁" },
   { label: "Uploaded", value: PhotoState.Uploaded, icon: "✅" },
   { label: "Deleted", value: PhotoState.Deleted, icon: "🗑️" },

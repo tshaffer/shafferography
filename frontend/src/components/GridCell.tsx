@@ -18,6 +18,7 @@ import CloudUpload from '@mui/icons-material/CloudUpload';
 import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import DeleteIcon from '@mui/icons-material/Delete';
+import ConstructionIcon from '@mui/icons-material/Construction';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -114,6 +115,9 @@ const GridCell = (props: GridCellProps) => {
         break;
       case PhotoState.Deleted:
         icon = <DeleteIcon />;
+        break;
+      case PhotoState.PendingEdits:
+        icon = <ConstructionIcon />;
         break;
     }
 

@@ -229,7 +229,7 @@ const initialState: PhotoViewSpec = {
   fullScreenMode: false,
   mediaItemZoomFactorById: {},
   displayedAlbumNodeIds: [],
-  displayedPhotoStates: [PhotoState.ReadyForUpload, PhotoState.Unreviewed, PhotoState.Undecided, PhotoState.Uploaded],
+  displayedPhotoStates: [PhotoState.ReadyForUpload, PhotoState.Unreviewed, PhotoState.Undecided, PhotoState.Uploaded, PhotoState.PendingEdits],
   groupUndecidedPhotos: false,
   displayedUndecidedGroupIds: [],
 };

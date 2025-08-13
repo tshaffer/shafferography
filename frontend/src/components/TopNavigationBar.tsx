@@ -27,6 +27,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import ReplayIcon from '@mui/icons-material/Replay';
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
+import ConstructionIcon from '@mui/icons-material/Construction';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
@@ -451,6 +452,14 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <span>
             <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)} disabled={getSetPhotoStateButtonDisabled()}>
               <MoreHoriz />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Set Pending Edits">
+          <span>
+            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.PendingEdits)} disabled={getSetPhotoStateButtonDisabled()}>
+              <ConstructionIcon />
             </IconButton>
           </span>
         </Tooltip>

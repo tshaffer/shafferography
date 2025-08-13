@@ -26,6 +26,7 @@ export enum PhotoState {
   ReadyForUpload = 'readyForUpload',
   Uploaded = 'uploaded',
   Deleted='deleted',
+  PendingEdits = 'pendingEdits',
 }
 
 export enum MediaContentNodeType {

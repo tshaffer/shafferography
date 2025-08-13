@@ -10,7 +10,8 @@ import {
   setPhotoStateRedux,
   clearMediaItems,
   updateMediaItemsRedux,
-  setMediaItemNotesRedux
+  setMediaItemNotesRedux,
+  setAlbumNodeIdRedux
 } from '../models';
 import {
   getServerUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
@@ -64,7 +65,7 @@ const loadMediaItemsByViewSpecParams = (albumNodeIds: string[], photoStates: Pho
         if (photoLayout !== PhotoLayout.Loupe) {
           dispatch(deselectHiddenMediaItems());
         }
-        
+
         return Promise.resolve();
       });
   }
@@ -252,6 +253,29 @@ export const setPhotoState = (mediaItemIds: string[], photoState: PhotoState): a
       setPhotoStateBody
     ).then((response) => {
       dispatch(setPhotoStateRedux(mediaItemIds, photoState));
+      dispatch(loadMediaItemCounts());
+      return Promise.resolve();
+    }).catch((error) => {
+      console.log('error');
+      console.log(error);
+      return Promise.reject();
+    });
+  };
+};
+
+export const setAlbumNodeId = (mediaItemIds: string[], albumNodeId: string): any => {
+
+  return (dispatch: TedTaggerDispatch) => {
+
+    const path = getServerUrl() + apiUrlFragment + 'setAlbumNodeId';
+
+    const setAlbumNodeIdBody = { mediaItemIds, albumNodeId };
+
+    return axios.post(
+      path,
+      setAlbumNodeIdBody
+    ).then((response) => {
+      dispatch(setAlbumNodeIdRedux(mediaItemIds, albumNodeId));
       dispatch(loadMediaItemCounts());
       return Promise.resolve();
     }).catch((error) => {

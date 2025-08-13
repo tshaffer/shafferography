@@ -24,6 +24,7 @@ export const SET_SURVEY_VIEW_MEDIA_ITEM_IDS = 'SET_SURVEY_VIEW_MEDIA_ITEM_IDS';
 export const REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID = 'REMOVE_SURVEY_VIEW_MEDIA_ITEM_ID';
 
 export const SET_PHOTO_STATE = 'SET_PHOTO_STATE';
+export const SET_ALBUM_NODE_ID = 'SET_ALBUM_NODE_ID';
 
 export const REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS = 'REMOVE_UNDECIDED_GROUP_ID_FROM_MEDIA_ITEMS';
 
@@ -49,6 +50,21 @@ export const setPhotoStateRedux = (
   return {
     type: SET_PHOTO_STATE,
     payload: { mediaItemIds, photoState }
+  };
+};
+
+interface SetAlbumNodeIdPayload {
+  mediaItemIds: string[];
+  albumNodeId: string;
+}
+
+export const setAlbumNodeIdRedux = (
+  mediaItemIds: string[],
+  albumNodeId: string,
+): any => {
+  return {
+    type: SET_ALBUM_NODE_ID,
+    payload: { mediaItemIds, albumNodeId }
   };
 };
 
@@ -246,7 +262,7 @@ const initialState: MediaItemsState =
 
 export const mediaItemsStateReducer = (
   state: MediaItemsState = initialState,
-  action: TedTaggerModelBaseAction<ReplaceMediaItemPayload & SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetPhotoStatePayload & SetMediaItemNotesPayload>
+  action: TedTaggerModelBaseAction<ReplaceMediaItemPayload & SetMediaItemsPayload & AddKeywordToMediaItemsPayload & AddOrRemoveKeywordToMediaItemIdsPayload & MediaItemIdsPayload & RemoveLoupeViewMediaIdPayload & RemoveSurveyViewMediaIdPayload & SetPhotoStatePayload & SetAlbumNodeIdPayload & SetMediaItemNotesPayload>
 ): MediaItemsState => {
   switch (action.type) {
     case UPDATE_MEDIA_ITEMS: {
@@ -404,6 +420,33 @@ export const mediaItemsStateReducer = (
 
         if (mediaItem && mediaItem.photoState !== photoState) {
           mediaItemsMap.set(mediaItemId, { ...mediaItem, photoState }); // Only update changed items
+          hasChanges = true;
+        }
+      }
+
+      // Only return a new state if changes were made
+      if (!hasChanges) {
+        return state;
+      }
+
+      return {
+        ...state,
+        mediaItems: Array.from(mediaItemsMap.values()) // Convert Map back to array
+      };
+    }
+    case SET_ALBUM_NODE_ID: {
+      const { mediaItemIds, albumNodeId } = action.payload;
+
+      // Convert state to a Map for fast lookups
+      const mediaItemsMap = new Map(state.mediaItems.map(item => [item.uniqueId, item]));
+
+      let hasChanges = false;
+
+      for (const mediaItemId of mediaItemIds) {
+        const mediaItem = mediaItemsMap.get(mediaItemId);
+
+        if (mediaItem && mediaItem.albumNodeId !== albumNodeId) {
+          mediaItemsMap.set(mediaItemId, { ...mediaItem, albumNodeId }); // Only update changed items
           hasChanges = true;
         }
       }

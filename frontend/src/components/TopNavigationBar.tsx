@@ -28,14 +28,16 @@ import ReplayIcon from '@mui/icons-material/Replay';
 import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
 
-import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setPhotoState } from '../controllers';
+import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setAlbumNodeId, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
-import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode, getSurveyViewOrientation } from '../selectors';
-import { MediaItem, PhotoLayout, PhotoState, SurveyViewOrientation, SurveyViewOrientations, TedTaggerState } from '../types';
+import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode, getSurveyViewOrientation, getMediaContentTree } from '../selectors';
+import { MediaContentNode, MediaItem, PhotoLayout, PhotoState, SurveyViewOrientation, SurveyViewOrientations, TedTaggerState } from '../types';
 import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
+import MovePhotosDialog from './MovePhotosDialog';
 
 const drawerWidth = 240;
 
@@ -81,6 +83,7 @@ export interface TopNavigationBarDerivedStateProps {
   surveyViewMediaItemIds: string[];
   displayMetadata: boolean;
   fullScreenMode: boolean;
+  mediaContentNodes: MediaContentNode[];
 }
 
 export interface TopNavigationBarDerivedActionCreatorProps {
@@ -94,6 +97,7 @@ export interface TopNavigationBarDerivedActionCreatorProps {
   onDeselectAllPhotos: () => void;
   onReloadMediaItemsByPhotoStates: (photoStates: PhotoState[]) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
+  onSetAlbumNodeId: (mediaItemIds: string[], albumNodeId: string) => any;
   onReloadMediaItemsByViewSpec: () => any;
   onRemoveLoupeViewMediaItemId: (mediaItemId: string) => any;
   onSetDisplayMetadata: (displayMetadata: boolean) => any;
@@ -114,6 +118,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
+  const [showMovePhotosDialog, setShowMovePhotosDialog] = useState(false);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Loupe) {
@@ -326,6 +331,19 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     props.onSetNumGridColumns(value as number);
   }
 
+  const handleMovePhotos = (newAlbumId: string) => {
+    console.log('handleMovePhotos');
+    console.log(props.selectedMediaItems);
+    console.log('New Album ID:', newAlbumId);
+    props.onSetAlbumNodeId(props.selectedMediaItemIds, newAlbumId)
+      .then(() => {
+        props.onReloadMediaItemsByViewSpec()
+          .then(() => {
+            setShowMovePhotosDialog(false);
+          });
+      });
+  }
+
   const handleReloadMediaItems = () => {
     console.log('handleReloadMediaItems');
     console.log(props.selectedMediaItems[0]);
@@ -429,6 +447,19 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
         onClose={() => setShowSettingsDialog(false)}
         showMetadata={props.displayMetadata}
         onSetShowMetadata={(showMetadata) => handleSetShowMetadata(showMetadata)}
+      />
+    );
+  }
+
+  const renderMovePhotosDialog = (): JSX.Element => {
+    const mediaContentNodes: MediaContentNode[] = props.mediaContentNodes;
+    return (
+      <MovePhotosDialog
+        open={showMovePhotosDialog}
+        onClose={() => setShowMovePhotosDialog(false)}
+        onMovePhotos={handleMovePhotos}
+        mediaContentNodes={mediaContentNodes}
+        mediaItemsToMove={props.selectedMediaItems}
       />
     );
   }
@@ -550,6 +581,18 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </span>
         </Tooltip>
 
+        <Tooltip title="Move Photos">
+          <span>
+            <IconButton
+              color="inherit"
+              onClick={() => setShowMovePhotosDialog(true)}
+              disabled={props.selectedMediaItemsCount === 0}
+            >
+              <TrendingFlatIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
         <Tooltip title="Assign Keywords">
           <span>
             <IconButton
@@ -590,7 +633,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const isGridActive = props.photoLayout === PhotoLayout.Grid;
   const isLoupeActive = props.photoLayout === PhotoLayout.Loupe;
   const isSurveyViewVertical = (props.photoLayout === PhotoLayout.Survey) && (props.surveyViewOrientation === SurveyViewOrientations.Vertical);
-  const isSurveyViewHorizontal = (props.photoLayout === PhotoLayout.Survey)  && (props.surveyViewOrientation === SurveyViewOrientations.Horizontal);
+  const isSurveyViewHorizontal = (props.photoLayout === PhotoLayout.Survey) && (props.surveyViewOrientation === SurveyViewOrientations.Horizontal);
   const isSurveyDisabled = props.selectedMediaItemsCount < 2;
 
   return (
@@ -764,6 +807,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       {renderUploadToGoogleDialog()}
       {renderZoomDialog()}
       {renderSettingsDialog()}
+      {renderMovePhotosDialog()}
 
     </React.Fragment >
   )
@@ -788,6 +832,7 @@ function mapStateToProps(state: TedTaggerState): TopNavigationBarDerivedStatePro
     surveyViewMediaItemIds: getSurveyViewMediaItemIds(state),
     displayMetadata: getDisplayMetadata(state),
     fullScreenMode: getFullScreenMode(state),
+    mediaContentNodes: getMediaContentTree(state),
   };
 }
 
@@ -802,6 +847,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetNumGridColumns: setNumGridColumnsRedux,
     onDeselectAllPhotos: deselectAllPhotos,
     onSetPhotoState: setPhotoState,
+    onSetAlbumNodeId: setAlbumNodeId,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
     onRemoveLoupeViewMediaItemId: removeLoupeViewMediaItemId,
     onSetDisplayMetadata: setDisplayMetadata,

@@ -170,6 +170,16 @@ export const setPhotoStateEndpoint = async (request: Request, response: Response
   response.sendStatus(200);
 }
 
+export const setAlbumNodeIdEndpoint = async (request: Request, response: Response, next: any) => {
+  const { mediaItemIds, albumNodeId } = request.body;
+  const updates: Partial<MediaItem> = {
+    albumNodeId
+  };
+
+  await updateMediaItemsFieldsInDb(mediaItemIds, updates);
+  response.sendStatus(200);
+} 
+
 export const setMediaItemNotesEndpoint = async (request: Request, response: Response, next: any) => {
   const { uniqueId, notes } = request.body;
   const updates: Partial<MediaItem> = {

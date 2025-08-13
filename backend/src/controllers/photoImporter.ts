@@ -14,7 +14,6 @@ import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, 
 import {
   addMediaItemToMediaItemsDBTable,
   getMediaItemFromDb,
-  updateMediaItemsFieldsInDb,
   updateSingleMediaItemFieldsInDb,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';

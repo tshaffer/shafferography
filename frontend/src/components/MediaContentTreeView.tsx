@@ -18,7 +18,6 @@ import {
   Menu,
   MenuItem,
   Box,
-  ButtonGroup,
   Typography,
 } from '@mui/material';
 import { TedTaggerDispatch } from '../models';

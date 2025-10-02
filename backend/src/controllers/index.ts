@@ -1,10 +1,14 @@
 export * from './mediaContentTree';
 export * from './app';
 export * from './dbInterface';
+export * from './fileStat';
 export * from './googlePhotos';
 export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
+export * from './openInPreview';
 export * from './peopleMerger';
 export * from './photoImporter';
-export * from './undecidedGroups'
+export * from './undecidedGroups';
+
+

@@ -6,7 +6,7 @@ const collections = [
   "mediacontenttree",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-08-13-1";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-10-02-1";
 
 const fs = require("fs");
 

@@ -29,8 +29,9 @@ import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
+import CropIcon from '@mui/icons-material/Crop';
 
-import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setAlbumNodeId, setPhotoState } from '../controllers';
+import { cropMediaItem, deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setAlbumNodeId, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
 import { getNumGridColumns, getSelectedMediaItemsCount, getMediaItems, getMediaItemIds, getSelectedMediaItemIds, getSelectedMediaItems, getPhotoLayout, getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getFocusedSurveyViewMediaItemId, getSurveyViewMediaItemIds, getDisplayMetadata, getRightPanelOpen, getSidebarOpen, getFullScreenMode, getSurveyViewOrientation, getMediaContentTree } from '../selectors';
 import { MediaContentNode, MediaItem, PhotoLayout, PhotoState, SurveyViewOrientation, SurveyViewOrientations, TedTaggerState } from '../types';
@@ -38,6 +39,7 @@ import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
 import MovePhotosDialog from './MovePhotosDialog';
+import CropWatcher from './CropWatcher';
 
 const drawerWidth = 240;
 
@@ -119,6 +121,8 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showMovePhotosDialog, setShowMovePhotosDialog] = useState(false);
+
+  const [isCropping, setIsCropping] = useState(false);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Loupe) {
@@ -350,6 +354,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     props.onReimportMediaItems();
   }
 
+  const handleCropMediaItem = () => {
+    cropMediaItem(props.selectedMediaItemIds[0]);
+    setIsCropping(true);
+  }
+
   /*  Prior slider version
           <DialogContent style={{ paddingTop: '34px' }}>
           <Slider
@@ -415,6 +424,18 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       />
     );
   }
+
+
+  const renderCropWatcher = (): JSX.Element => {
+    if (!isCropping) return <></>;
+    return (
+      <CropWatcher
+        mediaItemId={props.selectedMediaItemIds[0]}
+        onReimport={props.onReimportMediaItems}
+        onDone={() => setIsCropping(false)}
+      />
+    );
+  };
 
   const renderZoomDialog = (): JSX.Element => {
     return (
@@ -616,6 +637,18 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </span>
         </Tooltip>
 
+        <Tooltip title="Crop Photo">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount !== 1}
+              onClick={handleCropMediaItem}
+            >
+              <CropIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
       </React.Fragment>
     );
   };
@@ -808,7 +841,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
       {renderZoomDialog()}
       {renderSettingsDialog()}
       {renderMovePhotosDialog()}
-
+      {renderCropWatcher()}
     </React.Fragment >
   )
 }

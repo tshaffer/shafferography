@@ -6,5 +6,6 @@ export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
 export * from './peopleMerger';
+export * from './photosFlow';
 export * from './photoImporter';
-export * from './undecidedGroups'
+export * from './undecidedGroups';

@@ -31,6 +31,8 @@ import {
   getMediaItemCountByUndecidedGroupPerAlbumNode,
   reimportPhotosEndpoint,
   setAlbumNodeIdEndpoint,
+  importAndEdit,
+  exportSelectionBack,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -77,5 +79,8 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/album-tree', getAlbumNodes);
   app.put('/api/v1/album-tree', saveAlbumNodes);
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
+
+  app.post('/api/v1/import-and-edit', importAndEdit);
+  app.post('/api/v1/export-selection-back', exportSelectionBack);
 };
 

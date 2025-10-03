@@ -29,6 +29,8 @@ import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
+import CropIcon from '@mui/icons-material/Crop';
+import PublishIcon from '@mui/icons-material/Publish';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setAlbumNodeId, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
@@ -38,6 +40,7 @@ import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
 import MovePhotosDialog from './MovePhotosDialog';
+import { editInPhotos, exportEditedBack } from '../controllers/editInPhotos';
 
 const drawerWidth = 240;
 
@@ -350,6 +353,17 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     props.onReimportMediaItems();
   }
 
+  const handleCropMediaItem = () => {
+    editInPhotos(props.selectedMediaItemIds[0]);
+    // setIsCropping(true);
+  }
+
+  const handleRetrieveCroppedPhoto = () => {
+    exportEditedBack(props.selectedMediaItemIds[0]);
+    // setIsCropping(true);
+  }
+
+
   /*  Prior slider version
           <DialogContent style={{ paddingTop: '34px' }}>
           <Slider
@@ -612,6 +626,30 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
               onClick={handleReloadMediaItems}
             >
               <ReplayIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Crop Photo">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount !== 1}
+              onClick={handleCropMediaItem}
+            >
+              <CropIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        <Tooltip title="Retrieve Cropped Photo">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount !== 1}
+              onClick={handleRetrieveCroppedPhoto}
+            >
+              <PublishIcon />
             </IconButton>
           </span>
         </Tooltip>

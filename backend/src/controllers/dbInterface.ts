@@ -814,3 +814,23 @@ export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Pr
 
   await treeDoc.save();
 }
+
+export async function saveVariantForMediaItem(mediaItemId: string, variant: {
+  filePath: string;
+  source: 'crop' | 'crop-overwrite-disabled';
+  createdAt: string;
+  meta?: any;
+}) {
+  // push to item.variants[], maybe set defaultDisplayedVariantId, etc.
+}
+
+export async function updateMediaItemAfterOverwrite(mediaItemId: string, info: {
+  fileSize: number;
+  width: number;
+  height: number;
+  lastModified: string;
+  editLogEntry?: { kind: string; at: string; cropData: any };
+}) {
+  // update fields; optionally push to editLog[]
+  // Also: invalidate thumbnails so they regenerate
+}

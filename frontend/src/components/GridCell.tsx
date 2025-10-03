@@ -50,6 +50,7 @@ const GridCell = (props: GridCellProps) => {
 
   const mediaItem: MediaItem = props.mediaItem;
   let photoUrl = getPhotoUrl(mediaItem);
+  console.log('photoUrl:', photoUrl)
 
   const handleDoubleClick = () => {
     props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);
@@ -207,6 +208,7 @@ const GridCell = (props: GridCellProps) => {
       )}
 
       {metadataJsx}
+
 
       <img
         src={`${photoUrl}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}

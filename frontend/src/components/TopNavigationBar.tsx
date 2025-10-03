@@ -29,6 +29,7 @@ import HorizontalSplitIcon from '@mui/icons-material/HorizontalSplit';
 import VerticalSplitIcon from '@mui/icons-material/VerticalSplit';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import TrendingFlatIcon from '@mui/icons-material/TrendingFlat';
+import CropIcon from '@mui/icons-material/Crop';
 
 import { deselectAllPhotos, loadAndReplaceMediaItemsByViewSpec, reimportPhotosFromDrive, setAlbumNodeId, setPhotoState } from '../controllers';
 import { TedTaggerDispatch, setNumGridColumnsRedux, setPhotoLayoutRedux, setLoupeViewMediaItemIdRedux, setLoupeViewMediaItemIds, removeLoupeViewMediaItemId, setFocusedSurveyViewMediaItemId, setSurveyViewMediaItemIds, setDisplayMetadata, setFullScreenMode, setSurveyViewOrientation } from '../models';
@@ -38,6 +39,8 @@ import UploadToGoogleDialog from './UploadToGoogleDialog';
 import SetUndecidedGroup from './SetUndecidedGroup';
 import SettingsDialog from './SettingsDialog';
 import MovePhotosDialog from './MovePhotosDialog';
+import { CropperModal } from './CropperModal';
+import { cropMediaItem } from '../controllers/photoCropper';
 
 const drawerWidth = 240;
 
@@ -119,6 +122,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   const [undecidedGroupAnchorEl, setUndecidedGroupAnchorEl] = useState<null | HTMLElement>(null);
   const [showSettingsDialog, setShowSettingsDialog] = useState(false);
   const [showMovePhotosDialog, setShowMovePhotosDialog] = useState(false);
+  const [cropOpen, setCropOpen] = useState(false);
 
   React.useEffect(() => {
     if (props.photoLayout === PhotoLayout.Loupe) {
@@ -349,6 +353,13 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     console.log(props.selectedMediaItems[0]);
     props.onReimportMediaItems();
   }
+
+  const handleCropMediaItem = () => {
+    setCropOpen(true);
+    // cropMediaItem(props.selectedMediaItemIds[0]);
+    // setIsCropping(true);
+  }
+
 
   /*  Prior slider version
           <DialogContent style={{ paddingTop: '34px' }}>
@@ -616,9 +627,52 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </span>
         </Tooltip>
 
+        <Tooltip title="Crop Photo">
+          <span>
+            <IconButton
+              color="inherit"
+              disabled={props.selectedMediaItemsCount !== 1}
+              onClick={handleCropMediaItem}
+            >
+              <CropIcon />
+            </IconButton>
+          </span>
+        </Tooltip>
+
+        {renderCropperModal()}
+
       </React.Fragment>
     );
   };
+
+  type AspectRatio = number | 'free';
+
+  type CropData = {
+  x: number; y: number; width: number; height: number;
+  rotate: number; scaleX: number; scaleY: number;
+  naturalWidth: number; naturalHeight: number;
+  aspectRatio?: AspectRatio;
+};
+
+
+  async function handleOverwriteOriginal(args: { mediaItemId: string; cropData: CropData; backupOriginal?: boolean | undefined; }): Promise<void> {
+    console.log('handleOverwriteOriginal called with:', args);
+    return cropMediaItem(args.mediaItemId, args.cropData, false);
+  };
+
+  const renderCropperModal = (): JSX.Element => {
+    if (props.selectedMediaItemsCount !== 1) {
+      return <></>;
+    }
+    return (
+      <CropperModal
+        open={cropOpen}
+        onClose={() => setCropOpen(false)}
+        mediaItem={props.selectedMediaItems[0]}
+        onOverwriteOriginal={handleOverwriteOriginal}
+      />
+    );
+  }
 
   const renderLoupeViewItemCountAndActions = (): JSX.Element => {
     return (

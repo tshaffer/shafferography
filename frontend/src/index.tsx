@@ -10,6 +10,8 @@ import { rootReducer } from './models';
 import AppShell from './components/AppShell';
 import { initializeDiagnostics, loadEnvConfig } from './utilities';
 
+import 'cropperjs/dist/cropper.min.css';
+
 window.React = React;
 
 initializeDiagnostics();

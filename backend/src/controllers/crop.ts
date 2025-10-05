@@ -11,16 +11,16 @@ import { exiftool } from 'exiftool-vendored';
 //   updateMediaItemAfterOverwrite,
 // } from '../services/mediaItems';
 import { getMediaItemFromDb, saveVariantForMediaItem, updateMediaItemAfterOverwrite } from './dbInterface';
-import { MediaItem } from '../types';
+import { CropData, MediaItem } from '../types';
 
 /** Crop types shared with frontend */
 type AspectRatio = number | 'free';
-export type CropData = {
-  x: number; y: number; width: number; height: number;
-  rotate: number; scaleX: number; scaleY: number;
-  naturalWidth: number; naturalHeight: number;
-  aspectRatio?: AspectRatio;
-};
+// export type CropData = {
+//   x: number; y: number; width: number; height: number;
+//   rotate: number; scaleX: number; scaleY: number;
+//   naturalWidth: number; naturalHeight: number;
+//   aspectRatio?: AspectRatio;
+// };
 
 type CropPayload = {
   mediaItemId: string;

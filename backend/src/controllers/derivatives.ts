@@ -2,8 +2,8 @@ import { MediaItem } from '../types';
 import { CreateDerivativeRequestBody, DerivativeRecord } from '../types/crop-types';
 
 import { Request, Response } from 'express';
-import { z } from 'zod';
 import { generateDerivativeFromCrop } from './generate-derivative';
+import { bodySchema } from '../types';
 
 // ---- replace with your real DB accessors ----
 async function getMediaItemById(mediaItemId: string): Promise<MediaItem | null> {
@@ -17,27 +17,6 @@ async function markPreferred(mediaItemId: string, derivativeId: string): Promise
   // e.g., await Derivatives.updateMany({ mediaItemId }, { $set: { isPreferred: false } });
   //       await Derivatives.updateOne({ _id: derivativeId }, { $set: { isPreferred: true } });
 }
-
-const cropDataSchema = z.object({
-  x: z.number(),
-  y: z.number(),
-  width: z.number().positive(),
-  height: z.number().positive(),
-  rotate: z.number().default(0),
-  scaleX: z.number().default(1),
-  scaleY: z.number().default(1),
-  naturalWidth: z.number().positive(),
-  naturalHeight: z.number().positive(),
-  aspectRatio: z.union([z.number(), z.literal('free')]).default('free'),
-});
-
-const bodySchema = z.object({
-  cropData: cropDataSchema,
-  format: z.enum(['heic', 'jpeg', 'jpg', 'png']).optional(),
-  quality: z.number().min(1).max(100).optional(),
-  heifCompression: z.enum(['av1', 'hevc']).optional(),
-  markPreferred: z.boolean().optional(),
-});
 
 /**
  * POST /api/photos/:mediaItemId/derivatives

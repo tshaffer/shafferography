@@ -1,3 +1,5 @@
+use pgPhotos;
+
 /**
  * Shafferography MediaItem migration (mongosh)
  * - Adds/derives fields for original/derivative model
@@ -11,7 +13,7 @@ const DB_NAME = "pgPhotos";
 const COLL = "mediaitems";
 
 // ---- Options ----
-const DRY_RUN = true;      // true = report only, no writes
+const DRY_RUN = false;      // true = report only, no writes
 const BACKUP = true;        // make a full collection backup first
 const BACKUP_PREFIX = `${COLL}_backup_`;
 

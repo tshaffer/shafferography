@@ -9,8 +9,8 @@ import { getServerUrl, apiUrlFragment, TedTaggerState } from "../types";
 
 export const cropMediaItem = async (mediaItemId: string, cropData: any, createVariant: boolean): Promise<any> => {
 
-  const body = { mediaItemId, cropData, createVariant };
-  const path = getServerUrl() + apiUrlFragment + 'crop';
+  const body = { cropData, markPreferred: true };
+  const path = getServerUrl() + apiUrlFragment + mediaItemId + "/derivatives";
 
   try {
     const response = await axios.post(path, body);

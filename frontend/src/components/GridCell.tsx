@@ -50,7 +50,7 @@ const GridCell = (props: GridCellProps) => {
 
   const mediaItem: MediaItem = props.mediaItem;
   let photoUrl = getPhotoUrl(mediaItem);
-  console.log('photoUrl:', photoUrl)
+  // console.log('photoUrl:', photoUrl)
 
   const handleDoubleClick = () => {
     props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);

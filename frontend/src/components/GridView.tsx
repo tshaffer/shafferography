@@ -112,7 +112,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   React.useEffect(() => {
 
-    console.log('GridView: eventList React.useEffect - invoked');
+    // console.log('GridView: eventList React.useEffect - invoked');
 
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {

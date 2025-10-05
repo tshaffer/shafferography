@@ -81,6 +81,6 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
 
   // app.post('/api/v1/crop', crop);
-  app.post('/api/v1/crop/:mediaItemId/derivatives', generateDerivativeEndpoint);
+  app.post('/api/v1/:mediaItemId/derivatives', generateDerivativeEndpoint);
 };
 

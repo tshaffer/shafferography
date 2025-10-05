@@ -4,11 +4,9 @@ import { CreateDerivativeRequestBody, DerivativeRecord } from '../types/crop-typ
 import { Request, Response } from 'express';
 import { generateDerivativeFromCrop } from './generate-derivative';
 import { bodySchema } from '../types';
+import { getMediaItemFromDb } from './dbInterface';
 
-// ---- replace with your real DB accessors ----
-async function getMediaItemById(mediaItemId: string): Promise<MediaItem | null> {
-  return null; // e.g., await MediaItems.findOne({ uniqueId: mediaItemId })
-}
+// ---- replace with your real DB accessors ----}
 async function insertDerivative(rec: Omit<DerivativeRecord, '_id'>): Promise<DerivativeRecord> {
   // e.g., const doc = await Derivatives.create(rec); return doc.toObject();
   return { _id: 'DERIV123', ...rec };
@@ -32,7 +30,7 @@ export const generateDerivativeEndpoint = async (req: Request, res: Response, ne
   try {
     const mediaItemId = req.params.mediaItemId;
     const parsed = bodySchema.parse(req.body as CreateDerivativeRequestBody);
-    const mediaItem = await getMediaItemById(mediaItemId);
+    const mediaItem = await getMediaItemFromDb(mediaItemId);
     if (!mediaItem) return res.status(404).json({ error: 'Media item not found' });
 
     const { outputPath, width, height, mimeType } =

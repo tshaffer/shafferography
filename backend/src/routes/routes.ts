@@ -32,10 +32,10 @@ import {
   reimportPhotosEndpoint,
   setAlbumNodeIdEndpoint,
   crop,
+  fetchUndecidedGroupsForAlbums,
+  addUndecidedGroup,
+  generateDerivativeEndpoint
 } from '../controllers';
-import { fetchUndecidedGroupsForAlbums } from '../controllers';
-import { addUndecidedGroup } from '../controllers/';
-import { generateDerivativeEndpoint } from 'src/controllers/derivatives';
 
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
@@ -80,7 +80,7 @@ export const createRoutes = (app: express.Application) => {
   app.put('/api/v1/album-tree', saveAlbumNodes);
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
 
-  app.post('/api/v1/crop', crop);
+  // app.post('/api/v1/crop', crop);
   app.post('/api/v1/crop/:mediaItemId/derivatives', generateDerivativeEndpoint);
 };
 

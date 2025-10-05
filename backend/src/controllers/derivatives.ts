@@ -1,7 +1,7 @@
 import { MediaItem } from '../types';
 import { CreateDerivativeRequestBody, DerivativeRecord } from '../types/crop-types';
 
-import { Router, Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { z } from 'zod';
 import { generateDerivativeFromCrop } from './generate-derivative';
 
@@ -28,7 +28,7 @@ const cropDataSchema = z.object({
   scaleY: z.number().default(1),
   naturalWidth: z.number().positive(),
   naturalHeight: z.number().positive(),
-  aspectRatio: z.union([z.number(), z.literal('free')]),
+  aspectRatio: z.union([z.number(), z.literal('free')]).default('free'),
 });
 
 const bodySchema = z.object({
@@ -38,8 +38,6 @@ const bodySchema = z.object({
   heifCompression: z.enum(['av1', 'hevc']).optional(),
   markPreferred: z.boolean().optional(),
 });
-
-export const derivativesRouter = Router();
 
 /**
  * POST /api/photos/:mediaItemId/derivatives

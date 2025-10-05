@@ -21,12 +21,6 @@ export interface CreateDerivativeRequestBody {
   markPreferred?: boolean;                  // optional
 }
 
-// export interface MediaItem {
-//   uniqueId: string;
-//   absolutePath: string;
-//   mimeType?: string;
-// }
-
 export interface DerivativeRecord {
   _id: string;
   mediaItemId: string;

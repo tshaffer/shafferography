@@ -648,15 +648,15 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   type AspectRatio = number | 'free';
 
   type CropData = {
-  x: number; y: number; width: number; height: number;
-  rotate: number; scaleX: number; scaleY: number;
-  naturalWidth: number; naturalHeight: number;
-  aspectRatio?: AspectRatio;
-};
+    x: number; y: number; width: number; height: number;
+    rotate: number; scaleX: number; scaleY: number;
+    naturalWidth: number; naturalHeight: number;
+    aspectRatio?: AspectRatio;
+  };
 
 
-  async function handleOverwriteOriginal(args: { mediaItemId: string; cropData: CropData; backupOriginal?: boolean | undefined; }): Promise<void> {
-    console.log('handleOverwriteOriginal called with:', args);
+  async function handleSaveEdits(args: { mediaItemId: string; cropData: CropData; backupOriginal?: boolean | undefined; }): Promise<void> {
+    console.log('handleSaveEdits called with:', args);
     return cropMediaItem(args.mediaItemId, args.cropData, false);
   };
 
@@ -669,7 +669,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
         open={cropOpen}
         onClose={() => setCropOpen(false)}
         mediaItem={props.selectedMediaItems[0]}
-        onOverwriteOriginal={handleOverwriteOriginal}
+        onSaveEdits={handleSaveEdits}
       />
     );
   }

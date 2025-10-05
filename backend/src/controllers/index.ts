@@ -2,10 +2,12 @@ export * from './mediaContentTree';
 export * from './app';
 export * from './crop';
 export * from './dbInterface';
+export * from './generate-derivative';
 export * from './googlePhotos';
 export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
+export * from './meta-io';
 export * from './peopleMerger';
 export * from './photoImporter';
 export * from './undecidedGroups'

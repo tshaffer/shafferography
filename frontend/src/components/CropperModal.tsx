@@ -24,7 +24,7 @@ type Props = {
   open: boolean;
   onClose: () => void;
   mediaItem: MediaItem;
-  onOverwriteOriginal?: (args: { mediaItemId: string; cropData: CropData; backupOriginal?: boolean }) => Promise<void>;
+  onSaveEdits: (args: { mediaItemId: string; cropData: CropData; backupOriginal?: boolean }) => Promise<void>;
 };
 
 const ASPECTS = [
@@ -37,7 +37,7 @@ const ASPECTS = [
 ] as const;
 
 export const CropperModal: React.FC<Props> = ({
-  open, onClose, mediaItem, onOverwriteOriginal,
+  open, onClose, mediaItem, onSaveEdits,
 }) => {
   const cropperRef = useRef<ReactCropperElement>(null);
   // const [aspect, setAspect] = useState<number | 'free'>('free');
@@ -111,11 +111,10 @@ export const CropperModal: React.FC<Props> = ({
     };
   };
 
-  const handleOverwriteOriginal = async () => {
-    if (!onOverwriteOriginal) return;
-    const payload = getCropPayload();
+  const handleSaveEdits = async () => {
+    const payload: CropData | null = getCropPayload();
     if (!payload) return;
-    await onOverwriteOriginal({
+    await onSaveEdits({
       mediaItemId: mediaItem.uniqueId,
       cropData: payload,
       backupOriginal: true, // or expose a checkbox in the UI
@@ -167,8 +166,8 @@ export const CropperModal: React.FC<Props> = ({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel (Esc)</Button>
-        <Button variant="contained" color="error" onClick={handleOverwriteOriginal}>
-          Overwrite Original (Destructive)
+        <Button variant="contained" color="error" onClick={handleSaveEdits}>
+          Save
         </Button>
       </DialogActions>
     </Dialog>

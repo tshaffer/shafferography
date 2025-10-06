@@ -3,8 +3,11 @@ import { CreateDerivativeRequestBody, DerivativeRecord } from '../types/crop-typ
 
 import { Request, Response } from 'express';
 import { generateDerivativeFromCrop } from './generate-derivative';
-import { bodySchema } from '../types';
+import { bodySchema, OutFormat } from '../types';
 import { getMediaItemFromDb } from './dbInterface';
+import { getMediaitemModel } from '../models';
+import path from 'path';
+import { Types } from 'mongoose';
 
 // ---- replace with your real DB accessors ----}
 async function insertDerivative(rec: Omit<DerivativeRecord, '_id'>): Promise<DerivativeRecord> {
@@ -26,42 +29,150 @@ async function markPreferred(mediaItemId: string, derivativeId: string): Promise
  *   markPreferred?: boolean
  * }
  */
-export const generateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
+// export const generateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
+//   try {
+//     const mediaItemId = req.params.mediaItemId;
+//     const parsed = bodySchema.parse(req.body as CreateDerivativeRequestBody);
+//     const mediaItem = await getMediaItemFromDb(mediaItemId);
+//     if (!mediaItem) return res.status(404).json({ error: 'Media item not found' });
+
+//     const { outputPath, width, height, mimeType } =
+//       await generateDerivativeFromCrop(mediaItem.filePath, parsed.cropData, {
+//         format: parsed.format,
+//         quality: parsed.quality,
+//         heifCompression: parsed.heifCompression,
+//       });
+
+//     // Persist derivative record
+//     const created = await insertDerivative({
+//       mediaItemId,
+//       absolutePath: outputPath,
+//       mimeType,
+//       width,
+//       height,
+//       isPreferred: !!parsed.markPreferred,
+//       createdAt: new Date().toISOString(),
+//     });
+
+//     if (parsed.markPreferred) {
+//       await markPreferred(mediaItemId, created._id);
+//     }
+
+//     return res.json({
+//       ok: true,
+//       mediaItemId,
+//       derivative: created,
+//     });
+//   } catch (err: any) {
+//     console.error('create-derivative error', err);
+//     return res.status(400).json({ ok: false, error: err?.message ?? 'Failed to create derivative' });
+//   }
+// };
+
+// If you already have a router for /api/photos, add this handler there.
+
+// Small runtime guard (kept lightweight on purpose)
+function isValidBody(b: any): b is CreateDerivativeRequestBody {
+  return (
+    b &&
+    typeof b === "object" &&
+    b.cropData &&
+    typeof b.cropData.x === "number" &&
+    typeof b.cropData.y === "number" &&
+    typeof b.cropData.width === "number" &&
+    typeof b.cropData.height === "number"
+  );
+}
+
+export const newGenerateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
+
   try {
-    const mediaItemId = req.params.mediaItemId;
-    const parsed = bodySchema.parse(req.body as CreateDerivativeRequestBody);
-    const mediaItem = await getMediaItemFromDb(mediaItemId);
-    if (!mediaItem) return res.status(404).json({ error: 'Media item not found' });
+    const { mediaItemId } = req.params;
+    const body = req.body;
 
-    const { outputPath, width, height, mimeType } =
-      await generateDerivativeFromCrop(mediaItem.filePath, parsed.cropData, {
-        format: parsed.format,
-        quality: parsed.quality,
-        heifCompression: parsed.heifCompression,
-      });
-
-    // Persist derivative record
-    const created = await insertDerivative({
-      mediaItemId,
-      absolutePath: outputPath,
-      mimeType,
-      width,
-      height,
-      isPreferred: !!parsed.markPreferred,
-      createdAt: new Date().toISOString(),
-    });
-
-    if (parsed.markPreferred) {
-      await markPreferred(mediaItemId, created._id);
+    if (!isValidBody(body)) {
+      return res.status(400).json({ ok: false, error: "Invalid body: cropData is required" });
     }
 
-    return res.json({
+    // 1) Load the media item (to get the original absPath)
+    const item: MediaItem | undefined = await getMediaitemModel().findById(mediaItemId);
+    if (!item) return res.status(404).json({ ok: false, error: "Media item not found" });
+
+    const originalAbsPath = item.filePath;
+    if (!originalAbsPath) {
+      return res.status(409).json({ ok: false, error: "Media item has no original.absPath" });
+    }
+
+    // 2) Generate the derivative file using your existing code
+    const { outputPath, width, height, mimeType } = await generateDerivativeFromCrop(
+      originalAbsPath,
+      body.cropData,
+      {
+        format: body.format,                // 'heic' | 'jpeg' | 'jpg' | 'png' | undefined
+        quality: body.quality,             // 1..100 | undefined
+        heifCompression: body.heifCompression, // 'av1' | 'hevc' | undefined
+      }
+    );
+
+    // 3) Build the subdocument to push into `derivatives[]`
+    const ext = path.extname(outputPath).replace(".", "").toLowerCase() as OutFormat;
+    const format: OutFormat = (body.format ?? ext) as OutFormat;
+
+    const derivativeId = new Types.ObjectId();
+    const now = new Date();
+
+    // Simple, deterministic label. Customize as you like.
+    const label = `Crop ${width}×${height} ${format.toUpperCase()}`;
+
+    const derivativeSubdoc = {
+      _id: derivativeId,
+      label,
+      format,                // 'heic' | 'jpeg' | 'jpg' | 'png'
+      width,
+      height,
+      mimeType,              // from generator
+      absPath: outputPath,   // absolute path to the created derivative
+      createdAt: now,
+      markPreferred: !!body.markPreferred,
+    };
+
+    // 4) Persist: push derivative; optionally set preferredDerivativeId
+    const update: any = {
+      $push: { derivatives: derivativeSubdoc },
+    };
+    if (body.markPreferred) {
+      update.$set = { preferredDerivativeId: derivativeId };
+    }
+
+    const updated = await getMediaitemModel().findOneAndUpdate(
+      { _id: item.uniqueId },
+      update,
+      { new: true }
+    ).lean();
+
+    if (!updated) {
+      return res.status(500).json({ ok: false, error: "Failed to update media item" });
+    }
+
+    return res.status(201).json({
       ok: true,
       mediaItemId,
-      derivative: created,
+      derivative: {
+        id: derivativeId.toString(),
+        label,
+        format,
+        width,
+        height,
+        mimeType,
+        absPath: outputPath,
+        createdAt: now.toISOString(),
+        markPreferred: !!body.markPreferred,
+      },
+      preferredDerivativeId: body.markPreferred ? derivativeId.toString() : (updated.preferredDerivativeId?.toString() ?? null),
     });
   } catch (err: any) {
-    console.error('create-derivative error', err);
-    return res.status(400).json({ ok: false, error: err?.message ?? 'Failed to create derivative' });
+    console.error("POST /api/photos/:mediaItemId/derivatives failed:", err);
+    return res.status(400).json({ ok: false, error: err?.message ?? "Failed to create derivative" });
   }
 };
+

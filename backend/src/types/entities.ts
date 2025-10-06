@@ -10,10 +10,12 @@ export interface GeoData {
   longitudeSpan: number;
 }
 
+export type OutFormat = "heic" | "jpeg" | "jpg" | "png";
+
 export interface Derivative {
   _id: Types.ObjectId;
   label: string;                  // e.g. "Crop A", "Web 1600", etc.
-  format: "heic" | "jpeg" | "jpg" | "png";
+  format: OutFormat;
   width: number;
   height: number;
   mimeType: string;

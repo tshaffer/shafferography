@@ -2,23 +2,14 @@ import { MediaItem } from '../types';
 import { CreateDerivativeRequestBody, DerivativeRecord } from '../types/crop-types';
 
 import { Request, Response } from 'express';
+import { v4 as uuidv4 } from 'uuid';
 import { generateDerivativeFromCrop } from './generate-derivative';
 import { bodySchema, OutFormat } from '../types';
 import { getMediaItemFromDb } from './dbInterface';
 import { getMediaitemModel } from '../models';
 import path from 'path';
-import { Types } from 'mongoose';
 
 // ---- replace with your real DB accessors ----}
-async function insertDerivative(rec: Omit<DerivativeRecord, '_id'>): Promise<DerivativeRecord> {
-  // e.g., const doc = await Derivatives.create(rec); return doc.toObject();
-  return { _id: 'DERIV123', ...rec };
-}
-async function markPreferred(mediaItemId: string, derivativeId: string): Promise<void> {
-  // e.g., await Derivatives.updateMany({ mediaItemId }, { $set: { isPreferred: false } });
-  //       await Derivatives.updateOne({ _id: derivativeId }, { $set: { isPreferred: true } });
-}
-
 /**
  * POST /api/photos/:mediaItemId/derivatives
  * Body: {
@@ -95,7 +86,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
     }
 
     // 1) Load the media item (to get the original absPath)
-    const item: MediaItem | undefined = await getMediaitemModel().findById(mediaItemId);
+    const item: MediaItem | undefined = await getMediaItemFromDb(mediaItemId);
     if (!item) return res.status(404).json({ ok: false, error: "Media item not found" });
 
     const originalAbsPath = item.filePath;
@@ -118,14 +109,14 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
     const ext = path.extname(outputPath).replace(".", "").toLowerCase() as OutFormat;
     const format: OutFormat = (body.format ?? ext) as OutFormat;
 
-    const derivativeId = new Types.ObjectId();
+    const derivativeId = uuidv4();
     const now = new Date();
 
     // Simple, deterministic label. Customize as you like.
     const label = `Crop ${width}×${height} ${format.toUpperCase()}`;
 
     const derivativeSubdoc = {
-      _id: derivativeId,
+      derivativeId,
       label,
       format,                // 'heic' | 'jpeg' | 'jpg' | 'png'
       width,
@@ -145,7 +136,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
     }
 
     const updated = await getMediaitemModel().findOneAndUpdate(
-      { _id: item.uniqueId },
+      { uniqueId: item.uniqueId },
       update,
       { new: true }
     ).lean();

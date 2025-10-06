@@ -24,7 +24,7 @@ import { z } from 'zod';
 // }
 
 export interface DerivativeRecord {
-  _id: string;
+  derivativeId: string;
   mediaItemId: string;
   absolutePath: string;
   mimeType: string;

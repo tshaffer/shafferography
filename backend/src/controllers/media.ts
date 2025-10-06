@@ -1,7 +1,6 @@
 import path from "node:path";
 import fs from "node:fs/promises";
 import { Request, Response } from "express";
-import { Types } from "mongoose";
 import { getMediaItemFromDb } from "./dbInterface";
 import { getMediaitemModel } from "../models";
 
@@ -10,7 +9,7 @@ import { getMediaitemModel } from "../models";
  * Returns enough info for the client to render variant choices.
  */
 export const getManifest = async (req: Request, res: Response, next: any) => {
-// router.get("/:id/manifest", async (req: Request, res: Response) => {
+  // router.get("/:id/manifest", async (req: Request, res: Response) => {
   const { id } = req.params;
   // const item = await MediaItemModel.findById(id).lean();
   const item = await getMediaItemFromDb(id);
@@ -24,7 +23,7 @@ export const getManifest = async (req: Request, res: Response, next: any) => {
       mimeType: item.mimeType,
     },
     derivatives: item.derivatives.map(d => ({
-      id: d._id.toString(),
+      derivativeId: d.derivativeId.toString(),
       label: d.label,
       width: d.width,
       height: d.height,
@@ -39,7 +38,7 @@ export const getManifest = async (req: Request, res: Response, next: any) => {
  * Streams the file. Use Content-Type so <img> or <picture> can display directly.
  */
 export const getAsset = async (req: Request, res: Response, next: any) => {
-// router.get("/:id/asset", async (req: Request, res: Response) => {
+  // router.get("/:id/asset", async (req: Request, res: Response) => {
   const { id } = req.params;
   const { variant = "preferred" } = req.query as { variant?: string };
 
@@ -54,11 +53,11 @@ export const getAsset = async (req: Request, res: Response, next: any) => {
   } else if (variant === "preferred") {
     const prefId =
       item.preferredDerivativeId ??
-      item.derivatives.find(d => d.markPreferred)?. _id ??
-      item.derivatives[0]?._id;
+      item.derivatives.find(d => d.markPreferred)?.derivativeId ??
+      item.derivatives[0]?.derivativeId;
 
     if (prefId) {
-      const d = item.derivatives.find(x => x._id.toString() === prefId.toString());
+      const d = item.derivatives.find(x => x.derivativeId.toString() === prefId.toString());
       if (d) {
         absPath = d.absPath;
         mimeType = d.mimeType;
@@ -66,7 +65,7 @@ export const getAsset = async (req: Request, res: Response, next: any) => {
     }
   } else {
     // assume variant is a derivativeId
-    const d = item.derivatives.find(x => x._id.toString() === variant);
+    const d = item.derivatives.find(x => x.derivativeId.toString() === variant);
     if (d) {
       absPath = d.absPath;
       mimeType = d.mimeType;
@@ -90,17 +89,16 @@ export const getAsset = async (req: Request, res: Response, next: any) => {
  * (Optional) update which derivative is preferred (does NOT affect current view selection)
  */
 export const putPreferred = async (req: Request, res: Response, next: any) => {
-// router.put("/:id/preferred/:derivativeId", async (req: Request, res: Response) => {
+  // router.put("/:id/preferred/:derivativeId", async (req: Request, res: Response) => {
   const { id, derivativeId } = req.params;
-  const _id = new Types.ObjectId(derivativeId);
 
   const updated = await getMediaitemModel().findOneAndUpdate(
-    { _id: id, "derivatives._id": _id },
-    { $set: { preferredDerivativeId: _id } },
+    { uniqueId: id, "derivatives.derivativeId": derivativeId },
+    { $set: { preferredDerivativeId: derivativeId } },
     { new: true }
   ).lean();
 
   if (!updated) return res.status(404).json({ error: "Media or derivative not found" });
-  res.json({ ok: true, preferredDerivativeId: _id.toString() });
+  res.json({ ok: true, preferredDerivativeId: derivativeId });
 };
 

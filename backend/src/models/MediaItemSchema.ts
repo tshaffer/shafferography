@@ -5,6 +5,7 @@ import mongoose, { Schema, Types } from "mongoose";
 // const Schema = mongoose.Schema;
 
 const DerivativeSchema = new Schema<Derivative>({
+  derivativeId: { type: String, required: true },
   label: { type: String, required: true },
   format: { type: String, enum: ["heic", "jpeg", "jpg", "png"], required: true },
   width: { type: Number, required: true },
@@ -73,7 +74,7 @@ const MediaitemSchema = new Schema<MediaItem>({
 
   // support for variants
   derivatives: { type: [DerivativeSchema], default: [] },
-  preferredDerivativeId: { type: Schema.Types.ObjectId, default: null },
+  preferredDerivativeId: { type: String, default: null },
 
 });
 

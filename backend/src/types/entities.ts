@@ -1,5 +1,6 @@
 import { StringToNumberLUT } from "baseTypes";
 import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "enums";
+import { Types } from "mongoose";
 
 export interface GeoData {
   latitude: number;
@@ -9,29 +10,48 @@ export interface GeoData {
   longitudeSpan: number;
 }
 
+export interface Derivative {
+  _id: Types.ObjectId;
+  label: string;                  // e.g. "Crop A", "Web 1600", etc.
+  format: "heic" | "jpeg" | "jpg" | "png";
+  width: number;
+  height: number;
+  mimeType: string;
+  absPath: string;                // absolute path on disk
+  createdAt: Date;
+  markPreferred?: boolean;        // optional flag you may set when generating
+}
+
 export interface MediaItem {
   uniqueId: string;
-  googleMediaItemId: string,
-  fileName: string,
+  googleMediaItemId: string;
+  fileName: string;
   googleAlbumId: string;
   googleAlbumName: string;
-  filePath?: string,
-  url?: string,
-  mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: string[],
-  peopleRetrievedFromGoogle: boolean,
-  keywordNodeIds: string[],
-  photoState: PhotoState,
+
+  creationTime?: string;
+  lastModified?: string;
+  orientation?: number;
+  description?: string;
+  geoData?: GeoData;
+  people?: string[];
+  peopleRetrievedFromGoogle: boolean;
+  keywordNodeIds: string[];
+  photoState: PhotoState;
   albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
+
+  // original version
+  filePath?: string;
+  url?: string;
+  width?: number;
+  height?: number
+  mimeType?: string;
+
+  // support for variants
+  derivatives: Derivative[];
+  preferredDerivativeId?: Types.ObjectId | null;
 }
 
 export interface DateRangeSpecification {

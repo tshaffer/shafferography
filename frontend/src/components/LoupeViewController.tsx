@@ -23,8 +23,8 @@ export interface LoupeViewControllerProps {
 const assetUrlFor = (mediaItemId: string, variant: ViewVariant): string => {
   const v =
     variant === 'original' ? 'original' :
-    variant === 'preferred' ? 'preferred' :
-    variant.id; // derivative id
+      variant === 'preferred' ? 'preferred' :
+        variant.id; // derivative id
   return `/api/media/${encodeURIComponent(mediaItemId)}/asset?variant=${encodeURIComponent(v)}`;
 };
 
@@ -110,7 +110,7 @@ function mapStateToProps(state: any) {
   };
 }
 
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
+const xmapDispatchToProps = (dispatch: TedTaggerDispatch) =>
   bindActionCreators(
     {
       onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
@@ -120,5 +120,17 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
     },
     dispatch
   );
+
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => ({
+  // regular actions can stay simple
+  onSetLoupeViewMediaItemId: (id: string) => dispatch(setLoupeViewMediaItemIdRedux(id)),
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) =>
+    dispatch(setPhotoState(mediaItemIds, photoState)),
+  onReloadMediaItemsByViewSpec: () => dispatch(loadAndReplaceMediaItemsByViewSpec()),
+
+  // IMPORTANT: wrap the thunk to return a Promise<MediaManifest>
+  onFetchManifest: (mediaItemId: string) =>
+    (dispatch(fetchManifest(mediaItemId) as any) as unknown as Promise<MediaManifest>),
+});
 
 export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);

@@ -57,6 +57,25 @@ export interface MediaItem {
   undecidedGroupId?: string;
   notes?: string;
   albumNodeId?: string;
+
+    // support for variants
+  derivatives: Derivative[];
+  preferredDerivativeId?: string | null;
+}
+
+export type OutFormat = "heic" | "jpeg" | "jpg" | "png";
+
+export interface Derivative {
+  derivativeId: string;
+  label: string;                  // e.g. "Crop A", "Web 1600", etc.
+  format: OutFormat;
+  width: number;
+  height: number;
+  mimeType: string;
+  absPath: string;                // absolute path on disk
+  createdAt: Date;
+  markPreferred?: boolean;        // optional flag you may set when generating
+  url?: string;                  // URL to access via backend (filled in when sending to client)
 }
 
 export interface Keyword {

@@ -6,7 +6,7 @@ import LoupeView from './LoupeView';
 import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
-import { MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
+import { Derivative, MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { fetchManifest } from '../controllers';
 import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
 
@@ -20,12 +20,28 @@ export interface LoupeViewControllerProps {
   onFetchManifest: (mediaItemId: string) => Promise<MediaManifest>; // your controller returns manifest
 }
 
-const assetUrlFor = (mediaItemId: string, variant: ViewVariant): string => {
-  const v =
-    variant === 'original' ? 'original' :
-      variant === 'preferred' ? 'preferred' :
-        variant.id; // derivative id
-  return `/api/media/${encodeURIComponent(mediaItemId)}/asset?variant=${encodeURIComponent(v)}`;
+const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVariant): string => {
+  debugger;
+  if (variant === 'original') {
+    return mediaItem.url!;
+  } else if (variant === 'preferred') {
+    debugger;
+    const mediaItemId: string = mediaItem.preferredDerivativeId ? mediaItem.preferredDerivativeId : mediaItem.uniqueId;
+    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === mediaItemId);
+    if (derivative) {
+      return derivative.url!;
+    } else {
+      return mediaItem.url!;
+    }
+  } else {
+    debugger;
+  }
+  return '';
+  // const v =
+  //   variant === 'original' ? 'original' :
+  //     variant === 'preferred' ? 'preferred' :
+  //       variant.id; // derivative id
+  // return `/api/media/${encodeURIComponent(mediaItemId)}/asset?variant=${encodeURIComponent(v)}`;
 };
 
 const LoupeViewController = (props: LoupeViewControllerProps) => {
@@ -59,9 +75,10 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
   React.useEffect(() => {
     if (!loupeViewMediaItemId) return;
 
-    const base = assetUrlFor(loupeViewMediaItemId, variant);
     // optional cache-bust using current media's lastModified (matches existing LoupeView UX)
-    const currentMedia = mediaItems.find(m => m.uniqueId === loupeViewMediaItemId);
+    const currentMedia: MediaItem | undefined = mediaItems.find(m => m.uniqueId === loupeViewMediaItemId);
+
+    const base = assetUrlFor(loupeViewMediaItemId, currentMedia!, variant);
     const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
     setImgSrc(`${base}${cacheBust}`);
   }, [loupeViewMediaItemId, variant, manifest, mediaItems]);

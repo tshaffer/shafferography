@@ -22,6 +22,7 @@ export interface Derivative {
   absPath: string;                // absolute path on disk
   createdAt: Date;
   markPreferred?: boolean;        // optional flag you may set when generating
+  url?: string;                  // URL to access via backend (filled in when sending to client)
 }
 
 export interface MediaItem {

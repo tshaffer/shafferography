@@ -3,11 +3,35 @@ import fs from "node:fs/promises";
 import { Request, Response } from "express";
 import { getMediaItemFromDb } from "./dbInterface";
 import { getMediaitemModel } from "../models";
+import { Derivative, MediaItem } from "../types";
+
+import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 
 /**
  * GET /api/media/:id/manifest
  * Returns enough info for the client to render variant choices.
  */
+
+const getDerivatives = (item: MediaItem): Derivative[] => {
+  const derivatives: Derivative[] = [];
+  for (const d of item.derivatives) {
+    const relativePath = d.absPath.replace(BASE_MEDIA_PATH, "");
+    const url = `${BASE_MEDIA_URL}/${relativePath}`;
+    derivatives.push({
+      derivativeId: d.derivativeId.toString(),
+      label: d.label,
+      width: d.width,
+      height: d.height,
+      mimeType: d.mimeType,
+      absPath: d.absPath,
+      url,
+      format: d.format,
+      createdAt: d.createdAt
+    });
+  }
+  return derivatives;
+};
+
 export const getManifest = async (req: Request, res: Response, next: any) => {
   // router.get("/:id/manifest", async (req: Request, res: Response) => {
   const { id } = req.params;
@@ -22,13 +46,7 @@ export const getManifest = async (req: Request, res: Response, next: any) => {
       height: item.height,
       mimeType: item.mimeType,
     },
-    derivatives: item.derivatives.map(d => ({
-      derivativeId: d.derivativeId.toString(),
-      label: d.label,
-      width: d.width,
-      height: d.height,
-      mimeType: d.mimeType,
-    })),
+    derivatives: getDerivatives(item),
     preferredDerivativeId: item.preferredDerivativeId?.toString() ?? null,
   });
 };

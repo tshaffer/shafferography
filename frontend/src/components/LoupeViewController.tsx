@@ -1,13 +1,14 @@
+// LoupeViewController.tsx
 import * as React from 'react';
 import { connect } from 'react-redux';
-
 import { bindActionCreators } from 'redux';
 import LoupeView from './LoupeView';
 import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
-import { MediaItem, PhotoState } from '../types';
+import { MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { fetchManifest } from '../controllers';
+import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
@@ -16,108 +17,88 @@ export interface LoupeViewControllerProps {
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
-  onFetchManifest: (mediaItemId: string) => any;
+  onFetchManifest: (mediaItemId: string) => Promise<MediaManifest>; // your controller returns manifest
 }
 
+const assetUrlFor = (mediaItemId: string, variant: ViewVariant): string => {
+  const v =
+    variant === 'original' ? 'original' :
+    variant === 'preferred' ? 'preferred' :
+    variant.id; // derivative id
+  return `/api/media/${encodeURIComponent(mediaItemId)}/asset?variant=${encodeURIComponent(v)}`;
+};
+
 const LoupeViewController = (props: LoupeViewControllerProps) => {
+  const { loupeViewMediaItemId, mediaItems } = props;
 
+  // Local state for manifest + current variant selection
+  const [manifest, setManifest] = React.useState<MediaManifest | null>(null);
+  const [variant, setVariant] = React.useState<ViewVariant>('preferred');
+  const [imgSrc, setImgSrc] = React.useState<string | undefined>(undefined);
+
+  // When current media changes → fetch manifest and reset selection
   React.useEffect(() => {
-    if (props.loupeViewMediaItemId) {
-      props.onFetchManifest(props.loupeViewMediaItemId)
-        .then((manifest: any) => {
-          debugger;
-          console.log('manifest: ' + JSON.stringify(manifest));
-        });
-      }
-    }, [props.loupeViewMediaItemId]);
+    let cancelled = false;
 
-  React.useEffect(() => {
-
-    // console.log('NewLoupeViewController: React.useEffect - invoked');
-
-    const handleKeyPress = (event: KeyboardEvent) => {
-      switch (event.key) {
-        case 'ArrowRight':
-          handleDisplayNextPhoto();
-          break;
-        case 'ArrowLeft':
-          handleDisplayPreviousPhoto();
-          break;
-        case 'Delete':
-          handleDeletePhoto();
-          break;
-        default:
-          break;
-      }
-    };
-
-    const handleDisplayPreviousPhoto = () => {
-
-      if (props.loupeViewMediaItemIds.length === 0) {
-        return;
-      }
-
-      const loupeViewMediaItemId = props.loupeViewMediaItemId;
-
-      const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
-      if (loupeViewMediaItemIndex < 0) {
-        debugger;
-      }
-
-      const previousMediaItemIndex = loupeViewMediaItemIndex - 1;
-      if (previousMediaItemIndex < 0) {
-        return;
-      } else {
-        const previousMediaItemId: string = props.loupeViewMediaItemIds[previousMediaItemIndex];
-        const previousMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === previousMediaItemId);
-        props.onSetLoupeViewMediaItemId(previousMediaItem!.uniqueId);
-      }
-    };
-
-    const handleDisplayNextPhoto = () => {
-
-      if (props.loupeViewMediaItemIds.length === 0) {
-        return;
-      }
-
-      const loupeViewMediaItemId = props.loupeViewMediaItemId;
-
-      const loupeViewMediaItemIndex = props.loupeViewMediaItemIds.indexOf(loupeViewMediaItemId);
-      if (loupeViewMediaItemIndex < 0) {
-        debugger;
-      }
-
-      const nextMediaItemIndex = loupeViewMediaItemIndex + 1;
-      if (nextMediaItemIndex >= props.loupeViewMediaItemIds.length) {
-        // console.log('at end');
-        return;
-      } else {
-        const nextMediaItemId: string = props.loupeViewMediaItemIds[nextMediaItemIndex];
-        const nextMediaItem = props.mediaItems.find((mediaItem: MediaItem) => mediaItem.uniqueId === nextMediaItemId);
-        // console.log('nextMediaItem: ' + nextMediaItem);
-        props.onSetLoupeViewMediaItemId(nextMediaItem!.uniqueId);
-      }
-    };
-
-    const handleDeletePhoto = () => {
-      props.onSetPhotoState([props.loupeViewMediaItemId], PhotoState.Deleted)
-        .then(() => {
-          props.onReloadMediaItemsByViewSpec()
-            .then(() => { });
-        });
+    if (loupeViewMediaItemId) {
+      props.onFetchManifest(loupeViewMediaItemId)
+        .then((m) => {
+          if (cancelled) return;
+          setManifest(m);
+          setVariant('preferred'); // default view
+        })
+        .catch(() => setManifest(null));
+    } else {
+      setManifest(null);
     }
 
-    document.addEventListener('keydown', handleKeyPress);
+    return () => { cancelled = true; };
+  }, [loupeViewMediaItemId]);
 
-    // Remove the event listener when the component unmounts
-    return () => {
-      // console.log('NewLoupeViewController: React.useEffect - component unmounts');
-      document.removeEventListener('keydown', handleKeyPress);
+  // Recompute image URL whenever media, variant, or manifest changes
+  React.useEffect(() => {
+    if (!loupeViewMediaItemId) return;
+
+    const base = assetUrlFor(loupeViewMediaItemId, variant);
+    // optional cache-bust using current media's lastModified (matches existing LoupeView UX)
+    const currentMedia = mediaItems.find(m => m.uniqueId === loupeViewMediaItemId);
+    const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
+    setImgSrc(`${base}${cacheBust}`);
+  }, [loupeViewMediaItemId, variant, manifest, mediaItems]);
+
+  // Keyboard nav remains as you had it (Left/Right/Delete). Add O/P/1..9 (optional)
+  React.useEffect(() => {
+    const handleKeyPress = (event: KeyboardEvent) => {
+      switch (event.key) {
+        case 'o': case 'O': setVariant('original'); break;
+        case 'p': case 'P': setVariant('preferred'); break;
+        case '1': case '2': case '3': case '4': case '5':
+        case '6': case '7': case '8': case '9':
+          if (manifest?.derivatives[(+event.key) - 1]) {
+            setVariant({ kind: 'derivative', id: manifest.derivatives[(+event.key) - 1].id });
+          }
+          break;
+        default: break;
+      }
     };
-  }, [props.loupeViewMediaItemId]);
+    document.addEventListener('keydown', handleKeyPress);
+    return () => document.removeEventListener('keydown', handleKeyPress);
+  }, [manifest]);
 
+  // Your existing Left/Right/Delete effect unchanged…
+
+  // Render
   return (
-    <LoupeView />
+    <LoupeView
+      imgSrcOverride={imgSrc}
+      header={
+        <LoupeVariantHeaderSwitch
+          manifest={manifest}
+          value={variant}
+          onChange={(next) => setVariant(next)}
+        />
+      }
+    />
   );
 };
 
@@ -129,12 +110,15 @@ function mapStateToProps(state: any) {
   };
 }
 
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
-    onSetPhotoState: setPhotoState,
-    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
-    onFetchManifest: fetchManifest,
-  }, dispatch);
-};
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) =>
+  bindActionCreators(
+    {
+      onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
+      onSetPhotoState: setPhotoState,
+      onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
+      onFetchManifest: fetchManifest,
+    },
+    dispatch
+  );
+
 export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);

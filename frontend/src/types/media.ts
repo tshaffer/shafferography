@@ -15,7 +15,8 @@ export type MediaManifest = {
 };
 
 // Which variant is the user viewing right now?
-export type ViewVariant =
-  | { kind: "original" }
-  | { kind: "preferred" }
-  | { kind: "derivative"; derivativeId: string };
+// export type ViewVariant =
+//   | { kind: "original" }
+//   | { kind: "preferred" }
+//   | { kind: "derivative"; derivativeId: string };
+export type ViewVariant = 'original' | 'preferred' | { kind: 'derivative'; id: string };

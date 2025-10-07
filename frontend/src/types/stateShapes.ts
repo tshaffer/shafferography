@@ -16,11 +16,14 @@ import {
   PhotoState,
   SearchRuleType,
 } from './enums';
+import { MediaManifest, ViewVariant } from './media';
 
 export interface TedTaggerState {
   mediaContentTreeState: MediaContentTreeState;
   appState: AppState;
   keywordsState: KeywordsState;
+  manifestState: ManifestState;
+  variantState: VariantState;
   mediaItemsCountState: MediaItemsCountState;
   mediaItemsState: MediaItemsState;
   photoViewSpec: PhotoViewSpec;
@@ -110,4 +113,14 @@ export interface MediaItemsCountState {
   mediaItemCountByPhotoState: StringToNumberLUT;
   mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId;
   mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[];
+}
+
+export interface ManifestState {
+  byId: { [mediaId: string]: MediaManifest | null };
+  statusById: { [mediaId: string]: 'idle' | 'loading' | 'succeeded' | 'failed' };
+  errorById: { [mediaId: string]: string | null };
+}
+
+export interface VariantState {
+  byId: { [mediaId: string]: ViewVariant };
 }

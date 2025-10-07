@@ -7,6 +7,7 @@ import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controller
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
 import { MediaItem, PhotoState } from '../types';
+import { fetchManifest } from '../controllers';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
@@ -15,9 +16,20 @@ export interface LoupeViewControllerProps {
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
+  onFetchManifest: (mediaItemId: string) => any;
 }
 
 const LoupeViewController = (props: LoupeViewControllerProps) => {
+
+  React.useEffect(() => {
+    if (props.loupeViewMediaItemId) {
+      props.onFetchManifest(props.loupeViewMediaItemId)
+        .then((manifest: any) => {
+          debugger;
+          console.log('manifest: ' + JSON.stringify(manifest));
+        });
+      }
+    }, [props.loupeViewMediaItemId]);
 
   React.useEffect(() => {
 
@@ -122,6 +134,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
     onSetLoupeViewMediaItemId: setLoupeViewMediaItemIdRedux,
     onSetPhotoState: setPhotoState,
     onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
+    onFetchManifest: fetchManifest,
   }, dispatch);
 };
 export default connect(mapStateToProps, mapDispatchToProps)(LoupeViewController);

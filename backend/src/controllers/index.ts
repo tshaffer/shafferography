@@ -8,6 +8,7 @@ export * from './googlePhotos';
 export * from './googleUploader';
 export * from './googleUtils';
 export * from './mainController';
+export * from './media';
 export * from './meta-io';
 export * from './peopleMerger';
 export * from './photoImporter';

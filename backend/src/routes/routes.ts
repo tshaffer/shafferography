@@ -33,7 +33,9 @@ import {
   setAlbumNodeIdEndpoint,
   fetchUndecidedGroupsForAlbums,
   addUndecidedGroup,
-  newGenerateDerivativeEndpoint
+  newGenerateDerivativeEndpoint,
+  getManifest,
+  putPreferred,
 } from '../controllers';
 
 export const createRoutes = (app: express.Application) => {
@@ -80,6 +82,8 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
 
   // app.post('/api/v1/crop', crop);
+  app.get('/api/v1/:id/manifest', getManifest);
+  app.put('/api/v1/:id/preferred/:derivativeId', putPreferred);
   app.post('/api/v1/:mediaItemId/derivatives', newGenerateDerivativeEndpoint);
 };
 

@@ -1,16 +1,16 @@
 import axios from "axios";
-import { getServerUrl, apiUrlFragment, TedTaggerState } from "../types";
+import { getServerUrl, apiUrlFragment, TedTaggerState, MediaManifest } from "../types";
 import { TedTaggerDispatch } from "../models";
+import { setManifest } from "../models/manifest";
 
-export const fetchManifest = async (mediaItemId: string): Promise<any> => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
+// controllers/manifest.ts (or wherever)
+export const fetchManifest = (mediaItemId: string) =>
+  async (dispatch: any) => {
     const path = getServerUrl() + apiUrlFragment + mediaItemId + "/manifest";
 
-    return axios.get(path).then((response: any) => {
-      debugger;
-      return response.data;
-    });
-  }
-}
+    const getManifestResponse = await axios.get(path);
+    const manifest: MediaManifest = getManifestResponse.data;
+    dispatch(setManifest(manifest));
+    return manifest;
+  };
+

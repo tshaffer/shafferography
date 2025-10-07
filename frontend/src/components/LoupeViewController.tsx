@@ -22,11 +22,9 @@ export interface LoupeViewControllerProps {
 }
 
 const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVariant): string => {
-  debugger;
   if (variant === 'original') {
     return mediaItem.url!;
   } else if (variant === 'preferred') {
-    debugger;
     const mediaItemId: string = mediaItem.preferredDerivativeId ? mediaItem.preferredDerivativeId : mediaItem.uniqueId;
     const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === mediaItemId);
     if (derivative) {
@@ -35,8 +33,12 @@ const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVar
       return getPhotoUrl(mediaItem);
     }
   } else {
-    debugger;
-    return '';
+    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === variant.id);
+    if (derivative) {
+      return derivative.url!;
+    } else {
+      return getPhotoUrl(mediaItem);
+    }
   }
 };
 

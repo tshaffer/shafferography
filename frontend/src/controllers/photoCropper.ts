@@ -1,11 +1,5 @@
 import axios from "axios";
-import { getServerUrl, apiUrlFragment, TedTaggerState } from "../types";
-
-/*
-      mediaItemId,
-      cropData,
-      createVariant,
-*/
+import { getServerUrl, apiUrlFragment } from "../types";
 
 export const cropMediaItem = async (mediaItemId: string, cropData: any, createVariant: boolean): Promise<any> => {
 

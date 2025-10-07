@@ -23,7 +23,7 @@ export interface TedTaggerState {
   appState: AppState;
   keywordsState: KeywordsState;
   manifestState: ManifestState;
-  variantState: VariantState;
+  mediaViewState: MediaViewState;
   mediaItemsCountState: MediaItemsCountState;
   mediaItemsState: MediaItemsState;
   photoViewSpec: PhotoViewSpec;
@@ -116,11 +116,15 @@ export interface MediaItemsCountState {
 }
 
 export interface ManifestState {
-  byId: { [mediaId: string]: MediaManifest | null };
-  statusById: { [mediaId: string]: 'idle' | 'loading' | 'succeeded' | 'failed' };
-  errorById: { [mediaId: string]: string | null };
+  // byId: { [mediaId: string]: MediaManifest | null };
+  // statusById: { [mediaId: string]: 'idle' | 'loading' | 'succeeded' | 'failed' };
+  // errorById: { [mediaId: string]: string | null };
+  byId: Record<string, MediaManifest | undefined>;
+  statusById: Record<string, "idle" | "loading" | "succeeded" | "failed">;
+  errorById: Record<string, string | undefined>;
 }
 
-export interface VariantState {
-  byId: { [mediaId: string]: ViewVariant };
+export interface MediaViewState {
+  // byId: { [mediaId: string]: ViewVariant };
+  byId: Record<string, ViewVariant | undefined>;
 }

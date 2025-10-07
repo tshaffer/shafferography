@@ -85,13 +85,13 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
       return res.status(400).json({ ok: false, error: "Invalid body: cropData is required" });
     }
 
-    // 1) Load the media item (to get the original absPath)
+    // 1) Load the media item (to get the original filePath)
     const item: MediaItem | undefined = await getMediaItemFromDb(mediaItemId);
     if (!item) return res.status(404).json({ ok: false, error: "Media item not found" });
 
     const originalAbsPath = item.filePath;
     if (!originalAbsPath) {
-      return res.status(409).json({ ok: false, error: "Media item has no original.absPath" });
+      return res.status(409).json({ ok: false, error: "Media item has no original.filePath" });
     }
 
     // 2) Generate the derivative file using your existing code
@@ -122,7 +122,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
       width,
       height,
       mimeType,              // from generator
-      absPath: outputPath,   // absolute path to the created derivative
+      filePath: outputPath,   // absolute path to the created derivative
       createdAt: now,
       markPreferred: !!body.markPreferred,
     };
@@ -155,7 +155,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
         width,
         height,
         mimeType,
-        absPath: outputPath,
+        filePath: outputPath,
         createdAt: now.toISOString(),
         markPreferred: !!body.markPreferred,
       },

@@ -9,6 +9,7 @@ import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from
 import { Derivative, MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { fetchManifest } from '../controllers';
 import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
+import { getPhotoUrl } from '../utilities';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
@@ -31,17 +32,12 @@ const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVar
     if (derivative) {
       return derivative.url!;
     } else {
-      return mediaItem.url!;
+      return getPhotoUrl(mediaItem);
     }
   } else {
     debugger;
+    return '';
   }
-  return '';
-  // const v =
-  //   variant === 'original' ? 'original' :
-  //     variant === 'preferred' ? 'preferred' :
-  //       variant.id; // derivative id
-  // return `/api/media/${encodeURIComponent(mediaItemId)}/asset?variant=${encodeURIComponent(v)}`;
 };
 
 const LoupeViewController = (props: LoupeViewControllerProps) => {
@@ -79,8 +75,9 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
     const currentMedia: MediaItem | undefined = mediaItems.find(m => m.uniqueId === loupeViewMediaItemId);
 
     const base = assetUrlFor(loupeViewMediaItemId, currentMedia!, variant);
-    const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
-    setImgSrc(`${base}${cacheBust}`);
+    // const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
+    // setImgSrc(`${base}${cacheBust}`);
+    setImgSrc(base);
   }, [loupeViewMediaItemId, variant, manifest, mediaItems]);
 
   // Keyboard nav remains as you had it (Left/Right/Delete). Add O/P/1..9 (optional)

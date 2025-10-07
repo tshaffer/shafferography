@@ -24,9 +24,9 @@ export interface LoupeViewProps {
 const LoupeView = (props: LoupeViewProps) => {
   if (isNil(props.mediaItem)) return null;
 
-  const src = getPhotoUrl(props.mediaItem);
-  // const defaultSrc = getPhotoUrl(props.mediaItem);
-  // const src = props.imgSrcOverride ?? defaultSrc;
+  // const src = getPhotoUrl(props.mediaItem);
+  const defaultSrc = getPhotoUrl(props.mediaItem);
+  const src = props.imgSrcOverride ?? defaultSrc;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'calc(100vh - 112px)', bgcolor: 'black' }}>

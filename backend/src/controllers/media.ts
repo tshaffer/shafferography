@@ -15,7 +15,7 @@ import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 const getDerivatives = (item: MediaItem): Derivative[] => {
   const derivatives: Derivative[] = [];
   for (const d of item.derivatives) {
-    const relativePath = d.absPath.replace(BASE_MEDIA_PATH, "");
+    const relativePath = d.filePath.replace(BASE_MEDIA_PATH, "");
     const url = `${BASE_MEDIA_URL}/${relativePath}`;
     derivatives.push({
       derivativeId: d.derivativeId.toString(),
@@ -23,7 +23,7 @@ const getDerivatives = (item: MediaItem): Derivative[] => {
       width: d.width,
       height: d.height,
       mimeType: d.mimeType,
-      absPath: d.absPath,
+      filePath: d.filePath,
       url,
       format: d.format,
       createdAt: d.createdAt
@@ -55,52 +55,52 @@ export const getManifest = async (req: Request, res: Response, next: any) => {
  * GET /api/media/:id/asset?variant=original|preferred|<derivativeId>
  * Streams the file. Use Content-Type so <img> or <picture> can display directly.
  */
-export const getAsset = async (req: Request, res: Response, next: any) => {
-  // router.get("/:id/asset", async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { variant = "preferred" } = req.query as { variant?: string };
+// export const getAsset = async (req: Request, res: Response, next: any) => {
+//   // router.get("/:id/asset", async (req: Request, res: Response) => {
+//   const { id } = req.params;
+//   const { variant = "preferred" } = req.query as { variant?: string };
 
-  const item = await getMediaItemFromDb(id);
-  if (!item) return res.status(404).send("Not found");
+//   const item = await getMediaItemFromDb(id);
+//   if (!item) return res.status(404).send("Not found");
 
-  let absPath = item.filePath;
-  let mimeType = item.mimeType;
+//   let absPath = item.filePath;
+//   let mimeType = item.mimeType;
 
-  if (variant === "original") {
-    // keep original
-  } else if (variant === "preferred") {
-    const prefId =
-      item.preferredDerivativeId ??
-      item.derivatives.find(d => d.markPreferred)?.derivativeId ??
-      item.derivatives[0]?.derivativeId;
+//   if (variant === "original") {
+//     // keep original
+//   } else if (variant === "preferred") {
+//     const prefId =
+//       item.preferredDerivativeId ??
+//       item.derivatives.find(d => d.markPreferred)?.derivativeId ??
+//       item.derivatives[0]?.derivativeId;
 
-    if (prefId) {
-      const d = item.derivatives.find(x => x.derivativeId.toString() === prefId.toString());
-      if (d) {
-        absPath = d.absPath;
-        mimeType = d.mimeType;
-      }
-    }
-  } else {
-    // assume variant is a derivativeId
-    const d = item.derivatives.find(x => x.derivativeId.toString() === variant);
-    if (d) {
-      absPath = d.absPath;
-      mimeType = d.mimeType;
-    } else {
-      return res.status(404).send("Derivative not found");
-    }
-  }
+//     if (prefId) {
+//       const d = item.derivatives.find(x => x.derivativeId.toString() === prefId.toString());
+//       if (d) {
+//         absPath = d.filePath;
+//         mimeType = d.mimeType;
+//       }
+//     }
+//   } else {
+//     // assume variant is a derivativeId
+//     const d = item.derivatives.find(x => x.derivativeId.toString() === variant);
+//     if (d) {
+//       absPath = d.filePath;
+//       mimeType = d.mimeType;
+//     } else {
+//       return res.status(404).send("Derivative not found");
+//     }
+//   }
 
-  try {
-    await fs.access(absPath);
-  } catch {
-    return res.status(410).send("File missing on disk");
-  }
+//   try {
+//     await fs.access(absPath);
+//   } catch {
+//     return res.status(410).send("File missing on disk");
+//   }
 
-  res.type(mimeType);
-  res.sendFile(path.resolve(absPath));
-};
+//   res.type(mimeType);
+//   res.sendFile(path.resolve(absPath));
+// };
 
 /**
  * PUT /api/media/:id/preferred/:derivativeId

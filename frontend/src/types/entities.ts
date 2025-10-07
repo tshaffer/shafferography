@@ -72,10 +72,10 @@ export interface Derivative {
   width: number;
   height: number;
   mimeType: string;
-  absPath: string;                // absolute path on disk
+  filePath: string;                // absolute path on disk
+  url: string;                  // URL to access via backend (filled in when sending to client)
   createdAt: Date;
   markPreferred?: boolean;        // optional flag you may set when generating
-  url?: string;                  // URL to access via backend (filled in when sending to client)
 }
 
 export interface Keyword {

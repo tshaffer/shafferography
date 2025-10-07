@@ -11,7 +11,8 @@ const DerivativeSchema = new Schema<Derivative>({
   width: { type: Number, required: true },
   height: { type: Number, required: true },
   mimeType: { type: String, required: true },
-  absPath: { type: String, required: true },
+  filePath: { type: String, required: true },
+  url: { type: String, required: true },
   createdAt: { type: Date, default: () => new Date() },
   markPreferred: { type: Boolean, default: false },
 });

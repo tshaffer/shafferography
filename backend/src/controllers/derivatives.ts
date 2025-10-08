@@ -9,6 +9,8 @@ import { getMediaItemFromDb } from './dbInterface';
 import { getMediaitemModel } from '../models';
 import path from 'path';
 
+import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
+
 // ---- replace with your real DB accessors ----}
 /**
  * POST /api/photos/:mediaItemId/derivatives
@@ -115,6 +117,9 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
     // Simple, deterministic label. Customize as you like.
     const label = `Crop ${width}×${height} ${format.toUpperCase()}`;
 
+    const relativePath = outputPath.replace(BASE_MEDIA_PATH, "");
+    const url = `${BASE_MEDIA_URL}/${relativePath}`;
+
     const derivativeSubdoc = {
       derivativeId,
       label,
@@ -123,6 +128,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
       height,
       mimeType,              // from generator
       filePath: outputPath,   // absolute path to the created derivative
+      url,                   // public URL to the created derivative
       createdAt: now,
       markPreferred: !!body.markPreferred,
     };
@@ -156,6 +162,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
         height,
         mimeType,
         filePath: outputPath,
+        url,
         createdAt: now.toISOString(),
         markPreferred: !!body.markPreferred,
       },

@@ -76,7 +76,11 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
     // optional cache-bust using current media's lastModified (matches existing LoupeView UX)
     const currentMedia: MediaItem | undefined = mediaItems.find(m => m.uniqueId === loupeViewMediaItemId);
 
+    console.log('Recomputing imgSrc for variant', variant);
+
     const base = assetUrlFor(loupeViewMediaItemId, currentMedia!, variant);
+    console.log('Computed base URL:', base);
+    
     // const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
     // setImgSrc(`${base}${cacheBust}`);
     setImgSrc(base);

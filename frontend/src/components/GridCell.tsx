@@ -19,6 +19,7 @@ import CloudDone from '@mui/icons-material/CloudDone';
 import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConstructionIcon from '@mui/icons-material/Construction';
+import DerivativesBadge from './DerivativesBadge';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -217,6 +218,7 @@ const GridCell = (props: GridCellProps) => {
         loading='lazy'
         style={{ display: 'block' }}
       />
+      <DerivativesBadge mediaId={props.mediaItem.uniqueId} />
     </div>
   );
 };

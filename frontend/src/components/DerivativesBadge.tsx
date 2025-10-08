@@ -37,9 +37,11 @@ const DerivativesBadge = (props: DerivativesBadgeProps) => {
   const { mediaId } = props;
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
 
+  console.log('DerivativesBadge props:', props);
+
   const count = props.mediaItem?.derivatives.length ?? 0;
   if (!count) return null;
-
+  
   const preferredId = props.mediaItem?.preferredDerivativeId ?? null;
   const currentKey =
     props.variant === "original"
@@ -130,7 +132,7 @@ const DerivativesBadge = (props: DerivativesBadgeProps) => {
 
 function mapStateToProps(state: any, ownProps: any) {
   return {
-    mediaItem: getMediaItemById(state, getFullScreenMediaItemId(state)),
+    mediaItem: getMediaItemById(state, ownProps.mediaId),
     variant: getViewVariant(state, ownProps.mediaId),
   };
 }

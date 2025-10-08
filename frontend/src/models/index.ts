@@ -3,6 +3,7 @@ export * from './baseAction';
 export * from './baseReducer';
 export * from './mediaItems';
 export * from './mediaItemsCount';
+export * from './mediaView';
 export * from './selectedMediaItems';
 export * from './keywords';
 export * from './searchUI';

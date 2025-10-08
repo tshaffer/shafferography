@@ -15,50 +15,55 @@ import LayersIcon from "@mui/icons-material/Layers";
 import StarIcon from "@mui/icons-material/Star";
 import PhotoIcon from "@mui/icons-material/Photo";
 import RecommendIcon from "@mui/icons-material/Recommend"; // "Preferred" glyph
-import { useDispatch, useSelector } from "react-redux";
-import { fetchManifest, setViewVariant } from "../store/mediaViewSlice";
-import { selectManifest, selectCurrentVariant } from "../store/selectors";
+import { connect } from "react-redux";
+import { bindActionCreators } from "redux";
+import { TedTaggerDispatch } from "../models";
+import { getFullScreenMediaItemId, getMediaItemById } from "../selectors";
+import { MediaItem, ViewVariant } from "../types";
+import { setViewVariant } from "../models/mediaView";
+import { getViewVariant } from "../selectors/mediaView";
 
-type Props = {
+export interface DerivativesBadgePropsFromParent {
   mediaId: string;
 };
 
-export const DerivativesBadge: React.FC<Props> = ({ mediaId }) => {
-  const dispatch = useDispatch();
-  const manifest = useSelector((s: RootState) => selectManifest(s, mediaId));
-  const variant = useSelector((s: RootState) => selectCurrentVariant(s, mediaId));
+export interface DerivativesBadgeProps extends DerivativesBadgePropsFromParent {
+  mediaItem: MediaItem | null;
+  variant?: ViewVariant | null;
+  onSetViewVariant: (mediaId: string, variant: ViewVariant) => void;
+};
+
+const DerivativesBadge = (props: DerivativesBadgeProps) => {
+  const { mediaId } = props;
   const [anchor, setAnchor] = React.useState<HTMLElement | null>(null);
 
-  React.useEffect(() => {
-    if (!manifest) dispatch(fetchManifest({ mediaId }));
-  }, [dispatch, manifest, mediaId]);
-
-  const count = manifest?.derivatives.length ?? 0;
+  const count = props.mediaItem?.derivatives.length ?? 0;
   if (!count) return null;
 
-  const preferredId = manifest?.preferredDerivativeId ?? null;
+  const preferredId = props.mediaItem?.preferredDerivativeId ?? null;
   const currentKey =
-    variant?.kind === "original"
+    props.variant === "original"
       ? "original"
-      : variant?.kind === "preferred"
+      : props.variant === "preferred"
         ? "preferred"
-        : variant?.kind === "derivative"
-          ? variant.derivativeId
+        : props.variant?.kind === "derivative"
+          ? props.variant.id
           : "preferred";
 
   const openMenu = (e: React.MouseEvent<HTMLElement>) => setAnchor(e.currentTarget);
   const closeMenu = () => setAnchor(null);
 
   const chooseOriginal = () => {
-    dispatch(setViewVariant({ mediaId, variant: { kind: "original" } }));
+    props.onSetViewVariant( mediaId, "original" );
     closeMenu();
   };
   const choosePreferred = () => {
-    dispatch(setViewVariant({ mediaId, variant: { kind: "preferred" } }));
+    props.onSetViewVariant( mediaId, "preferred" );
     closeMenu();
   };
+
   const chooseDerivative = (id: string) => {
-    dispatch(setViewVariant({ mediaId, variant: { kind: "derivative", derivativeId: id } }));
+    // props.onSetViewVariant({ mediaId, variant: { kind: "derivative", derivativeId: id } }));
     closeMenu();
   };
 
@@ -102,11 +107,11 @@ export const DerivativesBadge: React.FC<Props> = ({ mediaId }) => {
 
         <Divider />
 
-        {manifest?.derivatives.map((d) => {
-          const isPreferred = d.id === preferredId;
-          const isCurrent = currentKey === d.id;
+        {props.mediaItem?.derivatives.map((d) => {
+          const isPreferred = d.derivativeId === preferredId;
+          const isCurrent = currentKey === d.derivativeId;
           return (
-            <MenuItem key={d.id} onClick={() => chooseDerivative(d.id)} dense>
+            <MenuItem key={d.derivativeId} onClick={() => chooseDerivative(d.derivativeId)} dense>
               <ListItemIcon>
                 {isPreferred ? <StarIcon fontSize="small" /> : <LayersIcon fontSize="small" />}
               </ListItemIcon>
@@ -122,3 +127,18 @@ export const DerivativesBadge: React.FC<Props> = ({ mediaId }) => {
     </>
   );
 };
+
+function mapStateToProps(state: any, ownProps: any) {
+  return {
+    mediaItem: getMediaItemById(state, getFullScreenMediaItemId(state)),
+    variant: getViewVariant(state, ownProps.mediaId),
+  };
+}
+
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
+  return bindActionCreators({
+    onSetViewVariant: setViewVariant,
+  }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(DerivativesBadge);

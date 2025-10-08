@@ -18,7 +18,7 @@ import RecommendIcon from "@mui/icons-material/Recommend"; // "Preferred" glyph
 import { connect } from "react-redux";
 import { bindActionCreators } from "redux";
 import { TedTaggerDispatch } from "../models";
-import { getFullScreenMediaItemId, getMediaItemById } from "../selectors";
+import { getMediaItemById } from "../selectors";
 import { MediaItem, ViewVariant } from "../types";
 import { setViewVariant } from "../models/mediaView";
 import { getViewVariant } from "../selectors/mediaView";
@@ -59,6 +59,7 @@ const DerivativesBadge = (props: DerivativesBadgeProps) => {
     props.onSetViewVariant( mediaId, "original" );
     closeMenu();
   };
+
   const choosePreferred = () => {
     props.onSetViewVariant( mediaId, "preferred" );
     closeMenu();

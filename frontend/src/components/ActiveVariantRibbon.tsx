@@ -1,19 +1,31 @@
 // frontend/src/components/ActiveVariantRibbon.tsx
-import React from "react";
 import { Box } from "@mui/material";
-import { useSelector } from "react-redux";
-import { RootState } from "../store/store";
-import { selectCurrentVariant, selectManifest } from "../store/selectors";
+import { connect } from "react-redux";
+import { MediaItem, ViewVariant } from "../types";
+import { bindActionCreators } from "redux";
+import { TedTaggerDispatch, setViewVariant } from "../models";
+import { getViewVariant } from "../selectors/mediaView";
+import { getMediaItemById } from "../selectors";
 
-export const ActiveVariantRibbon: React.FC<{ mediaId: string }> = ({ mediaId }) => {
-  const v = useSelector((s: RootState) => selectCurrentVariant(s, mediaId));
-  const manifest = useSelector((s: RootState) => selectManifest(s, mediaId));
-  if (!v || v.kind === "preferred") return null;
+export interface ActiveVariantRibbonPropsFromParent {
+  mediaId: string;
+};
+
+export interface ActiveVariantRibbonProps extends ActiveVariantRibbonPropsFromParent {
+  mediaItem: MediaItem | null;
+  variant?: ViewVariant | null;
+};
+
+const ActiveVariantRibbon = (props: ActiveVariantRibbonProps) => {
+  
+  if (!props.variant) return null;
+
+  if ((props.variant as any).kind && (props.variant as any).kind === "preferred") return null;
 
   const label =
-    v.kind === "original"
+    (props.variant as any).kind === "original"
       ? "ORIGINAL"
-      : manifest?.derivatives.find(d => d.id === v.derivativeId)?.label ?? "DERIVATIVE";
+      : props.mediaItem?.derivatives.find(d => d.derivativeId === (props.variant as any).derivativeId)?.label ?? "DERIVATIVE";
 
   return (
     <Box
@@ -35,3 +47,18 @@ export const ActiveVariantRibbon: React.FC<{ mediaId: string }> = ({ mediaId }) 
     </Box>
   );
 };
+
+function mapStateToProps(state: any, ownProps: any) {
+  return {
+    variant: getViewVariant(state, ownProps.mediaId),
+    mediaItem: getMediaItemById(state, ownProps.mediaId),
+  };
+}
+
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
+  return bindActionCreators({
+    onSetViewVariant: setViewVariant,
+  }, dispatch);
+};
+
+export default connect(mapStateToProps, mapDispatchToProps)(ActiveVariantRibbon);

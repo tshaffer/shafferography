@@ -20,6 +20,7 @@ import MoreHoriz from '@mui/icons-material/MoreHoriz';
 import DeleteIcon from '@mui/icons-material/Delete';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import DerivativesBadge from './DerivativesBadge';
+import ActiveVariantRibbon from './ActiveVariantRibbon';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -219,6 +220,7 @@ const GridCell = (props: GridCellProps) => {
         style={{ display: 'block' }}
       />
       <DerivativesBadge mediaId={props.mediaItem.uniqueId} />
+      <ActiveVariantRibbon mediaId={props.mediaItem.uniqueId} />
     </div>
   );
 };

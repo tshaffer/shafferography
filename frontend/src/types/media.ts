@@ -1,6 +1,6 @@
 // frontend/src/types/media.ts
 export type DerivativeInfo = {
-  id: string;
+  derivativeId: string;
   label: string;
   width: number;
   height: number;

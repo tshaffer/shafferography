@@ -10,25 +10,9 @@ import {
   Select,
   MenuItem,
   Typography,
-  useTheme,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import { ViewVariant } from '../types';
-
-export type DerivativeInfo = {
-  id: string;
-  label: string;
-  width: number;
-  height: number;
-  mimeType: string;
-};
-
-export type MediaManifest = {
-  mediaItemId: string;
-  original: { width: number; height: number; mimeType: string };
-  derivatives: DerivativeInfo[];
-  preferredDerivativeId: string | null;
-};
+import { MediaManifest, ViewVariant } from '../types';
 
 export function LoupeVariantHeaderSwitch(props: {
   manifest: MediaManifest | null;
@@ -36,7 +20,9 @@ export function LoupeVariantHeaderSwitch(props: {
   onChange: (next: ViewVariant) => void;
 }) {
   const { manifest, value, onChange } = props;
-  const theme = useTheme();
+
+  console.log(props.manifest);
+  console.log(props.manifest?.derivatives);
 
   const toggleVal =
     value === 'original' ? 'original'
@@ -140,8 +126,8 @@ export function LoupeVariantHeaderSwitch(props: {
             <MenuItem value="">
               <em>— choose —</em>
             </MenuItem>
-            {manifest?.derivatives.map((d) => (
-              <MenuItem key={d.id} value={d.id}>
+            {manifest?.derivatives.map((d, index) => (
+              <MenuItem key={d.derivativeId} value={d.derivativeId}>
                 {d.label} ({d.width}×{d.height})
               </MenuItem>
             ))}

@@ -91,7 +91,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         case '1': case '2': case '3': case '4': case '5':
         case '6': case '7': case '8': case '9':
           if (manifest?.derivatives[(+event.key) - 1]) {
-            setVariant({ kind: 'derivative', id: manifest.derivatives[(+event.key) - 1].id });
+            setVariant({ kind: 'derivative', id: manifest.derivatives[(+event.key) - 1].derivativeId });
           }
           break;
         default: break;

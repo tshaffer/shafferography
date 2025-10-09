@@ -82,7 +82,7 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
 
   app.get('/api/v1/:id/manifest', getManifest);
-  app.put('/api/v1/:id/preferred/:derivativeId', putPreferred);
+  app.put('/api/v1/:mediaItemId/preferred/:preferredId', putPreferred);
   app.post('/api/v1/:mediaItemId/derivatives', generateDerivativeEndpoint);
 };
 

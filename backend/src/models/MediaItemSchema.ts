@@ -1,8 +1,5 @@
 import { Derivative, MediaItem } from "../types";
-import mongoose, { Schema, Types } from "mongoose";
-
-// import * as mongoose from 'mongoose';
-// const Schema = mongoose.Schema;
+import { Schema } from "mongoose";
 
 const DerivativeSchema = new Schema<Derivative>({
   derivativeId: { type: String, required: true },
@@ -16,29 +13,6 @@ const DerivativeSchema = new Schema<Derivative>({
   createdAt: { type: Date, default: () => new Date() },
   markPreferred: { type: Boolean, default: false },
 });
-
-// export interface MediaItem {
-//   _id: Types.ObjectId;
-//   original: {
-//     absPath: string;
-//     width: number;
-//     height: number;
-//     mimeType: string;
-//   };
-//   derivatives: Derivative[];
-//   preferredDerivativeId?: Types.ObjectId | null;
-// }
-
-// const MediaItemSchema = new Schema<MediaItem>({
-//   original: {
-//     absPath: { type: String, required: true },
-//     width: { type: Number, required: true },
-//     height: { type: Number, required: true },
-//     mimeType: { type: String, required: true },
-//   },
-//   derivatives: { type: [DerivativeSchema], default: [] },
-//   preferredDerivativeId: { type: Schema.Types.ObjectId, default: null },
-// });
 
 const MediaitemSchema = new Schema<MediaItem>({
   uniqueId: { type: String, required: true, unique: true },

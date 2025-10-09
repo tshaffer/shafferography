@@ -22,49 +22,8 @@ import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
  *   markPreferred?: boolean
  * }
  */
-// export const generateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
-//   try {
-//     const mediaItemId = req.params.mediaItemId;
-//     const parsed = bodySchema.parse(req.body as CreateDerivativeRequestBody);
-//     const mediaItem = await getMediaItemFromDb(mediaItemId);
-//     if (!mediaItem) return res.status(404).json({ error: 'Media item not found' });
-
-//     const { outputPath, width, height, mimeType } =
-//       await generateDerivativeFromCrop(mediaItem.filePath, parsed.cropData, {
-//         format: parsed.format,
-//         quality: parsed.quality,
-//         heifCompression: parsed.heifCompression,
-//       });
-
-//     // Persist derivative record
-//     const created = await insertDerivative({
-//       mediaItemId,
-//       absolutePath: outputPath,
-//       mimeType,
-//       width,
-//       height,
-//       isPreferred: !!parsed.markPreferred,
-//       createdAt: new Date().toISOString(),
-//     });
-
-//     if (parsed.markPreferred) {
-//       await markPreferred(mediaItemId, created._id);
-//     }
-
-//     return res.json({
-//       ok: true,
-//       mediaItemId,
-//       derivative: created,
-//     });
-//   } catch (err: any) {
-//     console.error('create-derivative error', err);
-//     return res.status(400).json({ ok: false, error: err?.message ?? 'Failed to create derivative' });
-//   }
-// };
-
-// If you already have a router for /api/photos, add this handler there.
-
 // Small runtime guard (kept lightweight on purpose)
+
 function isValidBody(b: any): b is CreateDerivativeRequestBody {
   return (
     b &&
@@ -77,7 +36,7 @@ function isValidBody(b: any): b is CreateDerivativeRequestBody {
   );
 }
 
-export const newGenerateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
+export const generateDerivativeEndpoint = async (req: Request, res: Response, next: any) => {
 
   try {
     const { mediaItemId } = req.params;
@@ -150,7 +109,7 @@ export const newGenerateDerivativeEndpoint = async (req: Request, res: Response,
     if (!updated) {
       return res.status(500).json({ ok: false, error: "Failed to update media item" });
     }
-
+    ''
     return res.status(201).json({
       ok: true,
       mediaItemId,

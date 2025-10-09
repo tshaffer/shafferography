@@ -1,5 +1,5 @@
 // src/image/generate-derivative.ts
-import sharp, { FormatEnum } from 'sharp';
+import sharp from 'sharp';
 import path from 'path';
 import { copyExifAndNormalizeOrientation, buildDerivativePath } from './meta-io';
 import { CropData } from '../types';

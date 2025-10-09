@@ -147,22 +147,46 @@ export const CropperModal: React.FC<Props> = ({
   const photoUrl = getPhotoUrl(mediaItem);
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+    <Dialog
+      open={open}
+      onClose={onClose}
+      PaperProps={{
+        sx: {
+          width: '95vw',        // dialog width (viewport-relative)
+          maxWidth: 1600,       // optional hard cap
+          height: '92vh',       // dialog height
+          m: 0,                 // remove default margins if you like it tighter
+        },
+      }}
+    >
       <DialogTitle>Crop Photo</DialogTitle>
-      <DialogContent dividers>
+      <DialogContent
+        dividers
+        sx={{
+          p: 1.5,
+          height: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 1,
+          // ensures the inner flex children can actually grow
+          minHeight: 0,
+        }}
+      >
         {toolbar}
-        <Cropper
-          ref={cropperRef}
-          src={photoUrl}
-          autoCrop
-          responsive
-          viewMode={1}          // restrict to image bounds
-          background={false}
-          checkOrientation={true} // relies on embedded EXIF
-          guides={true}
-          zoomOnWheel={true}
-          style={{ width: '100%', height: '70vh' }}
-        />
+        <div style={{ flex: 1, minHeight: 0 }}>
+          <Cropper
+            ref={cropperRef}
+            src={photoUrl}
+            autoCrop
+            responsive
+            viewMode={1}          // restrict to image bounds
+            background={false}
+            checkOrientation={true} // relies on embedded EXIF
+            guides={true}
+            zoomOnWheel={true}
+            style={{ width: '100%', height: '70vh' }}
+          />
+        </div>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose}>Cancel (Esc)</Button>

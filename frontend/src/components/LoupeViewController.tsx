@@ -3,7 +3,7 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 import LoupeView from './LoupeView';
 import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
-import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
+import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setViewVariant } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getMediaManifestById } from '../selectors';
 import { Derivative, MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
@@ -11,15 +11,18 @@ import { getPhotoUrl } from '../utilities';
 
 // NEW: thunk to persist preferred image (implement in ../controllers)
 import { persistPreferredVariant } from '../controllers'; // <-- you provide this thunk
+import { getViewVariant } from '../selectors/mediaView';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
+  variant?: ViewVariant | null;
   loupeViewMediaItemIds: string[];
   mediaItems: MediaItem[];
   mediaManifest: MediaManifest | null;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
+  onSetViewVariant: (mediaItemId: string, variant: ViewVariant) => any;
   onPersistPreferredVariant: (
     mediaItemId: string,
     payload: { kind: 'original' } | { kind: 'derivative'; derivativeId: string }
@@ -27,6 +30,9 @@ export interface LoupeViewControllerProps {
 }
 
 const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVariant): string => {
+  if (!variant) {
+    variant = 'preferred';
+  }
   if (variant === 'original') {
     return mediaItem.url!;
   } else if (variant === 'preferred') {
@@ -51,7 +57,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
   const { loupeViewMediaItemId, mediaItems } = props;
 
   // Local state for manifest + current variant selection
-  const [variant, setVariant] = React.useState<ViewVariant>('preferred');
+  // const [variant, setVariant] = React.useState<ViewVariant>('preferred');
   const [imgSrc, setImgSrc] = React.useState<string | undefined>(undefined);
 
   // Compute current media
@@ -64,12 +70,12 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
   React.useEffect(() => {
     if (!loupeViewMediaItemId || !currentMedia) return;
 
-    console.log('Recomputing imgSrc for variant', variant);
+    console.log('Recomputing imgSrc for variant', props.variant);
 
-    const base = assetUrlFor(loupeViewMediaItemId, currentMedia, variant);
+    const base = assetUrlFor(loupeViewMediaItemId, currentMedia, props.variant!);
     console.log('Computed base URL:', base);
     setImgSrc(base);
-  }, [loupeViewMediaItemId, variant, props.mediaManifest, mediaItems, currentMedia]);
+  }, [loupeViewMediaItemId, props.variant, props.mediaManifest, mediaItems, currentMedia]);
 
   // Keyboard nav additions: O/P/1..9 (derivative quick select)
   React.useEffect(() => {
@@ -77,11 +83,11 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
       switch (event.key) {
         case 'o':
         case 'O':
-          setVariant('original');
+          props.onSetViewVariant(loupeViewMediaItemId, 'original');
           break;
         case 'p':
         case 'P':
-          setVariant('preferred');
+          props.onSetViewVariant(loupeViewMediaItemId, 'preferred');
           break;
         case '1':
         case '2':
@@ -93,7 +99,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         case '8':
         case '9':
           if (props.mediaManifest?.derivatives[(+event.key) - 1]) {
-            setVariant({ kind: 'derivative', id: props.mediaManifest.derivatives[(+event.key) - 1].derivativeId });
+            props.onSetViewVariant(loupeViewMediaItemId, { kind: 'derivative', id: props.mediaManifest.derivatives[(+event.key) - 1].derivativeId });
           }
           break;
         default:
@@ -108,20 +114,20 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
   const selectFirstDerivative = React.useCallback(() => {
     if (!props.mediaManifest || props.mediaManifest.derivatives.length === 0) return;
     const firstId = props.mediaManifest.derivatives[0].derivativeId;
-    setVariant({ kind: 'derivative', id: firstId });
-  }, [props.mediaManifest]);
+    props.onSetViewVariant(loupeViewMediaItemId, { kind: 'derivative', id: firstId });
+  }, [loupeViewMediaItemId, props.mediaManifest]);
 
   // Explicit persist action: Set the currently visible variant as preferred
   const handleSetAsPreferred = React.useCallback(async () => {
     if (!loupeViewMediaItemId || !currentMedia) return;
 
-    if (variant === 'original') {
+    if (props.variant === 'original') {
       // Persist "original" as preferred → convention: clear preferredDerivativeId server-side
       await props.onPersistPreferredVariant(loupeViewMediaItemId, { kind: 'original' });
-    } else if (typeof variant === 'object' && variant.kind === 'derivative') {
+    } else if (typeof props.variant === 'object' && props.variant!.kind === 'derivative') {
       await props.onPersistPreferredVariant(loupeViewMediaItemId, {
         kind: 'derivative',
-        derivativeId: variant.id,
+        derivativeId: props.variant!.id,
       });
     } else {
       // variant === 'preferred' → persist whatever the effective preferred currently is
@@ -139,7 +145,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
     // After persisting, you might want to refresh currentMedia from server or optimistically update Redux.
     // If your persistPreferredVariant thunk updates the store, nothing else is needed here.
     // Otherwise, consider re-fetching manifest or media metadata if the backend changes anything visible.
-  }, [loupeViewMediaItemId, currentMedia, variant, props]);
+  }, [loupeViewMediaItemId, currentMedia, props.variant, props]);
 
   return (
     <LoupeView
@@ -147,8 +153,8 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
       header={
         <LoupeVariantHeaderSwitch
           manifest={props.mediaManifest}
-          viewVariant={variant}
-          onSetVariant={(next) => setVariant(next)}
+          viewVariant={props.variant ? props.variant : 'preferred'}
+          onSetVariant={(next) => props.onSetViewVariant(loupeViewMediaItemId, next)}
           onSetAsPreferred={handleSetAsPreferred}
           onRequestSelectFirstDerivative={selectFirstDerivative}
         />
@@ -158,11 +164,13 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 };
 
 function mapStateToProps(state: any) {
+  const loupeViewMediaItemId: string = getLoupeViewMediaItemId(state);
   return {
-    loupeViewMediaItemId: getLoupeViewMediaItemId(state),
+    loupeViewMediaItemId,
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
     mediaItems: getMediaItems(state),
-    mediaManifest: getMediaManifestById(state, getLoupeViewMediaItemId(state)),
+    variant: getViewVariant(state, loupeViewMediaItemId),
+    mediaManifest: getMediaManifestById(state, loupeViewMediaItemId),
   };
 }
 
@@ -171,6 +179,9 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => ({
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) =>
     dispatch(setPhotoState(mediaItemIds, photoState)),
   onReloadMediaItemsByViewSpec: () => dispatch(loadAndReplaceMediaItemsByViewSpec()),
+  
+  onSetViewVariant: (mediaItemId: string, variant: ViewVariant) =>
+    dispatch(setViewVariant(mediaItemId, variant)),
 
   // NEW: Persist preferred image (Original or a specific Derivative)
   onPersistPreferredVariant: (

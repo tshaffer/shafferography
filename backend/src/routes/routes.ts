@@ -34,7 +34,6 @@ import {
   fetchUndecidedGroupsForAlbums,
   addUndecidedGroup,
   generateDerivativeEndpoint,
-  getManifest,
   putPreferred,
 } from '../controllers';
 
@@ -81,7 +80,6 @@ export const createRoutes = (app: express.Application) => {
   app.put('/api/v1/album-tree', saveAlbumNodes);
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
 
-  app.get('/api/v1/:id/manifest', getManifest);
   app.put('/api/v1/:mediaItemId/preferred/:preferredId', putPreferred);
   app.post('/api/v1/:mediaItemId/derivatives', generateDerivativeEndpoint);
 };

@@ -12,7 +12,6 @@ import { photoViewSpecReducer } from './photoViewSpec';
 import { undecidedGroupsStateReducer } from './undecidedGroups';
 import { mediaItemsCountStateReducer } from './mediaItemsCount';
 import { albumTreeStateReducer } from './mediaContentTree';
-import { manifestReducer } from './manifest';
 import { mediaViewReducer } from './mediaView';
 
 // -----------------------------------------------------------------------
@@ -28,7 +27,6 @@ export const rootReducer = combineReducers<TedTaggerState>({
   photoViewSpec: photoViewSpecReducer,
   undecidedGroupsState: undecidedGroupsStateReducer,
   mediaItemsCountState: mediaItemsCountStateReducer,
-  manifestState: manifestReducer,
   mediaViewState: mediaViewReducer,
 });
 

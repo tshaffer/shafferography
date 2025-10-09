@@ -4,6 +4,7 @@ import {
   FILTERED_MEDIA_ITEM_KEYS,
   FilteredMediaItemPicker,
   MediaItem,
+  MediaManifest,
   TedTaggerState
 } from '../types';
 
@@ -16,13 +17,11 @@ export const getMediaItemIds = (state: TedTaggerState): string[] => {
 };
 
 export const getMediaItemById = (state: TedTaggerState, uniqueId: string): MediaItem | null => {
-
   for (const mediaItem of state.mediaItemsState.mediaItems) {
     if (mediaItem.uniqueId === uniqueId) {
       return mediaItem;
     }
   }
-
   return null;
 };
 
@@ -79,3 +78,32 @@ export const getFilteredMediaItems = createSelector(
     return newFilteredItems;
   }
 );
+
+export const getMediaManifestById = (state: TedTaggerState, mediaItemId: string): MediaManifest | null => {
+
+  const mediaItem = getMediaItemById(state, mediaItemId);
+  if (!mediaItem) return null;
+
+  const mediaManifest: MediaManifest = {
+    mediaItemId: mediaItem.uniqueId,
+    original: {
+      width: mediaItem.width!,
+      height: mediaItem.height!,
+      mimeType: mediaItem.mimeType!,
+    },
+    derivatives: mediaItem.derivatives.map(d => ({
+      derivativeId: d.derivativeId,
+      label: d.label,
+      width: d.width,
+      height: d.height,
+      mimeType: d.mimeType,
+      filePath: d.filePath,
+      url: d.url!,
+      format: d.format,
+      createdAt: d.createdAt
+    })),
+    preferredDerivativeId: mediaItem.preferredDerivativeId || null,
+  };
+
+  return mediaManifest;
+};

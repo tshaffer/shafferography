@@ -1,11 +1,10 @@
 // LoupeViewController.tsx
 import * as React from 'react';
 import { connect } from 'react-redux';
-import { bindActionCreators } from 'redux';
 import LoupeView from './LoupeView';
-import { setPhotoState, loadAndReplaceMediaItemsByViewSpec, fetchManifest } from '../controllers';
+import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
-import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
+import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getMediaManifestById } from '../selectors';
 import { Derivative, MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
 import { getPhotoUrl } from '../utilities';
@@ -17,10 +16,10 @@ export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;
   loupeViewMediaItemIds: string[];
   mediaItems: MediaItem[];
+  mediaManifest: MediaManifest | null;
   onSetLoupeViewMediaItemId: (id: string) => any;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
-  onFetchManifest: (mediaItemId: string) => Promise<MediaManifest>;
   onPersistPreferredVariant: (
     mediaItemId: string,
     payload: { kind: 'original' } | { kind: 'derivative'; derivativeId: string }
@@ -52,31 +51,8 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
   const { loupeViewMediaItemId, mediaItems } = props;
 
   // Local state for manifest + current variant selection
-  const [manifest, setManifest] = React.useState<MediaManifest | null>(null);
   const [variant, setVariant] = React.useState<ViewVariant>('preferred');
   const [imgSrc, setImgSrc] = React.useState<string | undefined>(undefined);
-
-  // When current media changes → fetch manifest and reset selection
-  React.useEffect(() => {
-    let cancelled = false;
-
-    if (loupeViewMediaItemId) {
-      props
-        .onFetchManifest(loupeViewMediaItemId)
-        .then((m) => {
-          if (cancelled) return;
-          setManifest(m);
-          setVariant('preferred'); // default view on media change
-        })
-        .catch(() => setManifest(null));
-    } else {
-      setManifest(null);
-    }
-
-    return () => {
-      cancelled = true;
-    };
-  }, [loupeViewMediaItemId]);
 
   // Compute current media
   const currentMedia: MediaItem | undefined = React.useMemo(
@@ -93,7 +69,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
     const base = assetUrlFor(loupeViewMediaItemId, currentMedia, variant);
     console.log('Computed base URL:', base);
     setImgSrc(base);
-  }, [loupeViewMediaItemId, variant, manifest, mediaItems, currentMedia]);
+  }, [loupeViewMediaItemId, variant, props.mediaManifest, mediaItems, currentMedia]);
 
   // Keyboard nav additions: O/P/1..9 (derivative quick select)
   React.useEffect(() => {
@@ -116,8 +92,8 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         case '7':
         case '8':
         case '9':
-          if (manifest?.derivatives[(+event.key) - 1]) {
-            setVariant({ kind: 'derivative', id: manifest.derivatives[(+event.key) - 1].derivativeId });
+          if (props.mediaManifest?.derivatives[(+event.key) - 1]) {
+            setVariant({ kind: 'derivative', id: props.mediaManifest.derivatives[(+event.key) - 1].derivativeId });
           }
           break;
         default:
@@ -126,14 +102,14 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
     };
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [manifest]);
+  }, [props.mediaManifest]);
 
   // Helper: choose first derivative when the user clicks the Derivative toggle with none selected
   const selectFirstDerivative = React.useCallback(() => {
-    if (!manifest || manifest.derivatives.length === 0) return;
-    const firstId = manifest.derivatives[0].derivativeId;
+    if (!props.mediaManifest || props.mediaManifest.derivatives.length === 0) return;
+    const firstId = props.mediaManifest.derivatives[0].derivativeId;
     setVariant({ kind: 'derivative', id: firstId });
-  }, [manifest]);
+  }, [props.mediaManifest]);
 
   // Explicit persist action: Set the currently visible variant as preferred
   const handleSetAsPreferred = React.useCallback(async () => {
@@ -170,7 +146,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
       imgSrcOverride={imgSrc}
       header={
         <LoupeVariantHeaderSwitch
-          manifest={manifest}
+          manifest={props.mediaManifest}
           viewVariant={variant}
           onSetVariant={(next) => setVariant(next)}
           onSetAsPreferred={handleSetAsPreferred}
@@ -186,6 +162,7 @@ function mapStateToProps(state: any) {
     loupeViewMediaItemId: getLoupeViewMediaItemId(state),
     loupeViewMediaItemIds: getLoupeViewMediaItemIds(state),
     mediaItems: getMediaItems(state),
+    mediaManifest: getMediaManifestById(state, getLoupeViewMediaItemId(state)),
   };
 }
 
@@ -194,10 +171,6 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => ({
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) =>
     dispatch(setPhotoState(mediaItemIds, photoState)),
   onReloadMediaItemsByViewSpec: () => dispatch(loadAndReplaceMediaItemsByViewSpec()),
-
-  // Wrap the thunk to return a Promise<MediaManifest>
-  onFetchManifest: (mediaItemId: string) =>
-    (dispatch(fetchManifest(mediaItemId) as any) as unknown as Promise<MediaManifest>),
 
   // NEW: Persist preferred image (Original or a specific Derivative)
   onPersistPreferredVariant: (

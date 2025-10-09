@@ -9,12 +9,11 @@ export async function copyExifAndNormalizeOrientation(source: string, dest: stri
     '-EXIF:all',
     '-IPTC:all',
     '-XMP:all',
-    // now normalize orientation
-    '-EXIF:Orientation=Horizontal (normal)',
+
+    // remove any copied Orientation in XMP, then set EXIF (IFD0) explicitly
+    '-XMP-tiff:Orientation=',
+    '-IFD0:Orientation=Horizontal (normal)',  // same as “1”
   ]);
-
-  await exiftool.write(dest, { Orientation: "Horizontal (normal)" }, ['-overwrite_original']);
-
 }
 
 function timestampSlug(d = new Date()) {

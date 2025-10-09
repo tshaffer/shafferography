@@ -38,7 +38,7 @@ export async function generateDerivativeFromCrop(
   const outputPath = buildDerivativePath(originalAbsPath, outExt);
 
   // Build pipeline (rotate -> flop/flip -> extract -> encode)
-  let pipeline = sharp(originalAbsPath, { failOn: 'none' });
+  let pipeline = sharp(originalAbsPath, { failOn: 'none' }).rotate();
 
   if (crop.rotate) pipeline = pipeline.rotate(crop.rotate);
   if (crop.scaleX < 0) pipeline = pipeline.flop();
@@ -63,11 +63,13 @@ export async function generateDerivativeFromCrop(
     }
 
     await pipeline.toFile(outputPath);
+    await copyExifAndNormalizeOrientation(originalAbsPath, outputPath); // <-- add this
   } catch (err) {
     // If HEIF encode fails, fall back to JPEG derivative
     if (outExt === 'heic') {
       const fallbackPath = buildDerivativePath(originalAbsPath, 'jpeg');
       await sharp(originalAbsPath)
+        .rotate()                      // <-- bake EXIF Orientation into pixels
         .rotate(crop.rotate || 0)
         .flop(crop.scaleX < 0)
         .flip(crop.scaleY < 0)
@@ -97,7 +99,7 @@ export async function generateDerivativeFromCrop(
   // Map ext -> mime
   const mime =
     outExt === 'heic' ? 'image/heic' :
-    outExt === 'png' ? 'image/png' : 'image/jpeg';
+      outExt === 'png' ? 'image/png' : 'image/jpeg';
 
   return {
     outputPath,

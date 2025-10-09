@@ -1,14 +1,20 @@
 // src/image/meta-io.ts
 import { exiftool } from 'exiftool-vendored';
 import path from 'path';
-import fs from 'fs-extra';
 
-export async function copyExifAndNormalizeOrientation(
-  source: string,
-  dest: string
-): Promise<void> {
-  await exiftool.write(dest, {}, ['-TagsFromFile', source, '-all:all>all:all']);
-  await exiftool.write(dest, { Orientation: 1 });
+export async function copyExifAndNormalizeOrientation(source: string, dest: string) {
+  await exiftool.write(dest, {}, [
+    '-overwrite_original',
+    '-TagsFromFile', source,
+    '-EXIF:all',
+    '-IPTC:all',
+    '-XMP:all',
+    // now normalize orientation
+    '-EXIF:Orientation=1',
+  ]);
+
+  await exiftool.write(dest, { Orientation: 1 }, ['-overwrite_original']);
+
 }
 
 function timestampSlug(d = new Date()) {

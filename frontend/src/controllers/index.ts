@@ -11,3 +11,4 @@ export * from './mediaItemCounts';
 export * from './mediaItems';
 export * from './photoImporter';
 export * from './manifest';
+export * from './mediaView';

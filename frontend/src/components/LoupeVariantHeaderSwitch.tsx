@@ -13,17 +13,16 @@ import {
   Tooltip,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
-import * as React from 'react';
 import { MediaManifest, ViewVariant } from '../types';
 
 export function LoupeVariantHeaderSwitch(props: {
   manifest: MediaManifest | null;
   viewVariant: ViewVariant;
-  onChange: (next: ViewVariant) => void;
+  onSetVariant: (next: ViewVariant) => void;
   onRequestSelectFirstDerivative?: () => void; // ask controller to set the first derivative
   onSetAsPreferred?: () => void;               // explicit persist action
 }) {
-  const { manifest, viewVariant, onChange, onRequestSelectFirstDerivative, onSetAsPreferred } = props;
+  const { manifest, viewVariant, onSetVariant, onRequestSelectFirstDerivative, onSetAsPreferred } = props;
 
   const hasDerivatives = !!manifest && manifest.derivatives.length > 0;
 
@@ -42,16 +41,16 @@ export function LoupeVariantHeaderSwitch(props: {
     if (!val) return;
 
     if (val === 'original') {
-      onChange('original');
+      onSetVariant('original');
     } else if (val === 'preferred') {
-      onChange('preferred');
+      onSetVariant('preferred');
     } else if (val === 'derivative') {
       // If Derivative is clicked with none selected yet, choose first derivative by default
       if (!selectedDerivativeId && hasDerivatives) {
         if (onRequestSelectFirstDerivative) onRequestSelectFirstDerivative();
       } else {
         // Keep current derivative selection if one is already chosen
-        if (selectedDerivativeId) onChange({ kind: 'derivative', id: selectedDerivativeId });
+        if (selectedDerivativeId) onSetVariant({ kind: 'derivative', id: selectedDerivativeId });
       }
     }
   };
@@ -138,8 +137,8 @@ export function LoupeVariantHeaderSwitch(props: {
             value={selectedDerivativeId}
             onChange={(e) => {
               const id = e.target.value as string;
-              if (!id) onChange('preferred'); // back to Preferred when clearing
-              else onChange({ kind: 'derivative', id });
+              if (!id) onSetVariant('preferred'); // back to Preferred when clearing
+              else onSetVariant({ kind: 'derivative', id });
             }}
             // Keep the field populated even when value === ''
             displayEmpty

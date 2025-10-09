@@ -172,9 +172,9 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
         <LoupeVariantHeaderSwitch
           manifest={manifest}
           viewVariant={variant}
-          onChange={(next) => setVariant(next)}
-          onRequestSelectFirstDerivative={selectFirstDerivative}
+          onSetVariant={(next) => setVariant(next)}
           onSetAsPreferred={handleSetAsPreferred}
+          onRequestSelectFirstDerivative={selectFirstDerivative}
         />
       }
     />

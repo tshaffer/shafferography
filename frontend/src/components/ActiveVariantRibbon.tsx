@@ -23,9 +23,9 @@ const ActiveVariantRibbon = (props: ActiveVariantRibbonProps) => {
   if ((props.variant as any).kind && (props.variant as any).kind === "preferred") return null;
 
   const label =
-    (props.variant as any).kind === "original"
+    (props.variant as any) === "original"
       ? "ORIGINAL"
-      : props.mediaItem?.derivatives.find(d => d.derivativeId === (props.variant as any).derivativeId)?.label ?? "DERIVATIVE";
+      : props.mediaItem?.derivatives.find(d => d.derivativeId === (props.variant as any).id)?.label ?? "DERIVATIVE";
 
   return (
     <Box

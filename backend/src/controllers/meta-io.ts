@@ -10,10 +10,10 @@ export async function copyExifAndNormalizeOrientation(source: string, dest: stri
     '-IPTC:all',
     '-XMP:all',
     // now normalize orientation
-    '-EXIF:Orientation=1',
+    '-EXIF:Orientation=Horizontal (normal)',
   ]);
 
-  await exiftool.write(dest, { Orientation: 1 }, ['-overwrite_original']);
+  await exiftool.write(dest, { Orientation: "Horizontal (normal)" }, ['-overwrite_original']);
 
 }
 

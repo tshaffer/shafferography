@@ -9,27 +9,52 @@ import {
   Select,
   MenuItem,
   Typography,
+  Button,
+  Tooltip,
 } from '@mui/material';
 import { alpha } from '@mui/material/styles';
+import * as React from 'react';
 import { MediaManifest, ViewVariant } from '../types';
 
 export function LoupeVariantHeaderSwitch(props: {
   manifest: MediaManifest | null;
   viewVariant: ViewVariant;
   onChange: (next: ViewVariant) => void;
+  onRequestSelectFirstDerivative?: () => void; // ask controller to set the first derivative
+  onSetAsPreferred?: () => void;               // explicit persist action
 }) {
-  const { manifest, viewVariant, onChange } = props;
+  const { manifest, viewVariant, onChange, onRequestSelectFirstDerivative, onSetAsPreferred } = props;
 
-  console.log(props.manifest);
-  console.log(props.manifest?.derivatives);
+  const hasDerivatives = !!manifest && manifest.derivatives.length > 0;
 
-  const toggleVal =
-    viewVariant === 'original' ? 'original'
-      : viewVariant === 'preferred' ? 'preferred'
+  // Map the union to a 3-state toggle value: original | preferred | derivative
+  const toggleVal: 'original' | 'preferred' | 'derivative' =
+    viewVariant === 'original'
+      ? 'original'
+      : typeof viewVariant === 'object' && viewVariant.kind === 'derivative'
+        ? 'derivative'
         : 'preferred';
 
   const selectedDerivativeId =
     typeof viewVariant === 'object' && viewVariant.kind === 'derivative' ? viewVariant.id : '';
+
+  const handleToggleChange = (_: any, val: 'original' | 'preferred' | 'derivative' | null) => {
+    if (!val) return;
+
+    if (val === 'original') {
+      onChange('original');
+    } else if (val === 'preferred') {
+      onChange('preferred');
+    } else if (val === 'derivative') {
+      // If Derivative is clicked with none selected yet, choose first derivative by default
+      if (!selectedDerivativeId && hasDerivatives) {
+        if (onRequestSelectFirstDerivative) onRequestSelectFirstDerivative();
+      } else {
+        // Keep current derivative selection if one is already chosen
+        if (selectedDerivativeId) onChange({ kind: 'derivative', id: selectedDerivativeId });
+      }
+    }
+  };
 
   return (
     <Box
@@ -41,7 +66,9 @@ export function LoupeVariantHeaderSwitch(props: {
         borderColor: 'divider',
         bgcolor: (t) => alpha(t.palette.background.paper, 0.9),
         boxShadow: (t) =>
-          t.palette.mode === 'dark' ? 'inset 0 1px 0 rgba(255,255,255,0.06)' : '0 1px 2px rgba(0,0,0,0.06)',
+          t.palette.mode === 'dark'
+            ? 'inset 0 1px 0 rgba(255,255,255,0.06)'
+            : '0 1px 2px rgba(0,0,0,0.06)',
         color: 'text.primary',
         display: 'inline-block',
         maxWidth: '100%',
@@ -56,11 +83,7 @@ export function LoupeVariantHeaderSwitch(props: {
         <ToggleButtonGroup
           value={toggleVal}
           exclusive
-          onChange={(_, val) => {
-            if (!val) return;
-            if (val === 'original') onChange('original');
-            else if (val === 'preferred') onChange('preferred');
-          }}
+          onChange={handleToggleChange}
           size="small"
           color="primary"
           sx={{
@@ -78,18 +101,18 @@ export function LoupeVariantHeaderSwitch(props: {
           }}
           aria-label="View variant"
         >
-          <ToggleButton
-            value="original"
-            aria-label="Original"
-          >
+          <ToggleButton value="original" aria-label="Original">
             Original
           </ToggleButton>
-          <ToggleButton
-            value="preferred"
-            aria-label="Preferred derivative"
-            disabled={!manifest}
-          >
+          <ToggleButton value="preferred" aria-label="Preferred derivative" disabled={!manifest}>
             Preferred
+          </ToggleButton>
+          <ToggleButton
+            value="derivative"
+            aria-label="Specific derivative"
+            disabled={!hasDerivatives}
+          >
+            Derivative
           </ToggleButton>
         </ToggleButtonGroup>
 
@@ -109,11 +132,17 @@ export function LoupeVariantHeaderSwitch(props: {
             labelId="loupe-deriv-label"
             label="Derivative"
             value={selectedDerivativeId}
-            onChange={(e) =>
-              onChange({ kind: 'derivative', id: e.target.value as string })
-            }
+            onChange={(e) => {
+              const id = e.target.value as string;
+              if (!id) {
+                // user chose the "— choose —" entry; we flip back to Preferred view
+                onChange('preferred');
+              } else {
+                onChange({ kind: 'derivative', id });
+              }
+            }}
             displayEmpty
-            disabled={!manifest || manifest.derivatives.length === 0}
+            disabled={!hasDerivatives}
             MenuProps={{
               PaperProps: {
                 sx: {
@@ -128,13 +157,29 @@ export function LoupeVariantHeaderSwitch(props: {
             <MenuItem value="">
               <em>— choose —</em>
             </MenuItem>
-            {manifest?.derivatives.map((d, index) => (
+            {manifest?.derivatives.map((d) => (
               <MenuItem key={d.derivativeId} value={d.derivativeId}>
                 {d.label} ({d.width}×{d.height})
               </MenuItem>
             ))}
           </Select>
         </FormControl>
+
+        <Tooltip
+          title="Persist the currently visible image (Original or the selected Derivative) as the preferred image for this photo."
+          arrow
+        >
+          <span>
+            <Button
+              variant="outlined"
+              size="small"
+              disabled={!manifest}
+              onClick={() => onSetAsPreferred && onSetAsPreferred()}
+            >
+              Set as Preferred
+            </Button>
+          </span>
+        </Tooltip>
 
         {!manifest ? (
           <Typography variant="body2" color="text.secondary">

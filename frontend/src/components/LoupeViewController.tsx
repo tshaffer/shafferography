@@ -80,7 +80,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     const base = assetUrlFor(loupeViewMediaItemId, currentMedia!, variant);
     console.log('Computed base URL:', base);
-    
+
     // const cacheBust = currentMedia?.lastModified ? `&v=${encodeURIComponent(currentMedia.lastModified as any)}` : '';
     // setImgSrc(`${base}${cacheBust}`);
     setImgSrc(base);
@@ -114,7 +114,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
       header={
         <LoupeVariantHeaderSwitch
           manifest={manifest}
-          value={variant}
+          viewVariant={variant}
           onChange={(next) => setVariant(next)}
         />
       }

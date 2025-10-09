@@ -1,5 +1,4 @@
 // LoupeVariantHeaderSwitch.tsx
-import * as React from 'react';
 import {
   Box,
   Stack,
@@ -16,21 +15,21 @@ import { MediaManifest, ViewVariant } from '../types';
 
 export function LoupeVariantHeaderSwitch(props: {
   manifest: MediaManifest | null;
-  value: ViewVariant;
+  viewVariant: ViewVariant;
   onChange: (next: ViewVariant) => void;
 }) {
-  const { manifest, value, onChange } = props;
+  const { manifest, viewVariant, onChange } = props;
 
   console.log(props.manifest);
   console.log(props.manifest?.derivatives);
 
   const toggleVal =
-    value === 'original' ? 'original'
-    : value === 'preferred' ? 'preferred'
-    : 'preferred';
+    viewVariant === 'original' ? 'original'
+      : viewVariant === 'preferred' ? 'preferred'
+        : 'preferred';
 
   const selectedDerivativeId =
-    typeof value === 'object' && value.kind === 'derivative' ? value.id : '';
+    typeof viewVariant === 'object' && viewVariant.kind === 'derivative' ? viewVariant.id : '';
 
   return (
     <Box
@@ -79,7 +78,10 @@ export function LoupeVariantHeaderSwitch(props: {
           }}
           aria-label="View variant"
         >
-          <ToggleButton value="original" aria-label="Original">
+          <ToggleButton
+            value="original"
+            aria-label="Original"
+          >
             Original
           </ToggleButton>
           <ToggleButton

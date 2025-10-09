@@ -127,21 +127,28 @@ export function LoupeVariantHeaderSwitch(props: {
             },
           }}
         >
-          <InputLabel id="loupe-deriv-label">Derivative</InputLabel>
+          {/* Force the label to float so it never overlaps the displayed value */}
+          <InputLabel id="loupe-deriv-label" shrink>
+            Derivative
+          </InputLabel>
+
           <Select
             labelId="loupe-deriv-label"
             label="Derivative"
             value={selectedDerivativeId}
             onChange={(e) => {
               const id = e.target.value as string;
-              if (!id) {
-                // user chose the "— choose —" entry; we flip back to Preferred view
-                onChange('preferred');
-              } else {
-                onChange({ kind: 'derivative', id });
-              }
+              if (!id) onChange('preferred'); // back to Preferred when clearing
+              else onChange({ kind: 'derivative', id });
             }}
+            // Keep the field populated even when value === ''
             displayEmpty
+            // Render a proper placeholder when empty
+            renderValue={(val) => {
+              if (!val) return <em>— choose —</em>;
+              const d = manifest?.derivatives.find(x => x.derivativeId === val);
+              return d ? `${d.label} (${d.width}×${d.height})` : '';
+            }}
             disabled={!hasDerivatives}
             MenuProps={{
               PaperProps: {

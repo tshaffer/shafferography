@@ -2,7 +2,7 @@ import * as React from 'react';
 import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
-import { FilteredMediaItemPicker, GridRowData, MediaItem, PhotoState } from '../types';
+import { FilteredMediaItemPicker, GridRowData, MediaItem, PhotoState, TedTaggerState } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
 import {
   getAppInitialized,
@@ -21,7 +21,11 @@ import GridRow from './GridRow';
 import throttle from 'lodash/throttle';
 import { loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 
-export interface GridViewProps {
+export interface GridViewPropsFromParent {
+  setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void;
+}
+
+export interface GridViewDerivedStateProps {
   appInitialized: boolean;
   sidebarOpen: boolean;
   rightPanelOpen: boolean;
@@ -30,17 +34,19 @@ export interface GridViewProps {
   selectedMediaItemIds: string[];
   displayMetadata: boolean;
   savedScrollOffset: number;
-  onSaveScrollOffset: (offset: number) => void;
-  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
-  onReloadMediaItemsByViewSpec: () => any;
-
-  // NEW: drives recompute only when a viewVariant changes for any visible item
   viewVariantSignature: string;
 }
 
-const GridView = ({ setTooltip, ...props }: GridViewProps & {
-  setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void
-}) => {
+export interface GridViewPropsDerivedActionCreatorProps {
+  onSaveScrollOffset: (offset: number) => void;
+  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
+  onReloadMediaItemsByViewSpec: () => any;
+}
+
+
+export interface GridViewAllProps extends GridViewDerivedStateProps, GridViewPropsDerivedActionCreatorProps, GridViewPropsFromParent { }
+
+const GridView: React.FC<GridViewAllProps> = (props: GridViewAllProps) => {
 
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
@@ -219,12 +225,12 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
             numMediaItems={rowData.numMediaItems}
             rowHeight={rowData.rowHeight}
             cellWidths={rowData.cellWidths}
-            setTooltip={setTooltip} // Pass setTooltip down to GridRow
+            setTooltip={props.setTooltip} // Pass setTooltip down to GridRow
           />
         </div>
       );
     },
-    [gridRows, setTooltip, props.displayMetadata]
+    [gridRows, props.setTooltip, props.displayMetadata]
   );
 
   // Create a throttled version of onSaveScrollOffset so it fires at most once every 200ms
@@ -277,7 +283,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
   );
 };
 
-function mapStateToProps(state: any) {
+function mapStateToProps(state: TedTaggerState) {
   const allMediaItems = getFilteredMediaItems(state);
 
   // Build a stable signature that only changes when any visible item's viewVariant changes
@@ -290,13 +296,14 @@ function mapStateToProps(state: any) {
     .join('|');
 
   return {
+    appInitialized: getAppInitialized(state),
     sidebarOpen: getSidebarOpen(state),
     rightPanelOpen: getRightPanelOpen(state),
-    appInitialized: getAppInitialized(state),
+    numGridColumns: getNumGridColumns(state),
     allMediaItems,
-    savedScrollOffset: getScrollPosition(state),
-    displayMetadata: getDisplayMetadata(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
+    displayMetadata: getDisplayMetadata(state),
+    savedScrollOffset: getScrollPosition(state),
     viewVariantSignature, // <-- NEW
   };
 }

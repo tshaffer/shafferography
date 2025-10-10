@@ -9,24 +9,19 @@ import { Box, Tooltip } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
 import { getLoupeViewMediaItemId, getMediaItemById, getFullScreenMode } from '../selectors';
 import { MediaItem } from '../types';
-import { getPhotoUrl } from '../utilities';
 
 export interface LoupeViewProps {
   mediaItem: MediaItem | null;
   fullScreenMode: boolean;
 
-  /** (NEW) If provided, this overrides the default image source */
-  imgSrcOverride?: string;
-  /** (NEW) Optional header UI to render above the image (e.g., variant switcher) */
+  mediaItemUrl: string;
   header?: React.ReactNode;
 }
 
 const LoupeView = (props: LoupeViewProps) => {
   if (isNil(props.mediaItem)) return null;
 
-  // const src = getPhotoUrl(props.mediaItem);
-  const defaultSrc = getPhotoUrl(props.mediaItem);
-  const src = props.imgSrcOverride ?? defaultSrc;
+  const src = props.mediaItemUrl;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', width: '100%', height: 'calc(100vh - 112px)', bgcolor: 'black' }}>

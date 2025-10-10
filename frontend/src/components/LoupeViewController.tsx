@@ -7,7 +7,7 @@ import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setViewVariant } from 
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems, getMediaManifestById } from '../selectors';
 import { Derivative, MediaItem, MediaManifest, PhotoState, ViewVariant } from '../types';
 import { LoupeVariantHeaderSwitch } from './LoupeVariantHeaderSwitch';
-import { getPhotoUrl } from '../utilities';
+import { getMediaItemUrl, getPhotoUrl } from '../utilities';
 
 // NEW: thunk to persist preferred image (implement in ../controllers)
 import { persistPreferredVariant } from '../controllers'; // <-- you provide this thunk
@@ -29,36 +29,10 @@ export interface LoupeViewControllerProps {
   ) => Promise<void>;
 }
 
-const assetUrlFor = (mediaItemId: string, mediaItem: MediaItem, variant: ViewVariant): string => {
-  if (!variant) {
-    variant = 'preferred';
-  }
-  if (variant === 'original') {
-    return mediaItem.url!;
-  } else if (variant === 'preferred') {
-    const preferredId: string = mediaItem.preferredDerivativeId ? mediaItem.preferredDerivativeId : mediaItem.uniqueId;
-    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === preferredId);
-    if (derivative) {
-      return derivative.url!;
-    } else {
-      return getPhotoUrl(mediaItem);
-    }
-  } else {
-    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === variant.id);
-    if (derivative) {
-      return derivative.url!;
-    } else {
-      return getPhotoUrl(mediaItem);
-    }
-  }
-};
-
 const LoupeViewController = (props: LoupeViewControllerProps) => {
   const { loupeViewMediaItemId, mediaItems } = props;
 
-  // Local state for manifest + current variant selection
-  // const [variant, setVariant] = React.useState<ViewVariant>('preferred');
-  const [imgSrc, setImgSrc] = React.useState<string | undefined>(undefined);
+  const [imgSrc, setImgSrc] = React.useState<string>('');
 
   // Compute current media
   const currentMedia: MediaItem | undefined = React.useMemo(
@@ -72,9 +46,9 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
     console.log('Recomputing imgSrc for variant', props.variant);
 
-    const base = assetUrlFor(loupeViewMediaItemId, currentMedia, props.variant!);
-    console.log('Computed base URL:', base);
-    setImgSrc(base);
+    const mediaItemUrl = getMediaItemUrl(currentMedia, props.variant!);
+    console.log('Computed base URL:', mediaItemUrl);
+    setImgSrc(mediaItemUrl);
   }, [loupeViewMediaItemId, props.variant, props.mediaManifest, mediaItems, currentMedia]);
 
   // Keyboard nav additions: O/P/1..9 (derivative quick select)
@@ -149,7 +123,7 @@ const LoupeViewController = (props: LoupeViewControllerProps) => {
 
   return (
     <LoupeView
-      imgSrcOverride={imgSrc}
+      mediaItemUrl={imgSrc}
       header={
         <LoupeVariantHeaderSwitch
           manifest={props.mediaManifest}
@@ -179,7 +153,7 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => ({
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) =>
     dispatch(setPhotoState(mediaItemIds, photoState)),
   onReloadMediaItemsByViewSpec: () => dispatch(loadAndReplaceMediaItemsByViewSpec()),
-  
+
   onSetViewVariant: (mediaItemId: string, variant: ViewVariant) =>
     dispatch(setViewVariant(mediaItemId, variant)),
 

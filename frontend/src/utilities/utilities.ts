@@ -1,4 +1,4 @@
-import { AlbumNode, MediaContentNode, MediaItem } from '../types';
+import { AlbumNode, Derivative, MediaContentNode, MediaItem, ViewVariant } from '../types';
 
 export const formatISOString = (ISOString: string): string => {
 
@@ -18,6 +18,14 @@ export const formatISOString = (ISOString: string): string => {
   return formattedDate;
 };
 
+const isNode = (node: MediaContentNode | null): boolean => {
+  return node !== null;
+};
+
+export const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
+  return isNode(node) && node?.type === 'album';
+};
+
 export const getPhotoUrl = (mediaItem: MediaItem): string => {
   const backendUrl = (window as any).__ENV__?.BACKEND_URL || 'http://localhost:8080';
 
@@ -30,11 +38,25 @@ export const getPhotoUrl = (mediaItem: MediaItem): string => {
   return url;
 };
 
-  const isNode = (node: MediaContentNode | null): boolean => {
-    return node !== null;
-  };
-
-  export const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
-    return isNode(node) && node?.type === 'album';
-  };
+export const getMediaItemUrl = (mediaItem: MediaItem, variant: ViewVariant | null | undefined): string => {
+  if (!variant || variant === 'preferred') {
+    const preferredId: string = mediaItem.preferredDerivativeId ? mediaItem.preferredDerivativeId : mediaItem.uniqueId;
+    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === preferredId);
+    if (derivative) {
+      return derivative.url!;
+    } else {
+      return getPhotoUrl(mediaItem);
+    }
+  }
+  if (variant === 'original') {
+    return mediaItem.url!;
+  } else {
+    const derivative: Derivative | undefined = mediaItem.derivatives.find(d => d.derivativeId === variant.id);
+    if (derivative) {
+      return derivative.url!;
+    } else {
+      return getPhotoUrl(mediaItem);
+    }
+  }
+}
 

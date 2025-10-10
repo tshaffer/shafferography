@@ -5,9 +5,9 @@ import { connect } from 'react-redux';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } from '../models';
 
 import '../styles/TedTagger.css';
-import { MediaItem, PhotoLayout, PhotoState } from '../types';
+import { MediaItem, PhotoLayout, PhotoState, ViewVariant } from '../types';
 import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
-import { getPhotoUrl } from '../utilities';
+import { getMediaItemUrl, getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
 import { Icon, Typography } from '@mui/material';
@@ -21,6 +21,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import ConstructionIcon from '@mui/icons-material/Construction';
 import DerivativesBadge from './DerivativesBadge';
 import ActiveVariantRibbon from './ActiveVariantRibbon';
+import { getViewVariant } from '../selectors/mediaView';
 
 export interface GridCellPropsFromParent {
   mediaItemIndex: number;
@@ -33,6 +34,7 @@ export interface GridCellPropsFromParent {
 export interface GridCellPropsDerivedStateProps {
   displayMetadata: boolean;
   isSelected: boolean;
+  variant?: ViewVariant | null;
 }
 
 export interface GridCellPropsDerivedActionCreatorProps {
@@ -51,8 +53,7 @@ const GridCell = (props: GridCellProps) => {
   const [clickTimeout, setClickTimeout] = React.useState<NodeJS.Timeout | null>(null);
 
   const mediaItem: MediaItem = props.mediaItem;
-  let photoUrl = getPhotoUrl(mediaItem);
-  // console.log('photoUrl:', photoUrl)
+  const photoUrl = getMediaItemUrl(mediaItem, props.variant);
 
   const handleDoubleClick = () => {
     props.onSetLoupeViewMediaItemId(props.mediaItem.uniqueId);
@@ -229,6 +230,7 @@ function mapStateToProps(state: any, ownProps: GridCellPropsFromParent) {
   return {
     displayMetadata: getDisplayMetadata(state),
     isSelected: isMediaItemSelected(state, ownProps.mediaItem),
+    variant: getViewVariant(state, ownProps.mediaItem.uniqueId),
   };
 }
 

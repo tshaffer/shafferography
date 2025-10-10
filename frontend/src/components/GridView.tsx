@@ -1,7 +1,7 @@
 import * as React from 'react';
 import { VariableSizeList } from 'react-window';
 import { bindActionCreators } from 'redux';
-import { connect } from 'react-redux';
+import { connect, ConnectedProps } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem, PhotoState, TedTaggerState } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
 import {
@@ -25,28 +25,45 @@ export interface GridViewPropsFromParent {
   setTooltip: (tooltip: { text: string; position: { top: number; left: number } } | null) => void;
 }
 
-export interface GridViewDerivedStateProps {
-  appInitialized: boolean;
-  sidebarOpen: boolean;
-  rightPanelOpen: boolean;
-  numGridColumns: number;
-  allMediaItems: FilteredMediaItemPicker[];
-  selectedMediaItemIds: string[];
-  displayMetadata: boolean;
-  savedScrollOffset: number;
-  viewVariantSignature: string;
+function mapStateToProps(state: TedTaggerState) {
+  const allMediaItems = getFilteredMediaItems(state);
+
+  // Build a stable signature that only changes when any visible item's viewVariant changes
+  const viewVariantSignature = allMediaItems
+    .map(mi => {
+      const variant = getViewVariant(state, mi.uniqueId);
+      // Stringify null explicitly to keep signature stable
+      return `${mi.uniqueId}:${variant ?? 'null'}`;
+    })
+    .join('|');
+
+  return {
+    appInitialized: getAppInitialized(state),
+    sidebarOpen: getSidebarOpen(state),
+    rightPanelOpen: getRightPanelOpen(state),
+    numGridColumns: getNumGridColumns(state),
+    allMediaItems,
+    selectedMediaItemIds: getSelectedMediaItemIds(state),
+    displayMetadata: getDisplayMetadata(state),
+    savedScrollOffset: getScrollPosition(state),
+    viewVariantSignature, // <-- NEW
+  };
 }
 
-export interface GridViewPropsDerivedActionCreatorProps {
-  onSaveScrollOffset: (offset: number) => void;
-  onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
-  onReloadMediaItemsByViewSpec: () => any;
-}
+const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
+  return bindActionCreators({
+    onSaveScrollOffset: setScrollPositionRedux,
+    onSetPhotoState: setPhotoState,
+    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
+  }, dispatch);
+};
 
+const connector = connect(mapStateToProps, mapDispatchToProps);
+type ReduxProps = ConnectedProps<typeof connector>;
 
-export interface GridViewAllProps extends GridViewDerivedStateProps, GridViewPropsDerivedActionCreatorProps, GridViewPropsFromParent { }
+type GridViewProps = ReduxProps & GridViewPropsFromParent;
 
-const GridView: React.FC<GridViewAllProps> = (props: GridViewAllProps) => {
+const GridView: React.FC<GridViewProps> = (props: GridViewProps) => {
 
   const gridContainerRef = React.useRef<HTMLDivElement | null>(null);
   const [gridWidth, setGridWidth] = React.useState<number>(0);
@@ -283,37 +300,4 @@ const GridView: React.FC<GridViewAllProps> = (props: GridViewAllProps) => {
   );
 };
 
-function mapStateToProps(state: TedTaggerState) {
-  const allMediaItems = getFilteredMediaItems(state);
-
-  // Build a stable signature that only changes when any visible item's viewVariant changes
-  const viewVariantSignature = allMediaItems
-    .map(mi => {
-      const variant = getViewVariant(state, mi.uniqueId);
-      // Stringify null explicitly to keep signature stable
-      return `${mi.uniqueId}:${variant ?? 'null'}`;
-    })
-    .join('|');
-
-  return {
-    appInitialized: getAppInitialized(state),
-    sidebarOpen: getSidebarOpen(state),
-    rightPanelOpen: getRightPanelOpen(state),
-    numGridColumns: getNumGridColumns(state),
-    allMediaItems,
-    selectedMediaItemIds: getSelectedMediaItemIds(state),
-    displayMetadata: getDisplayMetadata(state),
-    savedScrollOffset: getScrollPosition(state),
-    viewVariantSignature, // <-- NEW
-  };
-}
-
-const mapDispatchToProps = (dispatch: TedTaggerDispatch) => {
-  return bindActionCreators({
-    onSaveScrollOffset: setScrollPositionRedux,
-    onSetPhotoState: setPhotoState,
-    onReloadMediaItemsByViewSpec: loadAndReplaceMediaItemsByViewSpec,
-  }, dispatch);
-};
-
-export default connect(mapStateToProps, mapDispatchToProps)(GridView);
+export default connector(GridView);

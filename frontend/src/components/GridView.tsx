@@ -4,7 +4,17 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { FilteredMediaItemPicker, GridRowData, MediaItem, PhotoState } from '../types';
 import { setScrollPositionRedux, TedTaggerDispatch } from '../models';
-import { getAppInitialized, getDisplayMetadata, getFilteredMediaItems, getNumGridColumns, getRightPanelOpen, getScrollPosition, getSelectedMediaItemIds, getSidebarOpen } from '../selectors';
+import {
+  getAppInitialized,
+  getDisplayMetadata,
+  getFilteredMediaItems,
+  getNumGridColumns,
+  getRightPanelOpen,
+  getScrollPosition,
+  getSelectedMediaItemIds,
+  getSidebarOpen,
+  getViewVariant, // <-- ADD THIS IMPORT
+} from '../selectors';
 import { getGridRowInfo } from '../utilities';
 import { targetHeights } from '../constants';
 import GridRow from './GridRow';
@@ -23,6 +33,9 @@ export interface GridViewProps {
   onSaveScrollOffset: (offset: number) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
+
+  // NEW: drives recompute only when a viewVariant changes for any visible item
+  viewVariantSignature: string;
 }
 
 const GridView = ({ setTooltip, ...props }: GridViewProps & {
@@ -178,13 +191,22 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     return null;
   }
 
+  // IMPORTANT: include viewVariantSignature so row layout recomputes when variants change
   const gridRows = React.useMemo(() => getGridRowData(), [
     gridWidth,
     props.numGridColumns,
     props.allMediaItems,
+    props.viewVariantSignature, // <-- NEW DEP
   ]);
 
   const rowHeights = React.useMemo(() => gridRows.map(row => row.rowHeight), [gridRows]);
+
+  // Ensure react-window recomputes cached sizes when row heights change (e.g., due to variant changes)
+  React.useEffect(() => {
+    if (listRef.current) {
+      listRef.current.resetAfterIndex(0, true);
+    }
+  }, [rowHeights]);
 
   const renderRow = React.useCallback(
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
@@ -230,16 +252,10 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     throttledOnSaveScrollOffset(scrollOffset);
   };
 
-  const getItemSize = (index: number) => {
-    // console.log('getItemSize :', rowHeights[index] + (props.displayMetadata ? 60 : 0));
-    return rowHeights[index] + (props.displayMetadata ? 60 : 0);
-  };
-  // const getItemSize = (index: number) => rowHeights[index];
+  const getItemSize = (index: number) =>
+    rowHeights[index] + (props.displayMetadata ? 60 : 0);
+
   const listHeight = window.innerHeight - 112;
-
-  // console.log('rowHeight:', rowHeights);
-
-  // console.log('GridView render');
 
   return (
     <div ref={gridContainerRef} style={{ width: '100%', overflow: 'hidden' }} id='variableSizeListContainer'>
@@ -262,17 +278,26 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 };
 
 function mapStateToProps(state: any) {
-  // console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
+  const allMediaItems = getFilteredMediaItems(state);
+
+  // Build a stable signature that only changes when any visible item's viewVariant changes
+  const viewVariantSignature = allMediaItems
+    .map(mi => {
+      const variant = getViewVariant(state, mi.uniqueId);
+      // Stringify null explicitly to keep signature stable
+      return `${mi.uniqueId}:${variant ?? 'null'}`;
+    })
+    .join('|');
 
   return {
     sidebarOpen: getSidebarOpen(state),
     rightPanelOpen: getRightPanelOpen(state),
     appInitialized: getAppInitialized(state),
-    numGridColumns: getNumGridColumns(state),
-    allMediaItems: getFilteredMediaItems(state),
+    allMediaItems,
     savedScrollOffset: getScrollPosition(state),
     displayMetadata: getDisplayMetadata(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
+    viewVariantSignature, // <-- NEW
   };
 }
 

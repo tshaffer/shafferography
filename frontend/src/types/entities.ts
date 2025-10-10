@@ -134,8 +134,8 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-export type FilteredMediaItemPropertyName = "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
+export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

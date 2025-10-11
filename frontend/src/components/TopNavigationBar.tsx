@@ -151,7 +151,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const getShafferographyPaddingLeft = (): any => {
     if (props.sidebarOpen) {
-      return '240px';
+      return '36px';
     } else {
       return 0;
     }
@@ -696,10 +696,10 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </Tooltip>
 
           {/* Search Bar */}
-          <Box sx={{ display: "flex", alignItems: "center", mx: 2 }}>
+          {/* <Box sx={{ display: "flex", alignItems: "center", mx: 2 }}>
             <SearchIcon />
             <TextField variant="outlined" size="small" placeholder="Search photos..." sx={{ ml: 1, backgroundColor: "white", borderRadius: 1 }} />
-          </Box>
+          </Box> */}
 
           <Divider orientation="vertical" flexItem sx={{ mx: 2, alignSelf: 'stretch', backgroundColor: "white" }} />
 
@@ -825,11 +825,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           </Tooltip>
 
           {/* More Options Menu */}
-          <Tooltip title="More Options">
+          {/* <Tooltip title="More Options">
             <IconButton color="inherit" onClick={handleOpenMoreOptionsMenu}>
               <MoreVertIcon />
             </IconButton>
-          </Tooltip>
+          </Tooltip> */}
 
           <Tooltip title="Settings">
             <IconButton onClick={() => setShowSettingsDialog(true)} color="inherit"><SettingsIcon /></IconButton>

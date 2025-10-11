@@ -5,9 +5,8 @@ import { connect } from 'react-redux';
 import { useDispatch } from 'react-redux';
 
 import MuiAppBar, { AppBarProps as MuiAppBarProps } from '@mui/material/AppBar';
-import { Toolbar, IconButton, Typography, Box, TextField, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider } from "@mui/material";
+import { Toolbar, IconButton, Typography, Tooltip, Divider, styled, Button, Dialog, DialogContent, DialogTitle, Slider, Theme } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import SearchIcon from "@mui/icons-material/Search";
 import SettingsIcon from "@mui/icons-material/Settings";
 import ViewModuleIcon from "@mui/icons-material/ViewModule";
 import ViewComfyIcon from "@mui/icons-material/ViewComfy";
@@ -16,7 +15,6 @@ import LabelIcon from "@mui/icons-material/Label";
 import ClearIcon from "@mui/icons-material/Clear";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import MoreVertIcon from "@mui/icons-material/MoreVert";
 import TuneIcon from '@mui/icons-material/Tune';
 import UploadIcon from '@mui/icons-material/Upload';   // Upload to Google
 import DeleteIcon from '@mui/icons-material/Delete';
@@ -497,12 +495,30 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   }
 
+  const getCommonPhotoState = (): PhotoState | null => {
+    if (props.selectedMediaItems.length === 0) {
+      return null;
+    }
+    const firstPhotoState = props.selectedMediaItems[0].photoState;
+    for (let i = 1; i < props.selectedMediaItems.length; i++) {
+      if (props.selectedMediaItems[i].photoState !== firstPhotoState) {
+        return null;
+      }
+    }
+    return firstPhotoState;
+  }
+
   const renderSetPhotoStateUI = () => {
+    const commonPhotoState: PhotoState | null = getCommonPhotoState();
     return (
       <React.Fragment>
         <Tooltip title="Set Unreviewed">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Unreviewed)} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={() => handleSetPhotoState(PhotoState.Unreviewed)}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.Unreviewed)}
+            >
               <MoreHoriz />
             </IconButton>
           </span>
@@ -510,7 +526,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
         <Tooltip title="Set Pending Edits">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.PendingEdits)} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={() => handleSetPhotoState(PhotoState.PendingEdits)}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.PendingEdits)}
+            >
               <ConstructionIcon />
             </IconButton>
           </span>
@@ -518,7 +538,10 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
         <Tooltip title="Set Undecided">
           <span>
-            <IconButton color="inherit" onClick={showSpecifyUndecidedGroupUI} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={showSpecifyUndecidedGroupUI}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.Undecided)}>
               <HelpOutline />
             </IconButton>
           </span>
@@ -533,21 +556,33 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
         <Tooltip title="Set Ready for Upload">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={() => handleSetPhotoState(PhotoState.ReadyForUpload)}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.ReadyForUpload)}
+            >
               <CloudUpload />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Set Uploaded">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Uploaded)} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={() => handleSetPhotoState(PhotoState.Uploaded)}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.Uploaded)}
+            >
               <CloudDone />
             </IconButton>
           </span>
         </Tooltip>
         <Tooltip title="Delete Selected Photos">
           <span>
-            <IconButton color="inherit" onClick={() => handleSetPhotoState(PhotoState.Deleted)} disabled={getSetPhotoStateButtonDisabled()}>
+            <IconButton
+              onClick={() => handleSetPhotoState(PhotoState.Deleted)}
+              disabled={getSetPhotoStateButtonDisabled()}
+              sx={getIconButtonProps(commonPhotoState === PhotoState.Deleted)}
+            >
               <DeleteIcon />
             </IconButton>
           </span>
@@ -668,6 +703,21 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     return (!isLoupeActive && props.selectedMediaItemsCount !== 1);
   }
 
+  const getIconButtonProps = (isActive: boolean): any => {
+    return (
+      {
+        backgroundColor: isActive ? (theme: Theme) => theme.palette.primary.main : 'transparent',
+        color: isActive ? '#fff' : (theme: Theme) => theme.palette.text.secondary,
+        borderRadius: '6px',
+        '&:hover': {
+          backgroundColor: isActive
+            ? (theme: Theme) => theme.palette.primary.dark
+            : (theme: Theme) => theme.palette.action.hover,
+        },
+      }
+    );
+  }
+
   const isGridActive = props.photoLayout === PhotoLayout.Grid;
   const isLoupeActive = props.photoLayout === PhotoLayout.Loupe;
   const isSurveyViewVertical = (props.photoLayout === PhotoLayout.Survey) && (props.surveyViewOrientation === SurveyViewOrientations.Vertical);
@@ -721,16 +771,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
             <span>
               <IconButton
                 onClick={() => handleUpdatePhotoLayout(PhotoLayout.Grid)}
-                sx={{
-                  backgroundColor: isGridActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isGridActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isGridActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
+                sx={getIconButtonProps(isGridActive)}
               >
                 <ViewModuleIcon />
               </IconButton>
@@ -740,16 +781,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
             <span>
               <IconButton
                 onClick={() => handleUpdatePhotoLayout(PhotoLayout.Loupe)}
-                sx={{
-                  backgroundColor: isLoupeActive ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isLoupeActive ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: isLoupeActive
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
+                sx={getIconButtonProps(isLoupeActive)}
               >
                 <ViewComfyIcon />
               </IconButton>
@@ -761,16 +793,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
               <IconButton
                 onClick={() => handleSetSurveyPhotoLayout(SurveyViewOrientations.Vertical)}
                 disabled={isSurveyDisabled}
-                sx={{
-                  backgroundColor: isSurveyViewVertical ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isSurveyViewVertical ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: !isSurveyDisabled && isSurveyViewVertical
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
+                sx={getIconButtonProps(isSurveyViewVertical)}
               >
                 <VerticalSplitIcon />
               </IconButton>
@@ -782,16 +805,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
               <IconButton
                 onClick={() => handleSetSurveyPhotoLayout(SurveyViewOrientations.Horizontal)}
                 disabled={isSurveyDisabled}
-                sx={{
-                  backgroundColor: isSurveyViewHorizontal ? (theme) => theme.palette.primary.main : 'transparent',
-                  color: isSurveyViewHorizontal ? '#fff' : (theme) => theme.palette.text.secondary,
-                  borderRadius: '6px',
-                  '&:hover': {
-                    backgroundColor: !isSurveyDisabled && isSurveyViewHorizontal
-                      ? (theme) => theme.palette.primary.dark
-                      : (theme) => theme.palette.action.hover,
-                  },
-                }}
+                sx={getIconButtonProps(isSurveyViewHorizontal)}
               >
                 <HorizontalSplitIcon />
               </IconButton>

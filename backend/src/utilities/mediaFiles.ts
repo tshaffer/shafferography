@@ -1,0 +1,16 @@
+import path from "path";
+import * as fse from 'fs-extra';
+import { MediaItem } from 'entities';
+
+export const getOriginalMediaItemFilePath = (mediaItem: MediaItem): string => {
+  let mediaFilePath: string = mediaItem.filePath;
+  const fileExtension = path.extname(mediaFilePath);
+  const dirname = path.dirname(mediaFilePath); // Extracts the directory path
+  const heicFileName = path.basename(mediaFilePath, fileExtension) + ".heic";
+  const heicFilePath = path.join(dirname, heicFileName);
+  if (fse.existsSync(heicFilePath)) {
+    console.log('HEIC file exists:', heicFilePath);
+    mediaFilePath = heicFilePath;
+  }
+  return mediaFilePath;
+}

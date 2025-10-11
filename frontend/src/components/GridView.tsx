@@ -20,6 +20,7 @@ export interface GridViewProps {
   selectedMediaItemIds: string[];
   displayMetadata: boolean;
   savedScrollOffset: number;
+  dimensionsSignature: string;
   onSaveScrollOffset: (offset: number) => void;
   onSetPhotoState: (mediaItemIds: string[], photoState: PhotoState) => any;
   onReloadMediaItemsByViewSpec: () => any;
@@ -112,7 +113,7 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
   React.useEffect(() => {
 
-    console.log('GridView: eventList React.useEffect - invoked');
+    // console.log('GridView: eventList React.useEffect - invoked');
 
     const handleKeyPress = (event: KeyboardEvent) => {
       switch (event.key) {
@@ -142,9 +143,8 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 
 
   const getGridRowData = (): GridRowData[] => {
-    if (gridWidth === 0) return [];
 
-    // console.log('getGridRowData gridWidth:', gridWidth);
+    if (gridWidth === 0) return [];
 
     const targetHeight = targetHeights[props.numGridColumns - 2];
     const gridRows: GridRowData[] = [];
@@ -182,9 +182,24 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
     gridWidth,
     props.numGridColumns,
     props.allMediaItems,
+    props.dimensionsSignature,
   ]);
 
   const rowHeights = React.useMemo(() => gridRows.map(row => row.rowHeight), [gridRows]);
+
+  // When row heights change, tell react-window to throw away size cache
+  const prevRowHeightsRef = React.useRef<number[]>([]);
+  React.useEffect(() => {
+    const prev = prevRowHeightsRef.current;
+    const changed =
+      prev.length !== rowHeights.length ||
+      prev.some((h, i) => h !== rowHeights[i]);
+
+    if (changed) {
+      listRef.current?.resetAfterIndex(0, true); // force full relayout
+      prevRowHeightsRef.current = rowHeights;
+    }
+  }, [rowHeights]);
 
   const renderRow = React.useCallback(
     ({ index, style }: { index: number; style: React.CSSProperties }) => {
@@ -264,15 +279,22 @@ const GridView = ({ setTooltip, ...props }: GridViewProps & {
 function mapStateToProps(state: any) {
   // console.log('mapStateToProps: displayMetadata:', getDisplayMetadata(state));
 
+  const allMediaItems = getFilteredMediaItems(state);
+
+  const dimensionsSignature = allMediaItems
+    .map(mi => `${mi.uniqueId}:${mi.width}x${mi.height}`)
+    .join('|');
+
   return {
     sidebarOpen: getSidebarOpen(state),
     rightPanelOpen: getRightPanelOpen(state),
     appInitialized: getAppInitialized(state),
     numGridColumns: getNumGridColumns(state),
-    allMediaItems: getFilteredMediaItems(state),
+    allMediaItems,
     savedScrollOffset: getScrollPosition(state),
     displayMetadata: getDisplayMetadata(state),
     selectedMediaItemIds: getSelectedMediaItemIds(state),
+    dimensionsSignature,
   };
 }
 

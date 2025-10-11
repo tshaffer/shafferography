@@ -54,28 +54,32 @@ const selectAllMediaItems = (state: TedTaggerState): MediaItem[] =>
 
 // Persistent cache for memoization
 let previousMediaItems: FilteredMediaItemPicker[] = [];
+let prevSignature = '';
 
 export const getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
+    // Build a signature that changes if length, order, width, or height changes
+    const signature = mediaItems
+      .map(mi => `${mi.uniqueId}:${mi.width}x${mi.height}`)
+      .join('|');
 
-    // If length is the same, no other property changes effect visibility
-    if (previousMediaItems.length === mediaItems.length) {
-      return previousMediaItems; // Return previous reference if unchanged
+    // If identical to last time, return the previous reference (prevents pointless re-layouts)
+    if (signature === prevSignature) {
+      return previousMediaItems;
     }
 
-    // Otherwise, recompute the filtered items
+    // Otherwise, (re)build filtered items
     const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
-      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>; // Allow dynamic keys
-
+      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>;
       for (const key of FILTERED_MEDIA_ITEM_KEYS) {
-        filteredItem[key] = item[key as keyof MediaItem]; // Explicitly cast `key`
+        filteredItem[key] = item[key as keyof MediaItem];
       }
-
-      return filteredItem as FilteredMediaItemPicker; // Cast back to the correct type
+      return filteredItem as FilteredMediaItemPicker;
     });
 
-    previousMediaItems = newFilteredItems; // Update cache
+    prevSignature = signature;
+    previousMediaItems = newFilteredItems;
     return newFilteredItems;
   }
 );

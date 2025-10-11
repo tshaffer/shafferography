@@ -1,14 +1,15 @@
 import axios from "axios";
-import { getServerUrl, apiUrlFragment, TedTaggerState, MediaItem } from "../types";
+import { getServerUrl, apiUrlFragment, TedTaggerState, MediaItem, PhotoLayout } from "../types";
 import { replaceMediaItemRedux, TedTaggerDispatch } from "../models";
-import { getSelectedMediaItemIds } from "../selectors";
+import { getLoupeViewMediaItemId, getPhotoLayout, getSelectedMediaItemIds } from "../selectors";
 
 export const reimportPhotosFromDrive = (): any => {
 
   return async (dispatch: TedTaggerDispatch, getState: any) => {
 
     const state: TedTaggerState = getState();
-    const mediaItemIds: string[] = getSelectedMediaItemIds(state);
+
+    const mediaItemIds: string[] = (getPhotoLayout(state) === PhotoLayout.Loupe) ? [getLoupeViewMediaItemId(state)] : getSelectedMediaItemIds(state);
 
     const uploadUrl = getServerUrl() + apiUrlFragment + 'reimportPhotos';
 

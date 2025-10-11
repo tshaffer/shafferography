@@ -355,7 +355,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
   }
 
   const handleCropMediaItem = () => {
-    cropMediaItem(props.selectedMediaItemIds[0]);
+    cropMediaItem(getTargetMediaItemId());
     setIsCropping(true);
   }
 
@@ -430,7 +430,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     if (!isCropping) return <></>;
     return (
       <CropWatcher
-        mediaItemId={props.selectedMediaItemIds[0]}
+        mediaItemId={getTargetMediaItemId()}
         onReimport={props.onReimportMediaItems}
         onDone={() => setIsCropping(false)}
       />
@@ -558,7 +558,8 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
 
   const renderItemCountAndActions = (): JSX.Element | null => {
     if (props.photoLayout === PhotoLayout.Loupe) {
-      return renderLoupeViewItemCountAndActions();
+      // return renderLoupeViewItemCountAndActions();
+      return renderGridItemCountAndActions();
     } else if (props.photoLayout === PhotoLayout.Survey) {
       return null;
     } else if (props.photoLayout === PhotoLayout.Grid) {
@@ -571,6 +572,11 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     return (
       <React.Fragment>
         {/* Selection Count & Actions */}
+        {isLoupeActive && (
+          <Typography variant="subtitle1" sx={{ mx: 2 }}>
+            {props.loupeViewMediaItemIds.length} {props.loupeViewMediaItemIds.length === 1 ? 'item' : 'items'}
+          </Typography>
+        )}
         {props.selectedMediaItemsCount > 0 && (
           <>
             <Tooltip title="Deselect All">
@@ -641,7 +647,7 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
           <span>
             <IconButton
               color="inherit"
-              disabled={props.selectedMediaItemsCount !== 1}
+              disabled={disableCrop()}
               onClick={handleCropMediaItem}
             >
               <CropIcon />
@@ -653,14 +659,13 @@ const TopNavigationBar: React.FC<any> = (props: TopNavigationProps) => {
     );
   };
 
-  const renderLoupeViewItemCountAndActions = (): JSX.Element => {
-    return (
-      <React.Fragment>
-        <Typography variant="subtitle1" sx={{ mx: 2 }}>
-          {props.loupeViewMediaItemIds.length} {props.loupeViewMediaItemIds.length === 1 ? 'item' : 'items'}
-        </Typography>
-      </React.Fragment>
-    )
+  const getTargetMediaItemId = (): string => {
+    const mediaItemIdToCrop = isLoupeActive ? props.loupeViewMediaItemId : props.selectedMediaItemIds[0];
+    return mediaItemIdToCrop;
+  }
+
+  const disableCrop = (): boolean => {
+    return (!isLoupeActive && props.selectedMediaItemsCount !== 1);
   }
 
   const isGridActive = props.photoLayout === PhotoLayout.Grid;

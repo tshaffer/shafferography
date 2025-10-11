@@ -1,10 +1,9 @@
 // src/routes/openInPreview.ts
 import { Request, Response } from 'express';
 import { spawn } from "child_process";
-import path from "path";
-import * as fse from 'fs-extra';
 import { MediaItem } from 'entities';
 import { getMediaItemFromDb } from './dbInterface';
+import { getOriginalMediaItemFilePath } from '../utilities';
 
 export const openInPreview = async (request: Request, response: Response, next: any) => {
 
@@ -18,17 +17,7 @@ export const openInPreview = async (request: Request, response: Response, next: 
       return response.status(404).json({ error: 'Media item not found' });
     }
 
-    console.log('mediaItem:', mediaItem);
-
-    let mediaFilePath: string = mediaItem.filePath;
-    const fileExtension = path.extname(mediaFilePath);
-    const dirname = path.dirname(mediaFilePath); // Extracts the directory path
-    const heicFileName = path.basename(mediaFilePath, fileExtension) + ".heic";
-    const heicFilePath = path.join(dirname, heicFileName);
-    if (fse.existsSync(heicFilePath)) {
-      console.log('HEIC file exists:', heicFilePath);
-      mediaFilePath = heicFilePath;
-    }
+    const mediaFilePath: string = getOriginalMediaItemFilePath(mediaItem);
 
     const appleScript = `
 on run argv

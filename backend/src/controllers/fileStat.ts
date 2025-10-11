@@ -2,8 +2,8 @@ import { MediaItem } from 'entities';
 import { Request, Response } from 'express';
 
 import * as fse from 'fs-extra';
-import path from "path";
 import { getMediaItemFromDb } from './dbInterface';
+import { getOriginalMediaItemFilePath } from '../utilities';
 
 export const fileStat = async (req: Request, res: Response, next: any) => {
 
@@ -18,17 +18,8 @@ export const fileStat = async (req: Request, res: Response, next: any) => {
       return res.status(404).json({ error: 'Media item not found' });
     }
 
-    console.log('mediaItem:', mediaItem);
-
-    let mediaFilePath: string = mediaItem.filePath;
-    const fileExtension = path.extname(mediaFilePath);
-    const dirname = path.dirname(mediaFilePath); // Extracts the directory path
-    const heicFileName = path.basename(mediaFilePath, fileExtension) + ".heic";
-    const heicFilePath = path.join(dirname, heicFileName);
-    if (fse.existsSync(heicFilePath)) {
-      console.log('HEIC file exists:', heicFilePath);
-      mediaFilePath = heicFilePath;
-    }
+    const mediaFilePath: string = getOriginalMediaItemFilePath(mediaItem);
+    
     const stat = await fse.stat(mediaFilePath);
     // mtimeMs is perfect for change detection
     res.json({ mtimeMs: stat.mtimeMs, size: stat.size });

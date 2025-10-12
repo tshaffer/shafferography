@@ -32,16 +32,24 @@ export const selectMediaItems = (
 };
 
 interface SelectMediaItemPayload {
+  /** The id being selected */
   uniqueId: string;
+  /**
+   * The on-screen order of all visible media items (ids), used to keep
+   * selectedMediaItemIds sorted to match the grid's visual order.
+   */
+  screenOrderIds: string[];
 }
 
 export const selectMediaItem = (
   uniqueId: string,
+  screenOrderIds: string[],
 ): any => {
   return {
     type: SELECT_MEDIA_ITEM,
     payload: {
-      uniqueId
+      uniqueId,
+      screenOrderIds,
     }
   };
 };
@@ -60,7 +68,6 @@ export const deselectMediaItem = (
     }
   };
 };
-
 
 export const clearMediaItemSelection = (
 ): any => {
@@ -83,7 +90,6 @@ export const setLastClickedId = (
     }
   };
 };
-
 
 // ------------------------------------
 // Reducer
@@ -108,14 +114,27 @@ export const selectedMediaItemsStateReducer = (
         lastClickedId: (action.payload as SetLastClickedIdPayload).uniqueId,
       };
     }
-    case "SELECT_MEDIA_ITEM":
-      if (state.selectedMediaItemIds.includes(action.payload.uniqueId)) {
-        return state; // ✅ Prevents unnecessary re-renders by returning the same object
+    case "SELECT_MEDIA_ITEM": {
+      const { uniqueId, screenOrderIds } = action.payload as SelectMediaItemPayload;
+
+      // Already selected? Keep state object identity stable.
+      if (state.selectedMediaItemIds.includes(uniqueId)) {
+        return state;
       }
+
+      // Add, then sort selected ids to match on-screen order
+      const next = [...state.selectedMediaItemIds, uniqueId];
+      const pos = (id: string) => {
+        const i = screenOrderIds.indexOf(id);
+        return i === -1 ? Number.MAX_SAFE_INTEGER : i; // unknown ids go last
+      };
+      const sorted = [...next].sort((a, b) => pos(a) - pos(b));
+
       return {
         ...state,
-        selectedMediaItemIds: [...state.selectedMediaItemIds, action.payload.uniqueId], // 🔥 This should only create a new array when necessary
+        selectedMediaItemIds: sorted,
       };
+    }
     case DESELECT_MEDIA_ITEM:
       if (!state.selectedMediaItemIds.includes(action.payload.uniqueId)) {
         return state;
@@ -139,11 +158,12 @@ export const selectedMediaItemsStateReducer = (
     }
     case DESELECT_MEDIA_ITEM: {
       const newState = cloneDeep(state) as SelectedMediaItemsState;
-      newState.selectedMediaItemIds = newState.selectedMediaItemIds.filter((selectedId) => selectedId !== (action.payload as SelectMediaItemPayload).uniqueId);
+      newState.selectedMediaItemIds = newState.selectedMediaItemIds.filter(
+        (selectedId) => selectedId !== (action.payload as SelectMediaItemPayload).uniqueId
+      );
       return newState;
     }
     default:
       return state;
   }
 };
-

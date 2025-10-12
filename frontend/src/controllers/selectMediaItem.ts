@@ -1,7 +1,7 @@
 
 import { TedTaggerDispatch, clearMediaItemSelection, deselectMediaItem, selectMediaItem, selectMediaItems, setLastClickedId } from '../models';
 import { MediaItem } from '../types';
-import { getLastClickedId, getMediaItems, getSelectedMediaItemIds } from '../selectors';
+import { getLastClickedId, getMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
 
 export const selectAllPhotos = () => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
@@ -61,7 +61,7 @@ const handleToggleSelection = (id: string, selectedMediaItemIds: string[]) => {
     if (isSelected) {
       dispatch(deselectMediaItem(id));
     } else {
-      dispatch(selectMediaItem(id));
+      dispatch(selectMediaItem(id, getMediaItemIds(getState())));
     }
 
     dispatch(setLastClickedId(id));
@@ -82,7 +82,7 @@ const handleShiftClick = (index: number, mediaItems: MediaItem[], selectedMediaI
       for (let i = start; i <= end; i++) {
         const id = mediaItems[i].uniqueId;
         if (!selectedMediaItemIds.includes(id)) {
-          dispatch(selectMediaItem(id));
+          dispatch(selectMediaItem(id, getMediaItemIds(getState())));
         }
       }
     } else {

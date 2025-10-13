@@ -198,8 +198,8 @@ const GridCell = (props: GridCellProps) => {
             position: 'absolute',
             top: 0,
             left: 0,
-            width: '100%',
-            height: '100%',
+            width: widthAttribute,
+            height: imgHeightAttribute,
             backgroundColor: 'rgba(0, 0, 255, 0.3)',
             zIndex: 5,
           }}

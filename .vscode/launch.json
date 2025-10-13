@@ -22,6 +22,52 @@
       "envFile": "${workspaceFolder}/backend/.env",
       "runtimeExecutable": "node",
       "sourceMaps": true
+    },
+    {
+      "name": "Dry run generateMediaItemsByUniqueId (tsx)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/backend/src/scripts/generateMediaItemsByUniqueId.ts",
+      "args": [
+        "/Users/tedshaffer/Documents/tmpFiles/shafferography/photoDetails/mediaItemsByUniqueId.json",
+        "--dryRun"
+      ],
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "sourceMaps": true
+    },
+    {
+      "name": "Dry run populateMediaItemsFromLocalFiles (tsx)",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect-brk",
+        "--import",
+        "tsx"
+      ],
+      "program": "${workspaceFolder}/backend/src/scripts/populateMediaItemsFromLocalFiles.ts",
+      "args": [
+        "/Users/tedshaffer/Documents/tmpFiles/shafferography/photoDetails/mediaItemsByUniqueId.json",
+        "--dryRun"
+      ],
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**",
+        "**/node_modules/**"
+      ],
+      "sourceMaps": true
     }
   ]
 }

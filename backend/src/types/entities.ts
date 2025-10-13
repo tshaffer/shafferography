@@ -9,6 +9,10 @@ export interface GeoData {
   longitudeSpan: number;
 }
 
+export interface PersonInPhoto {
+  name: string;
+}
+
 export interface MediaItem {
   uniqueId: string;
   googleMediaItemId: string,
@@ -25,7 +29,7 @@ export interface MediaItem {
   orientation?: number,
   description?: string,
   geoData?: GeoData,
-  people?: string[],
+  people?: PersonInPhoto[],
   peopleRetrievedFromGoogle: boolean,
   keywordNodeIds: string[],
   photoState: PhotoState,

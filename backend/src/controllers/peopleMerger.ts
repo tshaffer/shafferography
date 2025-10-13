@@ -1,5 +1,5 @@
 
-import { Keyword, KeywordData, KeywordNode, MediaItem, StringToStringLUT } from '../types';
+import { Keyword, KeywordData, KeywordNode, MediaItem, PersonInPhoto, StringToStringLUT } from '../types';
 import { isNil } from 'lodash';
 import { getJsonFromFile } from '../utilities';
 import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb, getMediaItemsInNamedAlbumFromDb, updateMediaItemFieldsInDb } from './dbInterface';
@@ -67,7 +67,7 @@ export const mergePeople = async (baseDirectory: string, albumName: string) => {
         })
       }
 
-      const people: string[] | null = takeoutMetadata.people ? takeoutMetadata.people : null;
+      const people: PersonInPhoto[] | null = takeoutMetadata.people ? takeoutMetadata.people : null;
 
       const updates: Partial<MediaItem> = {
         people,

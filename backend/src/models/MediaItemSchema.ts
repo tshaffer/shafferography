@@ -1,5 +1,5 @@
 import * as mongoose from 'mongoose';
-import { PhotoState } from 'src';
+import { PhotoState } from '../types';
 
 const Schema = mongoose.Schema;
 
@@ -33,7 +33,7 @@ const MediaitemSchema = new Schema(
       },
     ],
     keywordNodeIds: { type: [String], required: true, default: [] },
-    photoState: { type: String, required: true, enum: [PhotoState.Unreviewed, PhotoState.ReadyForReview, PhotoState.ReadyForUpload, PhotoState.UploadedToGoogle] },
+    photoState: { type: String, required: true, enum: [PhotoState.Unreviewed, PhotoState.Undecided, PhotoState.ReadyForUpload, PhotoState.Uploaded, PhotoState.Deleted, PhotoState.PendingEdits] },
     albumNodeId: { type: String, required: true },
     undecidedGroupId: { type: String },
     notes: { type: String },

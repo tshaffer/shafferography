@@ -16,7 +16,7 @@ import { MediaItemPropertiesFromExif } from '../types';
 const getExifData = async (filePath: string): Promise<any> => {
   try {
     const tags: Tags = await exiftool.read(filePath);
-    return tags;  
+    return tags;
   } catch (error: any) {
     console.log('getExifData failed on: ', filePath);
     debugger;
@@ -36,18 +36,18 @@ export const retrieveExifData = async (filePath: string): Promise<Tags> => {
   // return exifData;
 }
 
-export function mapExifToMediaItem(tags: Tags): MediaItemPropertiesFromExif {
+export async function mapExifToMediaItem(tags: Tags): Promise<MediaItemPropertiesFromExif> {
   // ---- timestamps
   const takenSource = (tags.DateTimeOriginal ?? tags.CreateDate) as ExifDateTime | string | undefined;
   const takenAt = toIsoString(takenSource);
 
   const fileModifiedAt = toIsoString(tags.FileModifyDate as ExifDateTime | string | undefined);
-  const exifModifiedAt  = toIsoString(tags.ModifyDate      as ExifDateTime | string | undefined);
+  const exifModifiedAt = toIsoString(tags.ModifyDate as ExifDateTime | string | undefined);
 
   // ---- dimensions (current vs original)
-  const width  = toNumber(tags.ImageWidth);
+  const width = toNumber(tags.ImageWidth);
   const height = toNumber(tags.ImageHeight);
-  const originalWidth  = toNumber(tags.ExifImageWidth);
+  const originalWidth = toNumber(tags.ExifImageWidth);
   const originalHeight = toNumber(tags.ExifImageHeight);
 
   // ---- exposure / optics
@@ -68,17 +68,18 @@ export function mapExifToMediaItem(tags: Tags): MediaItemPropertiesFromExif {
   const focalLengthMm = toNumber(tags.FocalLength); // number or "2.2 mm"
   const focalLength35mm = toNumber((tags as any).FocalLengthIn35mmFormat); // often "14 mm"
 
-  // ---- human place (note the dashed key)
-  const city = (tags.City as string | undefined)?.trim();
-  const provinceState = ((tags as Record<string, unknown>)["Province-State"] as string | undefined)?.trim();
-  const state = provinceState ?? (tags.State as string | undefined)?.trim();
-  const country = (tags.Country as string | undefined)?.trim();
-
   // ---- GPS
-  const gpsLatitude       = toNumber(tags.GPSLatitude);
-  const gpsLongitude      = toNumber(tags.GPSLongitude);
-  const gpsAltitudeM      = toNumber(tags.GPSAltitude);
+  const gpsLatitude = toNumber(tags.GPSLatitude);
+  const gpsLongitude = toNumber(tags.GPSLongitude);
+  const gpsAltitudeM = toNumber(tags.GPSAltitude);
   const gpsImgDirectionDeg = toNumber(tags.GPSImgDirection);
+
+  // ---- human place (note the dashed key)
+  const addr = await reverseGeocode(gpsLatitude, gpsLongitude);
+  const city = addr ? pickCity(addr) : undefined;
+  const state = addr ? pickState(addr) : undefined;
+  const country = addr?.country;
+
 
   return {
     // timestamps
@@ -110,6 +111,57 @@ export function mapExifToMediaItem(tags: Tags): MediaItemPropertiesFromExif {
     gpsAltitudeM,
     gpsImgDirectionDeg,
   };
+}
+
+type NominatimAddr = {
+  city?: string;
+  town?: string;
+  village?: string;
+  hamlet?: string;
+  suburb?: string;
+  neighbourhood?: string;
+  county?: string;
+  state?: string;
+  state_district?: string;
+  region?: string;
+  country?: string;
+  country_code?: string;
+};
+
+async function reverseGeocode(lat: number, lon: number): Promise<NominatimAddr | null> {
+  // IMPORTANT: Use a real contact in the User-Agent per Nominatim policy.
+  const url = `https://nominatim.openstreetmap.org/reverse?lat=${encodeURIComponent(
+    lat
+  )}&lon=${encodeURIComponent(lon)}&format=jsonv2&addressdetails=1`;
+
+  const res = await fetch(url, {
+    headers: {
+      "User-Agent": "Shafferography/1.0 (contact: shaffer.family@gmail.com)",
+      "Accept": "application/json",
+    },
+  });
+  if (!res.ok) return null;
+
+  // Be gentle to Nominatim
+  await new Promise((r) => setTimeout(r, 1100));
+
+  const json = (await res.json()) as any;
+  return json?.address ?? null;
+}
+
+function pickCity(addr: NominatimAddr): string | undefined {
+  return (
+    addr.city ||
+    addr.town ||
+    addr.village ||
+    addr.hamlet ||
+    addr.neighbourhood ||
+    addr.suburb
+  );
+}
+
+function pickState(addr: NominatimAddr): string | undefined {
+  return addr.state || addr.state_district || addr.region || addr.county;
 }
 
 export const copyExifTags = async (sourceFile: string, targetFile: string, deleteOrientation: boolean) => {

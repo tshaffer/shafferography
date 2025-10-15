@@ -173,8 +173,6 @@ export const getPerFileImportPhotosStatus = async (req: Request, res: Response, 
   res.json(processingStatuses[importId] || { files: [] });
 }
 
-
-
 export function getLastModifiedUTCISO(filePath: string): string {
   const stats = fs.statSync(filePath);
   const mtime = stats.mtime; // JS Date object (local time interpreted)

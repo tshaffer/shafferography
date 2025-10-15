@@ -12,7 +12,7 @@ import {
   Tags
 } from 'exiftool-vendored';
 
-import { MediaItemPropertiesFromExif, PersonInPhoto, PhotoState } from '../types';
+import { MediaItem, MediaItemPropertiesFromExif, PersonInPhoto, PhotoState } from '../types';
 import { connectDB } from '../config/db';
 import { mapExifToMediaItem, retrieveExifData } from '../utilities/exifUtils';
 
@@ -65,15 +65,39 @@ function parseArgs(): { file: string; dryRun: boolean } {
 
 // ── DB Updater ──────────────────────────────────────────────────────────────
 
-const updateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
+const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFromExif: MediaItemPropertiesFromExif): MediaItem => {
+  
+  const mediaItem: MediaItem = {
+    uniqueId: legacyMediaItem.uniqueId,
+    googleMediaItemId: legacyMediaItem.googleMediaItemId,
+    fileName: legacyMediaItem.fileName,
+    googleAlbumId: legacyMediaItem.googleAlbumId,
+    googleAlbumName: legacyMediaItem.googleAlbumName,
+    filePath: legacyMediaItem.filePath,
+    url: legacyMediaItem.url,
+    mimeType: legacyMediaItem.mimeType,
+    exif: mediaItemPropertiesFromExif,
+    people: legacyMediaItem.people,
+    peopleRetrievedFromGoogle: legacyMediaItem.peopleRetrievedFromGoogle,
+    keywordNodeIds: legacyMediaItem.keywordNodeIds,
+    photoState: legacyMediaItem.photoState,
+    albumNodeId: legacyMediaItem.albumNodeId,
+    undecidedGroupId: legacyMediaItem.undecidedGroupId,
+    notes: legacyMediaItem.notes,
+  };
 
-  debugger;
+  return mediaItem;
+}
+
+
+const updateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
 
   for (const legacyMediaItem of Object.values(legacyMediaItemsByUniqueId)) {
     const filePath = legacyMediaItem.filePath!;
     const tags: Tags = await retrieveExifData(filePath);
     const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(tags);
-    console.log('mappedExif:', mappedExif);
+    const mediaItem: MediaItem = mergeMediaItems(legacyMediaItem, mappedExif);
+    console.log(mediaItem.exif.city, mediaItem.exif.state, mediaItem.exif.country);
   }
 }
 

@@ -1,12 +1,12 @@
 import { DateTime } from 'luxon';
 import { execFileSync } from "child_process";
-import { GeoData } from "entities";
 
 import {
   ExifDateTime,
   exiftool,
   Tags
 } from 'exiftool-vendored';
+import { MediaItemPropertiesFromExif } from '../types';
 
 
 // import { FilePathToExifTags } from '../types';
@@ -34,6 +34,82 @@ export const retrieveExifData = async (filePath: string): Promise<Tags> => {
   //   filePathsToExifTags[filePath] = exifData;
   // }
   // return exifData;
+}
+
+export function mapExifToMediaItem(tags: Tags): MediaItemPropertiesFromExif {
+  // ---- timestamps
+  const takenSource = (tags.DateTimeOriginal ?? tags.CreateDate) as ExifDateTime | string | undefined;
+  const takenAt = toIsoString(takenSource);
+
+  const fileModifiedAt = toIsoString(tags.FileModifyDate as ExifDateTime | string | undefined);
+  const exifModifiedAt  = toIsoString(tags.ModifyDate      as ExifDateTime | string | undefined);
+
+  // ---- dimensions (current vs original)
+  const width  = toNumber(tags.ImageWidth);
+  const height = toNumber(tags.ImageHeight);
+  const originalWidth  = toNumber(tags.ExifImageWidth);
+  const originalHeight = toNumber(tags.ExifImageHeight);
+
+  // ---- exposure / optics
+  const fNumber = toNumber(tags.FNumber);
+
+  // ExposureTime can be "1/203" or numeric seconds
+  const rawET = tags.ExposureTime as unknown;
+  let exposureTime: string | undefined;
+  if (typeof rawET === "string") {
+    exposureTime = rawET; // already "1/203" etc.
+  } else if (typeof rawET === "number") {
+    exposureTime = rawET >= 1 ? `${rawET.toFixed(2)}s` : `1/${Math.round(1 / rawET)}`;
+  }
+
+  const iso = toNumber(tags.ISO);
+
+  // Focal length
+  const focalLengthMm = toNumber(tags.FocalLength); // number or "2.2 mm"
+  const focalLength35mm = toNumber((tags as any).FocalLengthIn35mmFormat); // often "14 mm"
+
+  // ---- human place (note the dashed key)
+  const city = (tags.City as string | undefined)?.trim();
+  const provinceState = ((tags as Record<string, unknown>)["Province-State"] as string | undefined)?.trim();
+  const state = provinceState ?? (tags.State as string | undefined)?.trim();
+  const country = (tags.Country as string | undefined)?.trim();
+
+  // ---- GPS
+  const gpsLatitude       = toNumber(tags.GPSLatitude);
+  const gpsLongitude      = toNumber(tags.GPSLongitude);
+  const gpsAltitudeM      = toNumber(tags.GPSAltitude);
+  const gpsImgDirectionDeg = toNumber(tags.GPSImgDirection);
+
+  return {
+    // timestamps
+    takenAt,
+    fileModifiedAt,
+    exifModifiedAt,
+
+    // dimensions
+    width,
+    height,
+    originalWidth,
+    originalHeight,
+
+    // exposure / optics
+    fNumber,
+    exposureTime,
+    iso,
+    focalLengthMm,
+    focalLength35mm,
+
+    // place
+    city,
+    state,
+    country,
+
+    // gps
+    gpsLatitude,
+    gpsLongitude,
+    gpsAltitudeM,
+    gpsImgDirectionDeg,
+  };
 }
 
 export const copyExifTags = async (sourceFile: string, targetFile: string, deleteOrientation: boolean) => {
@@ -89,24 +165,28 @@ export async function convertCreateDateToISO(tags: Tags): Promise<string | null>
   }
 }
 
-export async function extractGeoData(tags: Tags): Promise<GeoData | null> {
-  try {
-    if (tags.GPSLatitude && tags.GPSLongitude) {
-      const geoData: GeoData = {
-        latitude: tags.GPSLatitude,
-        longitude: tags.GPSLongitude,
-        altitude: tags.GPSAltitude || 0, // Default to 0 if altitude is not available
-        latitudeSpan: 0, // Adjust based on your needs
-        longitudeSpan: 0, // Adjust based on your needs
-      };
-      return geoData;
-    } else {
-      console.error('No GPS data found in EXIF tags');
-      return null;
-    }
-  } catch (err) {
-    console.error('Error reading EXIF data:', err);
-    return null;
+// ── helpers ──────────────────────────────────────────────────────────────
+
+function hasToISOString(x: unknown): x is { toISOString: () => string } {
+  return typeof x === "object" && x !== null && typeof (x as any).toISOString === "function";
+}
+
+function toIsoString(val: ExifDateTime | string | undefined): string | undefined {
+  if (!val) return undefined;
+  if (hasToISOString(val)) return val.toISOString();              // ExifDateTime → ISO
+  if (typeof val === "string") {
+    const d = new Date(val);
+    return Number.isNaN(d.getTime()) ? undefined : d.toISOString();
   }
+  return undefined;
+}
+
+function toNumber(val: unknown): number | undefined {
+  if (typeof val === "number" && Number.isFinite(val)) return val;
+  if (typeof val === "string") {
+    const n = parseFloat(val);
+    return Number.isFinite(n) ? n : undefined;
+  }
+  return undefined;
 }
 

@@ -1,16 +1,39 @@
 import { StringToNumberLUT } from "baseTypes";
 import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "enums";
 
-export interface GeoData {
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  latitudeSpan: number;
-  longitudeSpan: number;
-}
-
 export interface PersonInPhoto {
   name: string;
+}
+
+export interface MediaItemPropertiesFromExif {
+  // Timestamps (ISO 8601 strings)
+  takenAt?: string;         // from DateTimeOriginal/CreateDate
+  fileModifiedAt?: string;  // from FileModifyDate (filesystem mtime via exiftool)
+  exifModifiedAt?: string;  // from ModifyDate
+
+  // Dimensions
+  width?: number;           // ImageWidth (current/visible)
+  height?: number;          // ImageHeight (current/visible)
+  originalWidth?: number;   // ExifImageWidth (original capture)
+  originalHeight?: number;  // ExifImageHeight (original capture)
+
+  // Exposure / optics
+  fNumber?: number;         // FNumber (e.g., 2.2)
+  exposureTime?: string;    // ExposureTime (e.g., "1/203" or "0.50s")
+  iso?: number;             // ISO
+  focalLengthMm?: number;   // FocalLength in mm
+  focalLength35mm?: number; // FocalLengthIn35mmFormat in mm
+
+  // Human-readable place (if embedded)
+  city?: string;            // City
+  state?: string;           // Province-State / State
+  country?: string;         // Country
+
+  // GPS (decimal degrees / meters / degrees)
+  gpsLatitude?: number;         // GPSLatitude
+  gpsLongitude?: number;        // GPSLongitude
+  gpsAltitudeM?: number;        // GPSAltitude (meters)
+  gpsImgDirectionDeg?: number;  // GPSImgDirection (bearing)
 }
 
 export interface MediaItem {
@@ -22,15 +45,9 @@ export interface MediaItem {
   filePath?: string,
   url?: string,
   mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: PersonInPhoto[],
+  exif: MediaItemPropertiesFromExif,
   peopleRetrievedFromGoogle: boolean,
+  people?: PersonInPhoto[],
   keywordNodeIds: string[],
   photoState: PhotoState,
   albumNodeId: string;

@@ -5,12 +5,13 @@ import fs from 'fs';
 import * as fse from 'fs-extra';
 import { v4 as uuidv4 } from 'uuid';
 import {
-  FileToImport, GeoData, MediaItem,
+  FileToImport, MediaItem,
+  MediaItemPropertiesFromExif,
   PhotoState
 } from '../types';
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
-import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, extractGeoData, fsLocalFileExists, isImageFile, retrieveExifData, valueOrNull } from '../utilities';
+import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, fsLocalFileExists, isImageFile, mapExifToMediaItem, retrieveExifData, valueOrNull } from '../utilities';
 import {
   addMediaItemToMediaItemsDBTable,
   getMediaItemFromDb,
@@ -26,8 +27,8 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
   console.log('filePath:', filePath);
   const exifData: Tags = await retrieveExifData(filePath);
   console.log('exifData:', exifData);
-  const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
-  const geoData: GeoData | null = await extractGeoData(exifData);
+
+  const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
 
   const relativePath = filePath.replace(BASE_MEDIA_PATH, "");
 
@@ -40,15 +41,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
     filePath,
     url: `${BASE_MEDIA_URL}/${relativePath}`,
     mimeType: valueOrNull(exifData.MIMEType),
-    creationTime: isoCreateDate,
-    lastModified: isoLastModified,
-    width: exifData.ImageWidth, // or ExifImageWidth?
-    height: exifData.ImageHeight, // or ExifImageHeight?
-    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
-    // description from exifData or from takeoutMetadata? - I'm not sure that what's below makes sense.
-    // description: isNil(exifData) ? null : valueOrNull(takeoutMetadata.description),
-    description: null,
-    geoData,
+    exif: mappedExif,
     people: null,
     peopleRetrievedFromGoogle: false,
     keywordNodeIds: [],
@@ -192,19 +185,20 @@ async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promi
   const exifData: Tags = await retrieveExifData(filePath);
 
   const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
-  const geoData: GeoData | null = await extractGeoData(exifData);
+  // const geoData: GeoData | null = await extractGeoData(exifData);
 
-  const updates: Partial<MediaItem> = {
-    width: exifData.ImageWidth,
-    height: exifData.ImageHeight,
-    creationTime: isoCreateDate,
-    lastModified: getLastModifiedUTCISO(filePath),
-    geoData,
-    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
-  };
+  // const updates: Partial<MediaItem> = {
+  //   width: exifData.ImageWidth,
+  //   height: exifData.ImageHeight,
+  //   creationTime: isoCreateDate,
+  //   lastModified: getLastModifiedUTCISO(filePath),
+  //   // geoData,
+  //   orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
+  // };
 
-  const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
-  return updatedItem;
+  // const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
+  // return updatedItem;
+  return null;
 }
 
 export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {

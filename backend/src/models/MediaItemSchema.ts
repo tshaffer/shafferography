@@ -13,19 +13,49 @@ const MediaitemSchema = new Schema(
     filePath: { type: String, default: '' },
     url: { type: String },
     mimeType: { type: String },
-    creationTime: { type: String },
-    lastModified: { type: String },
-    width: { type: Number },
-    height: { type: Number },
-    orientation: { type: Number, default: 0 },
-    description: { type: String, default: '' },
-    geoData: {
-      altitude: { type: Number },
-      latitude: { type: Number },
-      latitudeSpan: { type: Number },
-      longitude: { type: Number },
-      longitudeSpan: { type: Number },
+
+    // EXIF subdocument (all EXIF/metadata-related fields live here)
+    exif: {
+      // Timestamps (ISO 8601 strings)
+      takenAt: { type: String },             // DateTimeOriginal or CreateDate
+      exifModifiedAt: { type: String },      // ModifyDate
+
+      // Timezone offsets (verbatim EXIF values, if present)
+      offsetTime: { type: String },          // OffsetTime
+      offsetTimeOriginal: { type: String },  // OffsetTimeOriginal
+      offsetTimeDigitized: { type: String }, // OffsetTimeDigitized
+
+      // Dimensions (current vs original)
+      imageWidth: { type: Number },          // ImageWidth (current/visible)
+      imageHeight: { type: Number },         // ImageHeight (current/visible)
+      exifImageWidth: { type: Number },      // ExifImageWidth (original)
+      exifImageHeight: { type: Number },     // ExifImageHeight (original)
+      orientation: { type: Number, default: 0 },
+
+      // Exposure / optics
+      fNumber: { type: Number },             // FNumber (e.g., 2.2)
+      exposureTime: { type: String },        // ExposureTime (e.g., "1/203" or "0.005s")
+      iso: { type: Number },                 // ISO
+      focalLengthMm: { type: Number },       // FocalLength in mm (numeric)
+      focalLength35mm: { type: Number },     // FocalLengthIn35mmFormat (numeric)
+
+      // GPS (decimal degrees / meters, plus refs)
+      gpsLatitude: { type: Number },         // GPSLatitude
+      gpsLongitude: { type: Number },        // GPSLongitude
+      gpsAltitudeM: { type: Number },        // GPSAltitude (meters)
+      gpsAltitudeRef: { type: String },      // "Above Sea Level" / "Below Sea Level"
+      gpsDateTime: { type: String },         // GPSDateTime (ISO 8601 UTC if normalized)
+      gpsImgDirectionDeg: { type: Number },  // GPSImgDirection (bearing degrees)
+      gpsImgDirectionRef: { type: String },  // "Magnetic North" / "True North"
+      gpsSpeed: { type: Number },            // GPSSpeed (numeric)
+      gpsSpeedRef: { type: String },         // "km/h", "m/s", "mph"
+
+      // Human-readable place name (if embedded)
+      city: { type: String },                // IPTC/XMP City
+      state: { type: String },               // ProvinceState/State
+      country: { type: String },             // Country or CountryCode (your choice to store)
     },
+
     peopleRetrievedFromGoogle: { type: Boolean, required: true },
     people: [
       {

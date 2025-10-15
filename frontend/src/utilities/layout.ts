@@ -25,7 +25,7 @@ export const getGridRowInfo = (
   /** Pass 1: Determine how many items can fit using target height */
   for (let i = startingMediaItemIndex; i <= maxMediaItemIndex; i++) {
     const item = mediaItems[i];
-    if (!item.width || !item.height) continue; // Ensure valid dimensions
+    if (!item.exif.width || !item.exif.height) continue; // Ensure valid dimensions
 
     const { width, height }: Dimensions = getWidthHeightFromOrientation(item);
     const itemAspectRatio = width / height;
@@ -72,11 +72,11 @@ export const getGridRowInfo = (
 
 const getWidthHeightFromOrientation = (mediaItem: MediaItem): Dimensions => {
 
-  let width = mediaItem.width!;
-  let height = mediaItem.height!;
+  let width = mediaItem.exif.width!;
+  let height = mediaItem.exif.height!;
 
   // swap width and height if orientation is portrait
-  switch (mediaItem.orientation) {
+  switch (mediaItem.exif.orientation) {
     case 6:
     case 8:
       const tmp = width;

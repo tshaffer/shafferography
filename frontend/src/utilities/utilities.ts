@@ -30,11 +30,21 @@ export const getPhotoUrl = (mediaItem: MediaItem): string => {
   return url;
 };
 
-  const isNode = (node: MediaContentNode | null): boolean => {
-    return node !== null;
-  };
+export const getCacheBustedPhotoUrl = (src: string, mediaItem: MediaItem): string => {
 
-  export const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
-    return isNode(node) && node?.type === 'album';
-  };
+  const url = `${src}?v=${encodeURIComponent(
+    mediaItem?.exif?.fileModifiedAt
+    ?? mediaItem?.exif?.exifModifiedAt
+    ?? ''
+  )}`;
+  return url;
+}
+
+const isNode = (node: MediaContentNode | null): boolean => {
+  return node !== null;
+};
+
+export const isAlbumNode = (node: MediaContentNode | null): node is AlbumNode => {
+  return isNode(node) && node?.type === 'album';
+};
 

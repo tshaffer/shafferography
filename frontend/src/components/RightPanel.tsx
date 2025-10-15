@@ -84,7 +84,7 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
         <Card sx={{ mb: 2 }}>
           <CardContent>
             <Typography variant="subtitle1">Filename: {props.mediaItem.fileName}</Typography>
-            <Typography variant="body2">Dimensions: {props.mediaItem.width} x {props.mediaItem.height}</Typography>
+            <Typography variant="body2">Dimensions: {props.mediaItem.exif.width} x {props.mediaItem.exif.height}</Typography>
           </CardContent>
         </Card>
         <Divider sx={{ my: 2 }} />

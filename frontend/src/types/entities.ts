@@ -1,39 +1,38 @@
 import { MediaContentNodeType, PhotoState } from "./enums";
 
-export interface GeoData {
-  latitude: number;
-  longitude: number;
-  altitude: number;
-  latitudeSpan: number;
-  longitudeSpan: number;
-}
-
-export interface ServerPerson {
-  _id: string;
+export interface PersonInPhoto {
   name: string;
 }
 
-export interface ServerMediaItem {
-  uniqueId: string;
-  googleMediaItemId: string,
-  fileName: string,
-  googleAlbumId: string;
-  filePath?: string,
-  url?: string,
-  mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: ServerPerson[],
-  keywordNodeIds: string[],
-  photoState: PhotoState,
-  undecidedGroupId?: string;
-  notes?: string;
-  albumNodeId?: string;
+export interface MediaItemPropertiesFromExif {
+  // Timestamps (ISO 8601 strings)
+  takenAt?: string;         // from DateTimeOriginal/CreateDate
+  fileModifiedAt?: string;  // from FileModifyDate (filesystem mtime via exiftool)
+  exifModifiedAt?: string;  // from ModifyDate
+
+  // Dimensions
+  width?: number;           // ImageWidth (current/visible)
+  height?: number;          // ImageHeight (current/visible)
+  originalWidth?: number;   // ExifImageWidth (original capture)
+  originalHeight?: number;  // ExifImageHeight (original capture)
+
+  // Exposure / optics
+  fNumber?: number;         // FNumber (e.g., 2.2)
+  exposureTime?: string;    // ExposureTime (e.g., "1/203" or "0.50s")
+  iso?: number;             // ISO
+  focalLengthMm?: number;   // FocalLength in mm
+  focalLength35mm?: number; // FocalLengthIn35mmFormat in mm
+
+  // Human-readable place (if embedded)
+  city?: string;            // City
+  state?: string;           // Province-State / State
+  country?: string;         // Country
+
+  // GPS (decimal degrees / meters / degrees)
+  gpsLatitude?: number;         // GPSLatitude
+  gpsLongitude?: number;        // GPSLongitude
+  gpsAltitudeM?: number;        // GPSAltitude (meters)
+  gpsImgDirectionDeg?: number;  // GPSImgDirection (bearing)
 }
 
 export interface MediaItem {
@@ -41,23 +40,20 @@ export interface MediaItem {
   googleMediaItemId: string,
   fileName: string,
   googleAlbumId: string;
+  googleAlbumName: string;
   filePath?: string,
   url?: string,
   mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: string[],
+  exif: MediaItemPropertiesFromExif,
+  peopleRetrievedFromGoogle: boolean,
+  people?: PersonInPhoto[],
   keywordNodeIds: string[],
   photoState: PhotoState,
+  albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
-  albumNodeId?: string;
 }
+
 
 export interface Keyword {
   keywordId: string;
@@ -115,8 +111,10 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
+// export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
+// export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
+export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "photoState"];
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

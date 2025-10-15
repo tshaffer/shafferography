@@ -7,7 +7,7 @@ import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } 
 import '../styles/TedTagger.css';
 import { MediaItem, PhotoLayout, PhotoState } from '../types';
 import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
-import { getPhotoUrl } from '../utilities';
+import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 import { selectPhoto } from '../controllers';
 import { borderSizeStr } from '../constants';
 import { Icon, Typography } from '@mui/material';
@@ -95,7 +95,7 @@ const GridCell = (props: GridCellProps) => {
       return null;
     }
 
-    const creationDate: Dayjs = dayjs(mediaItem.creationTime!);
+    const creationDate: Dayjs = dayjs(mediaItem.exif.takenAt!);
     const formattedCreationDate: string = creationDate.format('MM/DD/YYYY hh:mm A');
     // const keywords: string = props.keywordLabels.join(', ');
 
@@ -209,7 +209,7 @@ const GridCell = (props: GridCellProps) => {
       {metadataJsx}
 
       <img
-        src={`${photoUrl}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
+        src={getCacheBustedPhotoUrl(photoUrl, props.mediaItem!)}
         width={widthAttribute}
         height={imgHeightAttribute}
         loading='lazy'
@@ -252,7 +252,8 @@ const MemoizedGridCell = React.memo(GridCell, (prevProps, nextProps) => {
     prevProps.cellWidth === nextProps.cellWidth &&
     prevProps.isSelected === nextProps.isSelected &&
     prevProps.mediaItem.uniqueId === nextProps.mediaItem.uniqueId &&
-    prevProps.mediaItem.lastModified === nextProps.mediaItem.lastModified &&
+    prevProps.mediaItem.exif.fileModifiedAt === nextProps.mediaItem.exif.fileModifiedAt &&
+    prevProps.mediaItem.exif.exifModifiedAt === nextProps.mediaItem.exif.exifModifiedAt &&
     prevProps.displayMetadata === nextProps.displayMetadata
   );
 });

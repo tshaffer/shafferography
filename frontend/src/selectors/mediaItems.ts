@@ -61,7 +61,7 @@ export const getFilteredMediaItems = createSelector(
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
     // Build a signature that changes if length, order, width, or height changes
     const signature = mediaItems
-      .map(mi => `${mi.uniqueId}:${mi.width}x${mi.height}`)
+      .map(mi => `${mi.uniqueId}:${mi.exif.width}x${mi.exif.height}`)
       .join('|');
 
     // If identical to last time, return the previous reference (prevents pointless re-layouts)

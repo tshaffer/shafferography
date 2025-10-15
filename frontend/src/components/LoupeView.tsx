@@ -8,7 +8,7 @@ import { Box, Tooltip } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
 import { getLoupeViewMediaItemId, getMediaItemById, getFullScreenMode } from '../selectors';
 import { MediaItem } from '../types';
-import { getPhotoUrl } from '../utilities';
+import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 
 export interface LoupeViewProps {
   mediaItem: MediaItem | null;
@@ -52,7 +52,7 @@ const LoupeView = (props: LoupeViewProps) => {
         }}
       >
         <img
-          src={`${src}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
+          src={getCacheBustedPhotoUrl(src, props.mediaItem!)}
           style={{ maxWidth: "100%", maxHeight: "100%", objectFit: "contain" }}
         />
       </Tooltip>

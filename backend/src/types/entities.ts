@@ -16,6 +16,7 @@ export interface MediaItemPropertiesFromExif {
   height?: number;          // ImageHeight (current/visible)
   originalWidth?: number;   // ExifImageWidth (original capture)
   originalHeight?: number;  // ExifImageHeight (original capture)
+  orientation?: number;    // Orientation
 
   // Exposure / optics
   fNumber?: number;         // FNumber (e.g., 2.2)

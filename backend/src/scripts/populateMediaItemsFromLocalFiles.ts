@@ -67,7 +67,7 @@ function parseArgs(): { file: string; dryRun: boolean } {
 // ── DB Updater ──────────────────────────────────────────────────────────────
 
 const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFromExif: MediaItemPropertiesFromExif): MediaItem => {
-  
+
   const mediaItem: MediaItem = {
     uniqueId: legacyMediaItem.uniqueId,
     googleMediaItemId: legacyMediaItem.googleMediaItemId,
@@ -91,18 +91,12 @@ const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFr
 }
 
 const populateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
-  let count = 0;
   for (const legacyMediaItem of Object.values(legacyMediaItemsByUniqueId)) {
     const filePath = legacyMediaItem.filePath!;
     const tags: Tags = await retrieveExifData(filePath);
     const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(tags);
     const mediaItem: MediaItem = mergeMediaItems(legacyMediaItem, mappedExif);
-    console.log(mediaItem.exif.city, mediaItem.exif.state, mediaItem.exif.country);
     await addMediaItemsFromLocalStorage([mediaItem]);
-    count++;
-    if (count % 50 === 0) {
-      console.log(`Processed ${count} items...`);
-    }
   }
 }
 

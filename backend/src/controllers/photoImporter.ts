@@ -52,7 +52,7 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
   return mediaItem;
 }
 
-const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<any> => {
+export const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<any> => {
 
   for (let index = 0; index < mediaItems.length; index++) {
     const mediaItem = mediaItems[index];

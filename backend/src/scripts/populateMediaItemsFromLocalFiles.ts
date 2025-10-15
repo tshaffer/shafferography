@@ -14,7 +14,8 @@ import {
 
 import { MediaItem, MediaItemPropertiesFromExif, PersonInPhoto, PhotoState } from '../types';
 import { connectDB } from '../config/db';
-import { mapExifToMediaItem, retrieveExifData } from '../utilities/exifUtils';
+import { mapExifToMediaItem, retrieveExifData } from '../utilities';
+import { addMediaItemsFromLocalStorage } from '../controllers';
 
 export interface LegacyGeoData {
   latitude: number;
@@ -89,15 +90,19 @@ const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFr
   return mediaItem;
 }
 
-
-const updateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
-
+const populateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
+  let count = 0;
   for (const legacyMediaItem of Object.values(legacyMediaItemsByUniqueId)) {
     const filePath = legacyMediaItem.filePath!;
     const tags: Tags = await retrieveExifData(filePath);
     const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(tags);
     const mediaItem: MediaItem = mergeMediaItems(legacyMediaItem, mappedExif);
     console.log(mediaItem.exif.city, mediaItem.exif.state, mediaItem.exif.country);
+    await addMediaItemsFromLocalStorage([mediaItem]);
+    count++;
+    if (count % 50 === 0) {
+      console.log(`Processed ${count} items...`);
+    }
   }
 }
 
@@ -119,7 +124,7 @@ const updateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMedia
   const legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem } = await fse.readJSON(file);
   console.log(`Read ${Object.keys(legacyMediaItemsByUniqueId).length} legacy media items from ${file}`);
 
-  await updateDb(legacyMediaItemsByUniqueId, dryRun);
+  await populateDb(legacyMediaItemsByUniqueId, dryRun);
 
   console.log('Done.');
   await mongoose.disconnect();

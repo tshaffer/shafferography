@@ -111,14 +111,31 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-// export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
-// export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
-export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "photoState"];
+export type FilteredTopLevelKey =
+  | "uniqueId"
+  | "googleMediaItemId"
+  | "fileName"
+  | "googleAlbumId"
+  | "filePath"
+  | "url"
+  | "mimeType"
+  | "photoState";
 
-export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
+export const FilteredTopLevelKeys: FilteredTopLevelKey[] = [
+  "uniqueId",
+  "googleMediaItemId",
+  "fileName",
+  "googleAlbumId",
+  "filePath",
+  "url",
+  "mimeType",
+  "photoState",
+];
 
-export const FILTERED_MEDIA_ITEM_KEYS: (keyof FilteredMediaItemPicker)[] = FilteredMediaItemPropertyNames;
+export type FilteredMediaItemPicker = Pick<MediaItem, FilteredTopLevelKey> & {
+  width?: number;   // from mediaItem.exif.width
+  height?: number;  // from mediaItem.exif.height
+};
 
 export interface UndecidedGroup {
   id: string;

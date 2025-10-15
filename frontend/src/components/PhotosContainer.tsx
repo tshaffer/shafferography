@@ -4,14 +4,14 @@ import { connect } from 'react-redux';
 import '../styles/TedTagger.css';
 import LoupeViewController from './LoupeViewController';
 import SurveyView from './SurveyView';
-import { getAppInitialized, getFilteredMediaItems, getMediaItems, getPhotoLayout } from '../selectors';
-import { PhotoLayout, MediaItem, FilteredMediaItemPropertyName } from '../types';
+import { getAppInitialized, getFilteredMediaItems, getPhotoLayout } from '../selectors';
+import { PhotoLayout, FilteredMediaItemPicker } from '../types';
 import GridViewContainer from './GridViewContainer';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;
   photoLayout: PhotoLayout;
-  allMediaItems: Pick<MediaItem, FilteredMediaItemPropertyName>[]; // Match filtered type
+  allMediaItems: FilteredMediaItemPicker[];
 }
 
 const PhotosContainer = React.memo((props: PhotosContainerProps) => {

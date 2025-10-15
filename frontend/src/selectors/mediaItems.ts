@@ -1,8 +1,10 @@
 import { createSelector } from 'reselect';
 
 import {
-  FILTERED_MEDIA_ITEM_KEYS,
   FilteredMediaItemPicker,
+  FilteredTopLevelKey,
+  FilteredTopLevelKeys,
+  // FilteredMediaItemPicker,
   MediaItem,
   TedTaggerState
 } from '../types';
@@ -59,23 +61,23 @@ let prevSignature = '';
 export const getFilteredMediaItems = createSelector(
   [selectAllMediaItems],
   (mediaItems: MediaItem[]): FilteredMediaItemPicker[] => {
-    // Build a signature that changes if length, order, width, or height changes
+    // Build a signature that changes if length/order or exif size changes
     const signature = mediaItems
-      .map(mi => `${mi.uniqueId}:${mi.exif.width}x${mi.exif.height}`)
-      .join('|');
+      .map(mi => `${mi.uniqueId}:${mi.exif?.width ?? 0}x${mi.exif?.height ?? 0}`)
+      .join("|");
 
-    // If identical to last time, return the previous reference (prevents pointless re-layouts)
-    if (signature === prevSignature) {
-      return previousMediaItems;
-    }
+    if (signature === prevSignature) return previousMediaItems;
 
-    // Otherwise, (re)build filtered items
-    const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map((item) => {
-      const filteredItem = {} as Record<keyof FilteredMediaItemPicker, any>;
-      for (const key of FILTERED_MEDIA_ITEM_KEYS) {
-        filteredItem[key] = item[key as keyof MediaItem];
-      }
-      return filteredItem as FilteredMediaItemPicker;
+    const newFilteredItems: FilteredMediaItemPicker[] = mediaItems.map(item => {
+      // copy top-level keys that remain
+      const base = {} as Pick<MediaItem, FilteredTopLevelKey>;
+      for (const k of FilteredTopLevelKeys) base[k] = item[k] as any;
+
+      return {
+        ...base,
+        width: item.exif?.width,
+        height: item.exif?.height,
+      };
     });
 
     prevSignature = signature;
@@ -83,3 +85,4 @@ export const getFilteredMediaItems = createSelector(
     return newFilteredItems;
   }
 );
+

@@ -64,11 +64,11 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
 
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem | null> => {
   const filter = { uniqueId: mediaItemId };
-  
+
   const mediaItemModel = getMediaitemModel();
   const doc = await mediaItemModel.findOne(filter);
   const mediaItemStored: MediaItemStored = doc.lean().exec();
-  
+
   // const doc = await getMediaitemModel().findOne(filter).lean<MediaItemStored>().exec();
   if (!mediaItemStored) return null; // let controller return 404
   return toDTO(mediaItemStored);
@@ -147,12 +147,8 @@ export const getMediaItemsByViewSpecFromDb = async (
     .find({ $and: baseConditions })
     .sort({ creationTime: -1 });
 
-  const documents: any = await query.exec();
-  return documents.map((document: any) => {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    return mediaItem;
-  });
+  const docs = (await query.lean().exec()) as MediaItemStored[];
+  return docs.map(toDTO);
 };
 
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (

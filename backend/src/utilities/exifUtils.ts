@@ -89,10 +89,10 @@ export async function mapExifToMediaItem(tags: Tags): Promise<MediaItemPropertie
     exifModifiedAt,
 
     // dimensions
-    width,
-    height,
-    originalWidth,
-    originalHeight,
+    imageWidth: width,
+    imageHeight: height,
+    exifImageWidth: originalWidth,
+    exifImageHeight: originalHeight,
     orientation,
 
     // exposure / optics

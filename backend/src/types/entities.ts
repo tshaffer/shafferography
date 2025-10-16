@@ -57,7 +57,6 @@ export interface MediaItemStored {
   notes?: string;
 }
 
-// Returned by API (flattened)
 export interface MediaItem {
   uniqueId: string;
   googleMediaItemId: string;

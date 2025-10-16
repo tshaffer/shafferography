@@ -15,7 +15,7 @@ import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, fsLocalFileExist
 import {
   addMediaItemToMediaItemsDBTable,
   getMediaItemFromDb,
-  updateSingleMediaItemFieldsInDb,
+  // updateSingleMediaItemFieldsInDb,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
@@ -47,6 +47,12 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
     keywordNodeIds: [],
     photoState: PhotoState.Unreviewed,
     albumNodeId,
+    width: 0,
+    height: 0,
+    orientation: 0,
+    takenAt: null,
+    undecidedGroupId: null,
+    notes: null,
   }
 
   return mediaItem;

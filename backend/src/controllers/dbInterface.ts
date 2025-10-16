@@ -463,25 +463,25 @@ export const updateMediaItemFieldsInDb = async (
   }
 };
 
-export const updateSingleMediaItemFieldsInDb = async (
-  uniqueId: string,
-  updates: Partial<MediaItem>
-): Promise<MediaItem | null> => {
-  const mediaItemModel = getMediaitemModel();
+// export const updateSingleMediaItemFieldsInDb = async (
+//   uniqueId: string,
+//   updates: Partial<MediaItem>
+// ): Promise<MediaItem | null> => {
+//   const mediaItemModel = getMediaitemModel();
 
-  try {
-    const updatedDoc = await mediaItemModel.findOneAndUpdate(
-      { uniqueId },
-      { $set: updates },
-      { new: true }
-    ).exec();
+//   try {
+//     const updatedDoc = await mediaItemModel.findOneAndUpdate(
+//       { uniqueId },
+//       { $set: updates },
+//       { new: true }
+//     ).exec();
 
-    return updatedDoc;
-  } catch (err) {
-    console.error('Error updating media item:', err);
-    throw err;
-  }
-};
+//     return updatedDoc;
+//   } catch (err) {
+//     console.error('Error updating media item:', err);
+//     throw err;
+//   }
+// };
 
 export const updateMediaItemsFieldsInDb = async (
   uniqueIds: string[],

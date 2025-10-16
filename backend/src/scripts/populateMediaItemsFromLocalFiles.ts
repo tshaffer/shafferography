@@ -66,37 +66,37 @@ function parseArgs(): { file: string; dryRun: boolean } {
 
 // ── DB Updater ──────────────────────────────────────────────────────────────
 
-const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFromExif: MediaItemPropertiesFromExif): MediaItem => {
+// const mergeMediaItems = (legacyMediaItem: LegacyMediaItem, mediaItemPropertiesFromExif: MediaItemPropertiesFromExif): MediaItem => {
 
-  const mediaItem: MediaItem = {
-    uniqueId: legacyMediaItem.uniqueId,
-    googleMediaItemId: legacyMediaItem.googleMediaItemId,
-    fileName: legacyMediaItem.fileName,
-    googleAlbumId: legacyMediaItem.googleAlbumId,
-    googleAlbumName: legacyMediaItem.googleAlbumName,
-    filePath: legacyMediaItem.filePath,
-    url: legacyMediaItem.url,
-    mimeType: legacyMediaItem.mimeType,
-    exif: mediaItemPropertiesFromExif,
-    people: legacyMediaItem.people,
-    peopleRetrievedFromGoogle: legacyMediaItem.peopleRetrievedFromGoogle,
-    keywordNodeIds: legacyMediaItem.keywordNodeIds,
-    photoState: legacyMediaItem.photoState,
-    albumNodeId: legacyMediaItem.albumNodeId,
-    undecidedGroupId: legacyMediaItem.undecidedGroupId,
-    notes: legacyMediaItem.notes,
-  };
+//   const mediaItem: MediaItem = {
+//     uniqueId: legacyMediaItem.uniqueId,
+//     googleMediaItemId: legacyMediaItem.googleMediaItemId,
+//     fileName: legacyMediaItem.fileName,
+//     googleAlbumId: legacyMediaItem.googleAlbumId,
+//     googleAlbumName: legacyMediaItem.googleAlbumName,
+//     filePath: legacyMediaItem.filePath,
+//     url: legacyMediaItem.url,
+//     mimeType: legacyMediaItem.mimeType,
+//     exif: mediaItemPropertiesFromExif,
+//     people: legacyMediaItem.people,
+//     peopleRetrievedFromGoogle: legacyMediaItem.peopleRetrievedFromGoogle,
+//     keywordNodeIds: legacyMediaItem.keywordNodeIds,
+//     photoState: legacyMediaItem.photoState,
+//     albumNodeId: legacyMediaItem.albumNodeId,
+//     undecidedGroupId: legacyMediaItem.undecidedGroupId,
+//     notes: legacyMediaItem.notes,
+//   };
 
-  return mediaItem;
-}
+//   return mediaItem;
+// }
 
 const populateDb = async (legacyMediaItemsByUniqueId: { [key: string]: LegacyMediaItem }, dryRun: boolean) => {
   for (const legacyMediaItem of Object.values(legacyMediaItemsByUniqueId)) {
     const filePath = legacyMediaItem.filePath!;
     const tags: Tags = await retrieveExifData(filePath);
     const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(tags);
-    const mediaItem: MediaItem = mergeMediaItems(legacyMediaItem, mappedExif);
-    await addMediaItemsFromLocalStorage([mediaItem]);
+    // const mediaItem: MediaItem = mergeMediaItems(legacyMediaItem, mappedExif);
+    // await addMediaItemsFromLocalStorage([mediaItem]);
   }
 }
 

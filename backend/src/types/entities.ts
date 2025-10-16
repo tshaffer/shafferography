@@ -83,7 +83,7 @@ export interface MediaItem {
   people: { name: string }[];
 
   // optional raw exif
-  exif?: MediaItemStored["exif"];
+  exif?: MediaItemPropertiesFromExif;
 }
 
 export interface DateRangeSpecification {

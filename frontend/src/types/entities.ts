@@ -8,55 +8,70 @@ export interface GeoData {
   longitudeSpan: number;
 }
 
-export interface ServerPerson {
+export interface PersonInPhoto {
   _id: string;
   name: string;
 }
 
-export interface ServerMediaItem {
-  uniqueId: string;
-  googleMediaItemId: string,
-  fileName: string,
-  googleAlbumId: string;
-  filePath?: string,
-  url?: string,
-  mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: ServerPerson[],
-  keywordNodeIds: string[],
-  photoState: PhotoState,
-  undecidedGroupId?: string;
-  notes?: string;
-  albumNodeId?: string;
+export interface MediaItemPropertiesFromExif {
+  // Timestamps
+  takenAt?: string;          // DateTimeOriginal/CreateDate
+  fileModifiedAt?: string;   // FileModifyDate
+  exifModifiedAt?: string;   // ModifyDate
+
+  // Dimensions (match schema)
+  imageWidth?: number;       // ImageWidth (current/visible)
+  imageHeight?: number;      // ImageHeight (current/visible)
+  exifImageWidth?: number;   // ExifImageWidth (original)
+  exifImageHeight?: number;  // ExifImageHeight (original)
+  orientation?: number;      // Orientation
+
+  // Exposure / optics
+  fNumber?: number;
+  exposureTime?: string;
+  iso?: number;
+  focalLengthMm?: number;
+  focalLength35mm?: number;
+
+  // Place
+  city?: string;
+  state?: string;
+  country?: string;
+
+  // GPS
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAltitudeM?: number;
+  gpsImgDirectionDeg?: number;
 }
 
 export interface MediaItem {
   uniqueId: string;
-  googleMediaItemId: string,
-  fileName: string,
+  googleMediaItemId: string;
+  fileName: string;
   googleAlbumId: string;
-  filePath?: string,
-  url?: string,
-  mimeType?: string,
-  creationTime?: string,
-  lastModified?: string,
-  width?: number,
-  height?: number
-  orientation?: number,
-  description?: string,
-  geoData?: GeoData,
-  people?: string[],
-  keywordNodeIds: string[],
-  photoState: PhotoState,
-  undecidedGroupId?: string;
-  notes?: string;
-  albumNodeId?: string;
+  googleAlbumName: string;
+
+  width: number | null;       // from exif.imageWidth
+  height: number | null;      // from exif.imageHeight
+  orientation: number;        // default 0
+  takenAt: string | null;     // from exif.takenAt
+  fileModifiedAt: string | null;   // FileModifyDate
+  exifModifiedAt: string | null;   // ModifyDate
+
+  filePath: string;
+  url: string | null;
+  mimeType: string | null;
+  photoState: string;
+  albumNodeId: string;
+  undecidedGroupId: string | null;
+  notes: string | null;
+  keywordNodeIds: string[];
+  peopleRetrievedFromGoogle: boolean;
+  people: { name: string }[];
+
+  // optional raw exif
+  exif?: MediaItemPropertiesFromExif;
 }
 
 export interface Keyword {
@@ -115,8 +130,8 @@ export interface PhotoStateOption {
   icon?: any;
 }
 
-export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "creationTime" | "lastModified" | "width" | "height" | "orientation" | "photoState";
-export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "creationTime", "lastModified", "width", "height", "orientation", "photoState"];
+export type FilteredMediaItemPropertyName = "uniqueId" | "googleMediaItemId" | "fileName" | "googleAlbumId" | "filePath" | "url" | "mimeType" | "takenAt" | "fileModifiedAt" | "exifModifiedAt" | "width" | "height" | "orientation" | "photoState";
+export const FilteredMediaItemPropertyNames: FilteredMediaItemPropertyName[] = ["uniqueId", "googleMediaItemId", "fileName", "googleAlbumId", "filePath", "url", "mimeType", "takenAt", "fileModifiedAt", "exifModifiedAt", "width", "height", "orientation", "photoState"];
 
 export type FilteredMediaItemPicker = Pick<MediaItem, FilteredMediaItemPropertyName>;
 

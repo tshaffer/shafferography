@@ -31,7 +31,7 @@ export interface RightPanelPropsFromParent {
 }
 
 export interface RightPanelDerivedStateProps {
-  notes: string | undefined;
+  notes: string | undefined | null;
 }
 
 export interface RightPanelDerivedActionCreatorProps {

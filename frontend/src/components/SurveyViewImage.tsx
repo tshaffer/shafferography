@@ -5,7 +5,7 @@ import { Menu, MenuItem } from "@mui/material";
 import { deselectMediaItem, TedTaggerDispatch } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor, getFocusedSurveyViewMediaItemId } from '../selectors';
 import { MediaItem } from '../types';
-import { getPhotoUrl } from '../utilities';
+import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 import { borderSizeStr } from '../constants';
 
 export interface SurveyViewImagePropsFromParent {
@@ -59,7 +59,7 @@ function SurveyViewImage(props: SurveyViewImageProps) {
     <>
       <img
         id={elementId}
-        src={`${photoUrl}?v=${encodeURIComponent(props.mediaItem.lastModified ?? "")}`}
+        src={getCacheBustedPhotoUrl(photoUrl, props.mediaItem)}
         className='surveyImageStyle'
         style={{
           border: isFocused ? '6px solid #1976d2' : '2px solid #ccc',

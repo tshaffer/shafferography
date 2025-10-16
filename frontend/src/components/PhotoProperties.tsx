@@ -25,11 +25,11 @@ const PhotoProperties = (props: PhotoPropertiesProps) => {
 
   const renderCreationTime = (): JSX.Element | null => {
 
-    if (isNil(props.mediaItem!.creationTime)) {
+    if (isNil(props.mediaItem) || isNil(props.mediaItem.exif) || isNil(props.mediaItem.exif.takenAt) || props.mediaItem.exif.takenAt === '') {
       return null;
     }
 
-    const formattedDate = formatISOString(props.mediaItem!.creationTime);
+    const formattedDate = formatISOString(props.mediaItem!.exif.takenAt);
 
     return (
       <React.Fragment>

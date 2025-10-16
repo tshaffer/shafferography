@@ -348,7 +348,7 @@ export const mediaItemsStateReducer = (
         ...state,
         mediaItems: state.mediaItems.map((mediaItem) =>
           action.payload.mediaItemIds.includes(mediaItem.uniqueId)
-            ? { ...mediaItem, undecidedGroupId: undefined }
+            ? { ...mediaItem, undecidedGroupId: null }
             : mediaItem
         ),
       };

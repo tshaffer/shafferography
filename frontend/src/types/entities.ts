@@ -62,7 +62,7 @@ export interface MediaItem {
   filePath: string;
   url: string | null;
   mimeType: string | null;
-  photoState: string;
+  photoState: PhotoState;
   albumNodeId: string;
   undecidedGroupId: string | null;
   notes: string | null;

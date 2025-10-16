@@ -14,7 +14,7 @@ import {
   setAlbumNodeIdRedux
 } from '../models';
 import {
-  getServerUrl, apiUrlFragment, ServerMediaItem, MediaItem, TedTaggerState, MatchRule, SearchRule,
+  getServerUrl, apiUrlFragment, MediaItem, TedTaggerState, MatchRule, SearchRule,
   PhotoState,
   PhotoLayout,
 } from '../types';
@@ -119,7 +119,7 @@ export const loadMediaItems = (): any => {
       .then((mediaItemsResponse: any) => {
 
         const mediaItems: MediaItem[] = [];
-        const mediaItemEntitiesFromServer: ServerMediaItem[] = (mediaItemsResponse as any).data;
+        const mediaItemEntitiesFromServer: MediaItem[] = (mediaItemsResponse as any).data;
 
         // derive mediaItems from serverMediaItems
         for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
@@ -134,7 +134,7 @@ export const loadMediaItems = (): any => {
   };
 };
 
-const replaceMediaItems = (mediaItemEntitiesFromServer: ServerMediaItem[]): any => {
+const replaceMediaItems = (mediaItemEntitiesFromServer: MediaItem[]): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     const state: TedTaggerState = getState();

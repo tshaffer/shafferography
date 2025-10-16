@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { MediaItem } from '../types';
 import { TedTaggerDispatch } from '../models';
 import { getMediaItemById, getFullScreenMediaItemId } from '../selectors';
-import { getPhotoUrl } from '../utilities';
+import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 
 
 export interface FullScreenPhotoProps {
@@ -35,7 +35,7 @@ function FullScreenPhoto(props: FullScreenPhotoProps) {
     <div style={{ width: '1640px', height: '790px' }}>
       <img
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
-        src={`${src}?v=${encodeURIComponent(props.mediaItem!.lastModified ?? "")}`}
+        src={getCacheBustedPhotoUrl(src, props.mediaItem!)}
       />
     </div>
   );

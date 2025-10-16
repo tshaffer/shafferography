@@ -26,7 +26,7 @@ export const getMediaItemById = (state: TedTaggerState, uniqueId: string): Media
   return null;
 };
 
-export const getMediaItemNotes = (state: TedTaggerState, uniqueId: string): string | undefined => {
+export const getMediaItemNotes = (state: TedTaggerState, uniqueId: string): string | undefined | null => {
   const mediaItem = state.mediaItemsState.mediaItems.find((item: MediaItem) => item.uniqueId === uniqueId);
   return mediaItem?.notes;
 };

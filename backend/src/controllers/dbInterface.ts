@@ -6,8 +6,10 @@ import {
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
-  getMediaitemModel,
+  // getMediaitemModel,
   getUserModel,
+  MediaItemModel,
+  getMediaitemModel,
 } from '../models';
 import {
   MediaItem,
@@ -23,19 +25,51 @@ import {
   StringToNumberLUT,
   MediaContentNode,
   MediaItemCountByUndecidedGroupPerAlbumNode,
+  MediaItemStored,
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
 
-export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem> => {
-  const mediaItemModel = getMediaitemModel();
+const toDTO = (ret: MediaItemStored): MediaItem => {
+  const exif = ret.exif || {};
+  return {
+    uniqueId: ret.uniqueId,
+    googleMediaItemId: ret.googleMediaItemId,
+    fileName: ret.fileName,
+    googleAlbumId: ret.googleAlbumId,
+    googleAlbumName: ret.googleAlbumName,
+
+    width: exif.imageWidth ?? null,
+    height: exif.imageHeight ?? null,
+    orientation: exif.orientation ?? 0,
+    takenAt: exif.takenAt ?? null,
+
+    filePath: ret.filePath ?? '',
+    url: ret.url ?? null,
+    mimeType: ret.mimeType ?? null,
+    photoState: ret.photoState,
+    albumNodeId: ret.albumNodeId,
+    undecidedGroupId: ret.undecidedGroupId ?? null,
+    notes: ret.notes ?? null,
+    keywordNodeIds: ret.keywordNodeIds ?? [],
+    peopleRetrievedFromGoogle: ret.peopleRetrievedFromGoogle ?? false,
+    people: (ret.people || []).map(p => ({ name: p?.name ?? '' })),
+    exif,
+  };
+};
+
+export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem | null> => {
   const filter = { uniqueId: mediaItemId };
-  const mediaItemDocument: Document = await mediaItemModel.findOne(filter);
-  const mediaItem: MediaItem = mediaItemDocument.toObject() as MediaItem;
-  return mediaItem;
-}
+  
+  // const mediaItemModel = getMediaitemModel();
+  // const doc = await mediaItemModel.findOne(filter).lean<MediaItemStored>().exec();
+  
+  const doc = await getMediaitemModel().findOne(filter).lean<MediaItemStored>().exec();
+  if (!doc) return null; // let controller return 404
+  return toDTO(doc);
+};
 
 export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
 

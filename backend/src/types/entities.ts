@@ -6,54 +6,83 @@ export interface PersonInPhoto {
 }
 
 export interface MediaItemPropertiesFromExif {
-  // Timestamps (ISO 8601 strings)
-  takenAt?: string;         // from DateTimeOriginal/CreateDate
-  fileModifiedAt?: string;  // from FileModifyDate (filesystem mtime via exiftool)
-  exifModifiedAt?: string;  // from ModifyDate
+  // Timestamps
+  takenAt?: string;          // DateTimeOriginal/CreateDate
+  fileModifiedAt?: string;   // FileModifyDate
+  exifModifiedAt?: string;   // ModifyDate
 
-  // Dimensions
-  width?: number;           // ImageWidth (current/visible)
-  height?: number;          // ImageHeight (current/visible)
-  originalWidth?: number;   // ExifImageWidth (original capture)
-  originalHeight?: number;  // ExifImageHeight (original capture)
-  orientation?: number;    // Orientation
+  // Dimensions (match schema)
+  imageWidth?: number;       // ImageWidth (current/visible)
+  imageHeight?: number;      // ImageHeight (current/visible)
+  exifImageWidth?: number;   // ExifImageWidth (original)
+  exifImageHeight?: number;  // ExifImageHeight (original)
+  orientation?: number;      // Orientation
 
   // Exposure / optics
-  fNumber?: number;         // FNumber (e.g., 2.2)
-  exposureTime?: string;    // ExposureTime (e.g., "1/203" or "0.50s")
-  iso?: number;             // ISO
-  focalLengthMm?: number;   // FocalLength in mm
-  focalLength35mm?: number; // FocalLengthIn35mmFormat in mm
+  fNumber?: number;
+  exposureTime?: string;
+  iso?: number;
+  focalLengthMm?: number;
+  focalLength35mm?: number;
 
-  // Human-readable place (if embedded)
-  city?: string;            // City
-  state?: string;           // Province-State / State
-  country?: string;         // Country
+  // Place
+  city?: string;
+  state?: string;
+  country?: string;
 
-  // GPS (decimal degrees / meters / degrees)
-  gpsLatitude?: number;         // GPSLatitude
-  gpsLongitude?: number;        // GPSLongitude
-  gpsAltitudeM?: number;        // GPSAltitude (meters)
-  gpsImgDirectionDeg?: number;  // GPSImgDirection (bearing)
+  // GPS
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAltitudeM?: number;
+  gpsImgDirectionDeg?: number;
 }
 
-export interface MediaItem {
+export interface MediaItemStored {
+  _id: any;
   uniqueId: string;
-  googleMediaItemId: string,
-  fileName: string,
+  googleMediaItemId: string;
+  fileName: string;
   googleAlbumId: string;
   googleAlbumName: string;
-  filePath?: string,
-  url?: string,
-  mimeType?: string,
-  exif: MediaItemPropertiesFromExif,
-  peopleRetrievedFromGoogle: boolean,
-  people?: PersonInPhoto[],
-  keywordNodeIds: string[],
-  photoState: PhotoState,
+  filePath?: string;
+  url?: string;
+  mimeType?: string;
+  exif?: MediaItemPropertiesFromExif;
+  peopleRetrievedFromGoogle: boolean;
+  people?: { name: string }[];
+  keywordNodeIds: string[];
+  photoState: string; // or PhotoState
   albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
+}
+
+// Returned by API (flattened)
+export interface MediaItem {
+  uniqueId: string;
+  googleMediaItemId: string;
+  fileName: string;
+  googleAlbumId: string;
+  googleAlbumName: string;
+
+  width: number | null;       // from exif.imageWidth
+  height: number | null;      // from exif.imageHeight
+  orientation: number;        // default 0
+  takenAt: string | null;     // from exif.takenAt
+
+  filePath: string;
+  url: string | null;
+  mimeType: string | null;
+  photoState: string;
+  albumNodeId: string;
+  undecidedGroupId: string | null;
+  notes: string | null;
+  keywordNodeIds: string[];
+  peopleRetrievedFromGoogle: boolean;
+  people: { name: string }[];
+
+  // optional raw exif
+  exif?: MediaItemStored["exif"];
 }
 
 export interface DateRangeSpecification {

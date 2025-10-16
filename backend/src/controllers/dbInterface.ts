@@ -65,12 +65,13 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
 export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem | null> => {
   const filter = { uniqueId: mediaItemId };
   
-  // const mediaItemModel = getMediaitemModel();
-  // const doc = await mediaItemModel.findOne(filter).lean<MediaItemStored>().exec();
+  const mediaItemModel = getMediaitemModel();
+  const doc = await mediaItemModel.findOne(filter);
+  const mediaItemStored: MediaItemStored = doc.lean().exec();
   
-  const doc = await getMediaitemModel().findOne(filter).lean<MediaItemStored>().exec();
-  if (!doc) return null; // let controller return 404
-  return toDTO(doc);
+  // const doc = await getMediaitemModel().findOne(filter).lean<MediaItemStored>().exec();
+  if (!mediaItemStored) return null; // let controller return 404
+  return toDTO(mediaItemStored);
 };
 
 export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {

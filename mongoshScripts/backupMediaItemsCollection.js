@@ -4,7 +4,7 @@ const collections = [
   "mediaitems",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/preSchemaUpdate-mediaItems-backup-10-13-1";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/mediaItems-backup-10-15-1";
 
 const fs = require("fs");
 

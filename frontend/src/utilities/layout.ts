@@ -90,7 +90,7 @@ const getWidthHeightFromOrientation = (mediaItem: MediaItem): Dimensions => {
     case 3:
       break;
     default:
-      console.log('Unsupported orientation: ', mediaItem.orientation);
+      console.log('Unsupported orientation: ', mediaItem.exif.orientation);
       debugger;
       break;
   }

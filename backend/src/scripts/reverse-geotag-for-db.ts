@@ -27,8 +27,6 @@ type ExifSubdoc = {
   // dimensions
   imageWidth?: number;
   imageHeight?: number;
-  exifImageWidth?: number;
-  exifImageHeight?: number;
 
   // optics
   fNumber?: number;

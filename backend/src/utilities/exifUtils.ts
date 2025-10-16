@@ -47,8 +47,6 @@ export async function mapExifToMediaItem(tags: Tags): Promise<MediaItemPropertie
   // ---- dimensions (current vs original)
   const width = toNumber(tags.ImageWidth);
   const height = toNumber(tags.ImageHeight);
-  const originalWidth = toNumber(tags.ExifImageWidth);
-  const originalHeight = toNumber(tags.ExifImageHeight);
   const orientation = toNumber(tags.Orientation); // 1-8
 
   // ---- exposure / optics
@@ -91,8 +89,6 @@ export async function mapExifToMediaItem(tags: Tags): Promise<MediaItemPropertie
     // dimensions
     imageWidth: width,
     imageHeight: height,
-    exifImageWidth: originalWidth,
-    exifImageHeight: originalHeight,
     orientation,
 
     // exposure / optics

@@ -22,8 +22,6 @@ export interface MediaItemPropertiesFromExif {
   // Dimensions (match schema)
   imageWidth?: number;       // ImageWidth (current/visible)
   imageHeight?: number;      // ImageHeight (current/visible)
-  exifImageWidth?: number;   // ExifImageWidth (original)
-  exifImageHeight?: number;  // ExifImageHeight (original)
   orientation?: number;      // Orientation
 
   // Exposure / optics

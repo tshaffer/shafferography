@@ -28,8 +28,6 @@ const MediaitemSchema = new Schema({
     // Dimensions (current vs original)
     imageWidth: { type: Number },          // ImageWidth (current/visible)
     imageHeight: { type: Number },         // ImageHeight (current/visible)
-    exifImageWidth: { type: Number },      // ExifImageWidth (original)
-    exifImageHeight: { type: Number },     // ExifImageHeight (original)
     orientation: { type: Number, default: 0 },
 
     // Exposure / optics

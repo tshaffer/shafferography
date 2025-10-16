@@ -47,7 +47,6 @@ export interface MediaItemStored {
   filePath?: string;
   url?: string;
   mimeType?: string;
-  exif?: MediaItemPropertiesFromExif;
   peopleRetrievedFromGoogle: boolean;
   people?: { name: string }[];
   keywordNodeIds: string[];
@@ -55,6 +54,7 @@ export interface MediaItemStored {
   albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
+  exif?: MediaItemPropertiesFromExif;
 }
 
 export interface MediaItem {
@@ -68,6 +68,8 @@ export interface MediaItem {
   height: number | null;      // from exif.imageHeight
   orientation: number;        // default 0
   takenAt: string | null;     // from exif.takenAt
+  fileModifiedAt: string | null;   // FileModifyDate
+  exifModifiedAt: string | null;   // ModifyDate
 
   filePath: string;
   url: string | null;

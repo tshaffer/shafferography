@@ -51,6 +51,8 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
     height: 0,
     orientation: 0,
     takenAt: null,
+    fileModifiedAt: isoLastModified,
+    exifModifiedAt: null,
     undecidedGroupId: null,
     notes: null,
   }

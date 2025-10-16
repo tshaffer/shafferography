@@ -18,6 +18,7 @@ const MediaitemSchema = new Schema({
     // Timestamps (ISO 8601 strings)
     takenAt: { type: String },             // DateTimeOriginal or CreateDate
     exifModifiedAt: { type: String },      // ModifyDate
+    fileModifiedAt: { type: String },      // FileModifyDate
 
     // Timezone offsets (verbatim EXIF values, if present)
     offsetTime: { type: String },          // OffsetTime

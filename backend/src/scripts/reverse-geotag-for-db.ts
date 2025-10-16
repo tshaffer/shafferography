@@ -17,6 +17,7 @@ type ExifSubdoc = {
   // timestamps
   takenAt?: string;
   exifModifiedAt?: string;
+  fileModifiedAt?: string;
 
   // timezone offsets
   offsetTime?: string;

@@ -45,6 +45,8 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
     height: exif.imageHeight ?? null,
     orientation: exif.orientation ?? 0,
     takenAt: exif.takenAt ?? null,
+    fileModifiedAt: exif.fileModifiedAt ?? null,
+    exifModifiedAt: exif.exifModifiedAt ?? null,
 
     filePath: ret.filePath ?? '',
     url: ret.url ?? null,

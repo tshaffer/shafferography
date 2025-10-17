@@ -82,15 +82,15 @@ export const getMediaItemFromDb = async (
 
 export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
 
-  const mediaItemModel = getMediaItemModel(connection);
+  const MediaItemModel = getMediaItemModel(connection);
 
-  const mediaItems: MediaItem[] = [];
-  const documents: any = await (mediaItemModel as any).find().exec();
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    mediaItems.push(mediaItem);
-  }
+  const mediaItemStored: MediaItemStored[] = await MediaItemModel
+    .find()
+    .lean<MediaItemStored[]>()
+    .exec();
+
+  const mediaItems: MediaItem[] = mediaItemStored.map(toDTO);
+
   return mediaItems;
 }
 

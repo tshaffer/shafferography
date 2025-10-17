@@ -9,6 +9,7 @@ export * from './mainController';
 export * from './openInPreview';
 export * from './peopleMerger';
 export * from './photoImporter';
+export * from './testEndpoints';
 export * from './undecidedGroups';
 
 

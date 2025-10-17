@@ -33,6 +33,7 @@ import {
   setAlbumNodeIdEndpoint,
   openInPreview,
   fileStat,
+  getAllMediaItems,
 } from '../controllers';
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
@@ -83,5 +84,7 @@ export const createRoutes = (app: express.Application) => {
   app.post('/api/v1/open-in-preview', openInPreview);
   app.get('/api/v1/file-stat', fileStat);
 
+  // test endpoints
+  app.get('/api/v1/allMediaItems', getAllMediaItems);
 };
 

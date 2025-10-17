@@ -15,7 +15,7 @@ import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, fsLocalFileExist
 import {
   addMediaItemToMediaItemsDBTable,
   getMediaItemFromDb,
-  // updateSingleMediaItemFieldsInDb,
+  updateSingleMediaItemFieldsInDb,
 } from './dbInterface';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
@@ -188,23 +188,24 @@ export function getLastModifiedUTCISO(filePath: string): string {
 }
 
 async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItem | null> {
+
   const exifData: Tags = await retrieveExifData(filePath);
+  const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
 
   const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
-  // const geoData: GeoData | null = await extractGeoData(exifData);
+  const geoData: GeoData | null = await extractGeoData(exifData);
 
-  // const updates: Partial<MediaItem> = {
-  //   width: exifData.ImageWidth,
-  //   height: exifData.ImageHeight,
-  //   creationTime: isoCreateDate,
-  //   lastModified: getLastModifiedUTCISO(filePath),
-  //   // geoData,
-  //   orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
-  // };
+  const updates: Partial<MediaItem> = {
+    width: exifData.ImageWidth,
+    height: exifData.ImageHeight,
+    takenAt: isoCreateDate,
+    lastModified: getLastModifiedUTCISO(filePath),
+    // geoData,
+    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
+  };
 
-  // const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
-  // return updatedItem;
-  return null;
+  const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
+  return updatedItem;
 }
 
 export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {

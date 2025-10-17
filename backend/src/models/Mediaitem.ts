@@ -1,19 +1,9 @@
-// src/models/MediaItem.ts
-import { Schema, model, Document } from "mongoose";
+// backend/models/MediaItem.ts
+import { Model, Connection } from "mongoose";
 import { MediaItemStored } from "../types";
-import { connection } from '../config';
+import MediaitemSchema from "./MediaItemSchema";
 
-// const MediaitemSchema = new Schema<MediaItemStored>({ /* fields */ });
-import MediaitemSchema from './MediaItemSchema';
-
-export const getMediaitemModel = () => {
-  // return model<MediaItemStored>("mediaitems", MediaitemSchema)
-  const mediaItemModel = connection.model('mediaitem', MediaitemSchema);
-  return mediaItemModel;
+export function getMediaItemModel(conn: Connection): Model<MediaItemStored> {
+  return (conn.models.MediaItem as Model<MediaItemStored>) ??
+    conn.model<MediaItemStored>("MediaItem", MediaitemSchema);
 }
-
-export const MediaItemModel = model<MediaItemStored>("mediaitems", MediaitemSchema);
-
-
-// import MediaitemSchema from './MediaItemSchema';
-

@@ -6,10 +6,9 @@ import {
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
-  // getMediaitemModel,
+  // getMediaItemModel,
   getUserModel,
-  MediaItemModel,
-  getMediaitemModel,
+  getMediaItemModel,
 } from '../models';
 import {
   MediaItem,
@@ -29,6 +28,8 @@ import {
 } from '../types';
 import { Document } from 'mongoose';
 import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
+
+import { connection } from "../config"; // your already-initialized, connected mongoose Connection
 
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
 
@@ -62,21 +63,27 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
   };
 };
 
-export const getMediaItemFromDb = async (mediaItemId: string): Promise<MediaItem | null> => {
+export const getMediaItemFromDb = async (
+  mediaItemId: string
+): Promise<MediaItem | null> => {
   const filter = { uniqueId: mediaItemId };
 
-  const mediaItemModel = getMediaitemModel();
-  const doc = await mediaItemModel.findOne(filter);
-  const mediaItemStored: MediaItemStored = doc.lean().exec();
+  // IMPORTANT: use the connected `connection`, not the default
+  const MediaItemModel = getMediaItemModel(connection);
 
-  // const doc = await getMediaitemModel().findOne(filter).lean<MediaItemStored>().exec();
-  if (!mediaItemStored) return null; // let controller return 404
+  const mediaItemStored: MediaItemStored | null = await MediaItemModel
+    .findOne(filter)
+    .lean<MediaItemStored>()
+    .exec();
+
+  if (!mediaItemStored) return null;
+
   return toDTO(mediaItemStored);
 };
 
 export const getAllMediaItemsFromDb = async (): Promise<MediaItem[]> => {
 
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const mediaItems: MediaItem[] = [];
   const documents: any = await (mediaItemModel as any).find().exec();
@@ -100,7 +107,7 @@ export const getMediaItemsToDisplayFromDb = async (
     querySpec = { creationTime: { $gte: startDate, $lte: endDate } };
   }
 
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const query = mediaItemModel.find(querySpec).sort({ creationTime: -1 });
 
@@ -120,7 +127,7 @@ export const getMediaItemsByViewSpecFromDb = async (
   groupUndecidedPhotos: boolean,
   undecidedGroupIds: string[],
 ): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const baseConditions: any[] = [
     { albumNodeId: { $in: albumNodeIds } },
@@ -210,7 +217,7 @@ export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
     }
   }
 
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const query = mediaItemModel.find(querySpec);
   const documents: any = await query.exec();
@@ -433,7 +440,7 @@ export const addAutoPersonKeywordsToDb = async (keywordsSet: Set<string>): Promi
 }
 
 export const updateMediaItemInDb = async (mediaItem: MediaItem): Promise<any> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
   const filter = { uniqueId: mediaItem.uniqueId };
   const updatedDoc = await mediaItemModel.findOneAndUpdate(filter, mediaItem, {
     new: true,
@@ -444,7 +451,7 @@ export const updateMediaItemFieldsInDb = async (
   uniqueId: string,
   updates: Partial<MediaItem>
 ): Promise<any> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   try {
     // Construct the filter
@@ -466,7 +473,7 @@ export const updateSingleMediaItemFieldsInDb = async (
   uniqueId: string,
   updates: Partial<MediaItem>
 ): Promise<MediaItem | null> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   try {
     const updatedDoc = await mediaItemModel.findOneAndUpdate(
@@ -475,7 +482,8 @@ export const updateSingleMediaItemFieldsInDb = async (
       { new: true }
     ).exec();
 
-    return updatedDoc;
+    return null;
+    // return updatedDoc;
   } catch (err) {
     console.error('Error updating media item:', err);
     throw err;
@@ -486,7 +494,7 @@ export const updateMediaItemsFieldsInDb = async (
   uniqueIds: string[],
   updates: Partial<MediaItem>
 ): Promise<any> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   try {
     // Construct the filter to match multiple documents
@@ -524,12 +532,12 @@ const addMediaItemToDb = async (mediaItemModel: any, mediaItem: MediaItem): Prom
 };
 
 export const addMediaItemToMediaItemsDBTable = async (mediaItem: MediaItem): Promise<any> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
   return addMediaItemToDb(mediaItemModel, mediaItem);
 };
 
 export const getGoogleAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   try {
     // Query the collection to find distinct album names
@@ -546,7 +554,7 @@ export const getGoogleAlbumNamesWherePeopleNotRetrieved = async (): Promise<stri
 };
 
 export const getMediaItemsInNamedAlbumFromDb = async (googleAlbumName: string): Promise<MediaItem[]> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const mediaItems: MediaItem[] = [];
   const documents: any = await (mediaItemModel as any).find({ googleAlbumName }).exec();
@@ -609,7 +617,7 @@ export const addUndecidedGroupToDb = async (albumNodeIds: string[], name: string
 
 export const assignMediaItemsToUndecidedGroupDb = async (undecidedGroupId: string, mediaItemIds: string[]): Promise<void> => {
   try {
-    const mediaItemModel = getMediaitemModel(); // Get MediaItems collection model
+    const mediaItemModel = getMediaItemModel(connection); // Get MediaItems collection model
 
     // Ensure undecidedGroupId is a valid ObjectId before querying
     if (!mongoose.Types.ObjectId.isValid(undecidedGroupId)) {
@@ -636,7 +644,7 @@ export const deleteUndecidedGroupFromDb = async (undecidedGroupId: string): Prom
     }
 
     // Remove the reference to the undecided group from all media items.
-    const mediaItemModel = getMediaitemModel();
+    const mediaItemModel = getMediaItemModel(connection);
     await mediaItemModel.updateMany(
       { undecidedGroupId },
       { $unset: { undecidedGroupId: "" } }
@@ -653,7 +661,7 @@ export const deleteUndecidedGroupFromDb = async (undecidedGroupId: string): Prom
 };
 
 export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNumberLUT> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
   const counts = await mediaItemModel.aggregate([
     {
       $group: {
@@ -679,7 +687,7 @@ export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNum
 };
 
 export const getMediaItemCountByAlbumNodeFromDb = async (): Promise<StringToNumberLUT> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   const counts = await mediaItemModel.aggregate([
     {
@@ -706,7 +714,7 @@ export const getMediaItemCountByAlbumNodeFromDb = async (): Promise<StringToNumb
 };
 
 export const getMediaItemCountByPhotoStateByAlbumNodeIdFromDb = async (): Promise<Record<string, Record<string, number>>> => {
-  const mediaItemModel = getMediaitemModel();
+  const mediaItemModel = getMediaItemModel(connection);
 
   // Aggregate counts by albumNodeId and photoState
   const counts = await mediaItemModel.aggregate([

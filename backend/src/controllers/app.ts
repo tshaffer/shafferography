@@ -16,7 +16,7 @@ import {
   updateMediaItemsFieldsInDb,
   // getAllAlbumsFromDb,
   // addAlbumToDb,
-  getMediaItemsByViewSpecFromDb,
+  getMediaItemsForPhotoStateFromDb,
   getMediaItemCountByPhotoStateFromDb,
   getMediaItemCountByAlbumNodeFromDb,
   getMediaItemCountByPhotoStateByAlbumNodeIdFromDb,
@@ -46,14 +46,14 @@ export const getVersion = (request: Request, response: Response, next: any) => {
   response.json(data);
 };
 
-export const getMediaItemsByViewSpec = async (request: Request, response: Response) => {
+export const getMediaItemsForPhotoState = async (request: Request, response: Response) => {
   const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
   const albumNodeIdsAsStr: string = request.query.albumNodeIds as string;
   const albumNodeIds: string[] = albumNodeIdsAsStr.split(',');
   const groupUndecidedPhotos: boolean = request.query.groupUndecidedPhotos === 'true';
   const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
   const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
-  const mediaItems: MediaItem[] = await getMediaItemsByViewSpecFromDb(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
+  const mediaItems: MediaItem[] = await getMediaItemsForPhotoStateFromDb(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
   response.json(mediaItems);
 }
 
@@ -178,7 +178,7 @@ export const setAlbumNodeIdEndpoint = async (request: Request, response: Respons
 
   await updateMediaItemsFieldsInDb(mediaItemIds, updates);
   response.sendStatus(200);
-} 
+}
 
 export const setMediaItemNotesEndpoint = async (request: Request, response: Response, next: any) => {
   const { uniqueId, notes } = request.body;

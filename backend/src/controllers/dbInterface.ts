@@ -1,6 +1,6 @@
 import { v4 as uuidv4 } from 'uuid';
 import { isEmpty, isNil } from 'lodash';
-import mongoose from "mongoose";
+import mongoose, { FilterQuery, LeanDocument } from "mongoose";
 import {
   getMediaContentTreeModel,
   getKeywordModel,
@@ -66,10 +66,9 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
 export const getMediaItemFromDb = async (
   mediaItemId: string
 ): Promise<MediaItem | null> => {
-  const filter = { uniqueId: mediaItemId };
 
-  // IMPORTANT: use the connected `connection`, not the default
   const MediaItemModel = getMediaItemModel(connection);
+  const filter = { uniqueId: mediaItemId };
 
   const mediaItemStored: MediaItemStored | null = await MediaItemModel
     .findOne(filter)
@@ -121,7 +120,7 @@ export const getMediaItemsToDisplayFromDb = async (
   return mediaItems;
 }
 
-export const getMediaItemsByViewSpecFromDb = async (
+export const getMediaItemsForPhotoStateFromDb = async (
   albumNodeIds: string[],
   photoStates: PhotoState[],
   groupUndecidedPhotos: boolean,
@@ -150,12 +149,15 @@ export const getMediaItemsByViewSpecFromDb = async (
     }
   }
 
-  const query = mediaItemModel
-    .find({ $and: baseConditions })
-    .sort({ creationTime: -1 });
+  const filter: FilterQuery<MediaItemStored> = { $and: baseConditions };
+  const docs: LeanDocument<MediaItemStored>[] = await mediaItemModel
+    .find(filter)
+    .sort({ creationTime: -1 })
+    .lean() // no generic needed; we annotate the variable instead
+    .exec();
 
-  const docs = (await query.lean().exec()) as MediaItemStored[];
-  return docs.map(toDTO);
+  const mediaItems: MediaItem[] = docs.map(toDTO);
+  return mediaItems;
 };
 
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
@@ -689,7 +691,7 @@ export const getMediaItemCountByPhotoStateFromDb = async (): Promise<StringToNum
 export const getMediaItemCountByAlbumNodeFromDb = async (): Promise<StringToNumberLUT> => {
   const mediaItemModel = getMediaItemModel(connection);
 
-  const counts = await mediaItemModel.aggregate([
+  const counts: { albumNodeId: string; count: number }[] = await mediaItemModel.aggregate([
     {
       $group: {
         _id: "$albumNodeId",

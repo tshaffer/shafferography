@@ -16,7 +16,7 @@ import {
   importPhotosEndpoint,
   getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
-  getMediaItemsByViewSpec,
+  getMediaItemsForPhotoState,
   assignMediaItemsToUndecidedGroup,
   deleteUndecidedGroup,
   getUndecidedGroups,
@@ -40,7 +40,7 @@ import { addUndecidedGroup } from '../controllers/';
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
   app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
-  app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsByViewSpec);
+  app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsForPhotoState);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
 

@@ -1,6 +1,5 @@
 import express from 'express';
 import {
-  getMediaItemsToDisplay,
   getVersion,
   getAllKeywordData,
   addKeyword,
@@ -16,19 +15,11 @@ import {
   importPhotosEndpoint,
   getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
-  getMediaItemsForPhotoState,
-  assignMediaItemsToUndecidedGroup,
-  deleteUndecidedGroup,
   getUndecidedGroups,
-  getMediaItemCountByPhotoState,
-  getMediaItemCounts,
   setMediaItemNotesEndpoint,
   getAlbumNodes,
   saveAlbumNodes,
   moveAlbumNode,
-  getMediaItemCountByAlbumNode,
-  getMediaItemCountByPhotoStateByAlbumNodeId,
-  getMediaItemCountByUndecidedGroupPerAlbumNode,
   reimportPhotosEndpoint,
   setAlbumNodeIdEndpoint,
   openInPreview,
@@ -38,10 +29,12 @@ import {
 import { fetchUndecidedGroupsForAlbums } from '../controllers';
 import { addUndecidedGroup } from '../controllers/';
 
+import { getMediaItemCounts } from '../controllers/stats.controller';
+import { getMediaItemsForPhotoState as getMediaItemsForPhotoStates, getOne as getMediaItem, assignMediaItemsToUndecidedGroup } from '../controllers/mediaItems.controller';
+import { deleteUndecidedGroup } from '../controllers/undecidedGroups.controller';
+
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);
-  app.get('/api/v1/mediaItemsToDisplay', getMediaItemsToDisplay);
-  app.get('/api/v1/mediaItemsByViewSpec', getMediaItemsForPhotoState);
   app.get('/api/v1/mediaItemsToDisplayFromSearchSpec', getMediaItemsToDisplayFromSearchSpec);
   app.get('/api/v1/allKeywordData', getAllKeywordData);
 
@@ -70,13 +63,6 @@ export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/undecidedGroups/:albumNodeId', fetchUndecidedGroupsForAlbums);
   app.delete('/api/v1/undecidedGroups/:groupId', deleteUndecidedGroup);
 
-  app.get('/api/v1/mediaItemCounts', getMediaItemCounts);
-  app.get('/api/v1/mediaItemCountByPhotoState', getMediaItemCountByPhotoState);
-
-  app.get('/api/v1/mediaItemCountByAlbum', getMediaItemCountByAlbumNode);
-  app.get('/api/v1/mediaItemCountByUndecidedGroupPerAlbum', getMediaItemCountByUndecidedGroupPerAlbumNode);
-  app.get('/api/v1/mediaItemCountByPhotoStateByAlbumId', getMediaItemCountByPhotoStateByAlbumNodeId);
-
   app.get('/api/v1/album-tree', getAlbumNodes);
   app.put('/api/v1/album-tree', saveAlbumNodes);
   app.post('/api/v1/album-tree/move-node', moveAlbumNode);
@@ -86,5 +72,10 @@ export const createRoutes = (app: express.Application) => {
 
   // test endpoints
   app.get('/api/v1/allMediaItems', getAllMediaItems);
+
+  // new architecture
+  app.get('/api/v1/stats/mediaItemCounts', getMediaItemCounts);
+  app.get('/api/v1/mediaitems/:id', getMediaItem);
+  app.get('/api/v1/mediaItemsForPhotoStates', getMediaItemsForPhotoStates);
 };
 

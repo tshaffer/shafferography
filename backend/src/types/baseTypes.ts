@@ -1,4 +1,4 @@
-import { MediaItem } from "entities";
+import { MediaItem } from "../types";
 import { Tags } from "exiftool-vendored";
 import { Response } from 'express';
 

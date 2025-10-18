@@ -1,6 +1,6 @@
 import { Request, Response } from 'express';
-import { addUndecidedGroupToDb, assignMediaItemsToUndecidedGroupDb, deleteUndecidedGroupFromDb, getAllUndecidedGroupsFromDb } from './dbInterface';
-import { UndecidedGroup } from 'entities';
+import { addUndecidedGroupToDb, getAllUndecidedGroupsFromDb } from './dbInterface';
+import { UndecidedGroup } from '../types';
 
 export const getUndecidedGroups = async (request: Request, response: Response, next: any) => {
   const undecidedGroups: UndecidedGroup[] = await getAllUndecidedGroupsFromDb();
@@ -17,19 +17,7 @@ export const addUndecidedGroup = async (req: Request, res: Response, next: any) 
   }
 }
 
-export const assignMediaItemsToUndecidedGroup = async (request: Request, response: Response, next: any) => {
-  const { undecidedGroupId, mediaItemIds } = request.body;
-  await assignMediaItemsToUndecidedGroupDb(undecidedGroupId, mediaItemIds);
-  response.json({ success: true });
-}
-
 export const fetchUndecidedGroupsForAlbums = async (request: Request, response: Response, next: any) => {
   response.json([]);
 };
-
-export const deleteUndecidedGroup = async (request: Request, response: Response, next: any) => {
-  const undecidedGroupId = request.params.groupId;
-  await deleteUndecidedGroupFromDb(undecidedGroupId);
-  response.json({ success: true });
-}
 

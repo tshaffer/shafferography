@@ -13,16 +13,15 @@ import {
 import { Tags } from 'exiftool-vendored';
 import { isNil } from 'lodash';
 import { convertCreateDateToISO, convertHEICFileToJPEGWithEXIF, fsLocalFileExists, isImageFile, mapExifToMediaItem, retrieveExifData, valueOrNull } from '../utilities';
-import {
-  addMediaItemToMediaItemsDBTable,
-  getMediaItemFromDb,
-  // updateSingleMediaItemFieldsInDb,
-} from './dbInterface';
+import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { mergePeople } from './peopleMerger';
 import { DateTime } from 'luxon';
+import { addMediaItemToMediaItemsDBTable } from '../repositories/mediaItem.repo';
+import { MediaItemDTO } from '../domain/mediaItem.types';
+import { toIsoString } from '../utilities/exifUtils';
 
-async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: string, fileName: string, isoLastModified: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItem> {
+async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: string, fileName: string, isoLastModified: string, googleAlbumName: string, googleAlbumId: string): Promise<MediaItemDTO> {
 
   const filePath = path.join(baseDirectory, fileName);
   console.log('filePath:', filePath);
@@ -33,35 +32,52 @@ async function buildLocalStorageMediaItem(baseDirectory: string, albumNodeId: st
 
   const relativePath = filePath.replace(BASE_MEDIA_PATH, "");
 
-  const mediaItem: MediaItem = {
+  const creationTime =
+    toIsoString(exifData.DateTimeOriginal) ??
+    toIsoString(exifData.CreateDate) ??
+    undefined;
+
+  const lastModified = toIsoString(exifData.FileModifyDate);
+
+
+  const mediaItem: MediaItemDTO = {
     uniqueId: uuidv4(),
     googleMediaItemId: '',
     fileName,
     googleAlbumId,
     googleAlbumName,
-    filePath,
-    url: `${BASE_MEDIA_URL}/${relativePath}`,
-    mimeType: valueOrNull(exifData.MIMEType),
-    exif: mappedExif,
-    people: null,
-    peopleRetrievedFromGoogle: false,
-    keywordNodeIds: [],
-    photoState: PhotoState.Unreviewed,
-    albumNodeId,
+
+    creationTime: creationTime ?? null,
+    lastModified: lastModified ?? null,
+
     width: 0,
     height: 0,
     orientation: 0,
     takenAt: null,
     fileModifiedAt: isoLastModified,
     exifModifiedAt: null,
+
+    filePath,
+    url: `${BASE_MEDIA_URL}/${relativePath}`,
+    mimeType: valueOrNull(exifData.MIMEType),
+
+    photoState: PhotoState.Unreviewed,
+    albumNodeId,
     undecidedGroupId: null,
     notes: null,
+    keywordNodeIds: [],
+    peopleRetrievedFromGoogle: false,
+    people: null,
+
+    // exif: mappedExif,
+    exif: undefined,
+    exifMeta: undefined
   }
 
   return mediaItem;
 }
 
-export const addMediaItemsFromLocalStorage = async (mediaItems: MediaItem[]): Promise<any> => {
+export const addMediaItemsFromLocalStorage = async (mediaItems: MediaItemDTO[]): Promise<any> => {
 
   for (let index = 0; index < mediaItems.length; index++) {
     const mediaItem = mediaItems[index];
@@ -162,7 +178,7 @@ export const importPhotosEndpoint = async (request: Request, response: Response,
         updatedFileName = fileName;
       }
 
-      const mediaItem: MediaItem = await buildLocalStorageMediaItem(baseDirectory, albumNodeId, updatedFileName, isoLastModified, googleAlbumName, googleAlbumId);
+      const mediaItem: MediaItemDTO = await buildLocalStorageMediaItem(baseDirectory, albumNodeId, updatedFileName, isoLastModified, googleAlbumName, googleAlbumId);
       await addMediaItemsFromLocalStorage([mediaItem]);
 
     }
@@ -190,23 +206,24 @@ export function getLastModifiedUTCISO(filePath: string): string {
 
 async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItemStored | null> {
 
-  const exifData: Tags = await retrieveExifData(filePath);
-  const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
+  return null; // Temporarily disable this function
+  // const exifData: Tags = await retrieveExifData(filePath);
+  // const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
 
-  const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
-  const geoData: GeoData | null = await extractGeoData(exifData);
+  // const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
+  // const geoData: GeoData | null = await extractGeoData(exifData);
 
-  const updates: Partial<MediaItem> = {
-    width: exifData.ImageWidth,
-    height: exifData.ImageHeight,
-    takenAt: isoCreateDate,
-    lastModified: getLastModifiedUTCISO(filePath),
-    // geoData,
-    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
-  };
+  // const updates: Partial<MediaItem> = {
+  //   width: exifData.ImageWidth,
+  //   height: exifData.ImageHeight,
+  //   takenAt: isoCreateDate,
+  //   lastModified: getLastModifiedUTCISO(filePath),
+  //   // geoData,
+  //   orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
+  // };
 
-  const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
-  return updatedItem;
+  // const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
+  // return updatedItem;
 }
 
 export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {
@@ -241,7 +258,8 @@ export const reimportPhotosEndpoint = async (request: Request, response: Respons
     } else {
       console.error('HEIC file does not exist:', heicFilePath);
     }
-    const updatedItem: MediaItem | null = await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
+    // const updatedItem: MediaItem | null = await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
+    const updatedItem: MediaItemStored | null = null; // Temporarily disable this function
     if (!updatedItem) {
       console.error('Failed to update media item:', mediaItem.uniqueId);
       return response.status(500).json({ error: 'Failed to update media item' });

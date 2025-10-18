@@ -3,7 +3,6 @@ import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
 import { Box, CssBaseline, styled } from "@mui/material";
 import {
-  loadMediaItems,
   loadMediaContentTree,
   loadUndecidedGroups,
   reloadMediaItemsByViewSpec
@@ -68,7 +67,6 @@ export interface AppShellProps {
   selectedMediaItems: MediaItem[];
   onReloadMediaItemsByViewSpec: () => any;
   onLoadMediaItemCounts: () => any;
-  onLoadMediaItems: () => any;
   onLoadAlbumTree: () => any;
   onLoadUndecidedGroups: () => any;
   onSetAppInitialized: () => any;
@@ -279,7 +277,6 @@ const mapDispatchToProps = (dispatch: TedTaggerDispatch) => bindActionCreators({
   onSetRightPanelOpen: setRightPanelOpen,
   onReloadMediaItemsByViewSpec: reloadMediaItemsByViewSpec,
   onLoadMediaItemCounts: loadMediaItemCounts,
-  onLoadMediaItems: loadMediaItems,
   onLoadAlbumTree: loadMediaContentTree,
   onLoadUndecidedGroups: loadUndecidedGroups,
   onSetAppInitialized: setAppInitialized,

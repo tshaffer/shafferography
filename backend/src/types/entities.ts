@@ -1,5 +1,5 @@
-import { StringToNumberLUT } from "baseTypes";
-import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "enums";
+import { StringToNumberLUT } from "../types";
+import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "./enums";
 
 export interface PersonInPhoto {
   name: string;

@@ -1,4 +1,4 @@
-import { MediaContentNode } from 'entities';
+import { MediaContentNode } from '../types';
 import { Request, Response } from 'express';
 import { getMediaContentNodesFromDb, moveAlbumNodeInDb, saveAlbumTreeToDb } from './dbInterface';
 

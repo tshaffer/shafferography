@@ -6,9 +6,11 @@ import { v4 as uuidv4 } from 'uuid';
 import { getGoogleAlbumsByName, getAlbumMediaItemsFromGoogle, GooglePhotoAPIs } from "./googlePhotos";
 import { BatchCreateGoogleMediaItem, CreateGoogleAlbumResponse, CreateMediaItemsResponse, GoogleAlbum, GoogleMediaItem, MediaItem, NewMediaItemResult, UploadToGoogleResults } from '../types';
 import { isNil } from 'lodash';
-import { getMediaItemFromDb, updateMediaItemFieldsInDb } from './dbInterface';
+import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import path from 'path';
 import { TypedResponse } from '../types';
+import { updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 interface MediaItemDifferences {
   mediaItemsToUpload: MediaItem[];
@@ -347,7 +349,7 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
     for (let i = 0; i < mediaItemsToUploadIds.length; i++) {
       const mediaItemId = mediaItemsToUploadIds[i];
       const createdMediaItem = createdMediaItems[i];
-      const updates: Partial<MediaItem> = {
+      const updates: Partial<MediaItemDTO> = {
         googleAlbumId: googleAlbumId,
         googleAlbumName: googleAlbumName,
         googleMediaItemId: createdMediaItem.id,

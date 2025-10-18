@@ -2,13 +2,15 @@
 import { Keyword, KeywordData, KeywordNode, MediaItem, PersonInPhoto, StringToStringLUT } from '../types';
 import { isNil } from 'lodash';
 import { getJsonFromFile } from '../utilities';
-import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb, getMediaItemsInNamedAlbumFromDb, updateMediaItemFieldsInDb } from './dbInterface';
+import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb } from './dbInterface';
 import { getTakeoutMetaDataFilePath } from './app';
+import { getMediaItemsInNamedAlbum, updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 export const mergePeople = async (baseDirectory: string, albumName: string) => {
 
   try {
-    const mediaItemsInAlbum: MediaItem[] = await getMediaItemsInNamedAlbumFromDb(albumName);
+    const mediaItemsInAlbum: MediaItem[] = await getMediaItemsInNamedAlbum(albumName);
 
     const personKeywordNames: Set<string> = new Set<string>();
 
@@ -69,7 +71,7 @@ export const mergePeople = async (baseDirectory: string, albumName: string) => {
 
       const people: PersonInPhoto[] | null = takeoutMetadata.people ? takeoutMetadata.people : null;
 
-      const updates: Partial<MediaItem> = {
+      const updates: Partial<MediaItemDTO> = {
         people,
         keywordNodeIds,
         peopleRetrievedFromGoogle: true,

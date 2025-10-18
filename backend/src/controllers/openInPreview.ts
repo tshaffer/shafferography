@@ -1,8 +1,8 @@
 // src/routes/openInPreview.ts
 import { Request, Response } from 'express';
 import { spawn } from "child_process";
-import { MediaItem } from 'entities';
-import { getMediaItemFromDb } from './dbInterface';
+import { MediaItem } from '../types';
+import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import { getOriginalMediaItemFilePath } from '../utilities';
 
 export const openInPreview = async (request: Request, response: Response, next: any) => {

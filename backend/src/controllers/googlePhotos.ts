@@ -3,8 +3,8 @@ import { Request } from 'express';
 import { GoogleAlbum, GoogleMediaItem } from "../types";
 import { isArray, isNil } from 'lodash';
 import { getGoogleRequest, postGoogleRequest } from './googleUtils';
-import { getGoogleAlbumNamesWherePeopleNotRetrieved } from './dbInterface';
 import { TypedResponse } from '../types';
+import { getGoogleAlbumNamesWherePeopleNotRetrieved } from '../repositories/mediaItem.repo';
 
 export const GooglePhotoAPIs = {
   mediaItem: 'https://photoslibrary.googleapis.com/v1/mediaItems/',

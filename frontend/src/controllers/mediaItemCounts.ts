@@ -7,7 +7,7 @@ export const loadMediaItemCounts = (): any => {
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    let path = getServerUrl() + apiUrlFragment + 'mediaItemCounts';
+    let path = getServerUrl() + apiUrlFragment + 'stats/mediaItemCounts';
 
     return axios.get(path)
       .then((mediaItemCountsResponse: any) => {

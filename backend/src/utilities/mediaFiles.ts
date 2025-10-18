@@ -1,6 +1,6 @@
 import path from "path";
 import * as fse from 'fs-extra';
-import { MediaItem } from 'entities';
+import { MediaItem } from '../types';
 
 export const getOriginalMediaItemFilePath = (mediaItem: MediaItem): string => {
   let mediaFilePath: string = mediaItem.filePath;

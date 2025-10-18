@@ -1,0 +1,5 @@
+{
+  // Force Quick Fix to suggest ../relative paths for both TS and JS
+  "typescript.preferences.importModuleSpecifier": "relative",
+  "javascript.preferences.importModuleSpecifier": "relative"
+}

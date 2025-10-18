@@ -221,7 +221,7 @@ function hasToISOString(x: unknown): x is { toISOString: () => string } {
   return typeof x === "object" && x !== null && typeof (x as any).toISOString === "function";
 }
 
-function toIsoString(val: ExifDateTime | string | undefined): string | undefined {
+export function toIsoString(val: ExifDateTime | string | undefined): string | undefined {
   if (!val) return undefined;
   if (hasToISOString(val)) return val.toISOString();              // ExifDateTime → ISO
   if (typeof val === "string") {

@@ -9,7 +9,7 @@ import path from 'path';
 import * as fse from 'fs-extra';
 import mongoose from 'mongoose';
 import { connectDB } from '../config/db';
-import { getAllMediaItemsFromDb } from '../controllers';
+import { getAllMediaItemsFromDb } from '../repositories/mediaItem.repo';
 
 /* ────────────────────────────────────────────────────────────
    CLI args

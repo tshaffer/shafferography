@@ -1,9 +1,9 @@
-import { MediaItem } from 'entities';
 import { Request, Response } from 'express';
 
 import * as fse from 'fs-extra';
-import { getMediaItemFromDb } from './dbInterface';
 import { getOriginalMediaItemFilePath } from '../utilities';
+import { MediaItem } from '../types';
+import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 
 export const fileStat = async (req: Request, res: Response, next: any) => {
 

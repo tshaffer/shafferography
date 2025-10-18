@@ -50,7 +50,7 @@ const loadMediaItemsByViewSpecParams = (albumNodeIds: string[], photoStates: Pho
 
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
-    let path = getServerUrl() + apiUrlFragment + 'mediaItemsByViewSpec';
+    let path = getServerUrl() + apiUrlFragment + 'mediaItemsForPhotoStates';
     path += '?albumNodeIds=' + albumNodeIds.join(',');
     path += '&photoStates=' + JSON.stringify(photoStates);
     path += '&groupUndecidedPhotos=' + JSON.stringify(groupUndecidedPhotos);
@@ -95,43 +95,6 @@ export const loadAndReplaceMediaItemsByViewSpec = (): any => {
         return Promise.resolve();
       });
   }
-};
-
-export const loadMediaItems = (): any => {
-
-  return (dispatch: TedTaggerDispatch) => {
-
-    const specifyDateRange = false;
-    const startDate = (new Date()).toISOString();
-    const endDate = (new Date()).toISOString();
-
-    let path = getServerUrl()
-      + apiUrlFragment
-      + 'mediaItemsToDisplay';
-
-    path += '?specifyDateRange=' + specifyDateRange;
-    path += '&startDate=' + startDate;
-    path += '&endDate=' + endDate;
-
-    path += '&specifyTagsInSearch=false&tagSelector=untagged&tagIds=&tagSearchOperator=OR';
-
-    return axios.get(path)
-      .then((mediaItemsResponse: any) => {
-
-        const mediaItems: MediaItem[] = [];
-        const mediaItemEntitiesFromServer: MediaItem[] = (mediaItemsResponse as any).data;
-
-        // derive mediaItems from serverMediaItems
-        for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-
-          // TEDTODO - replace any
-          const mediaItem: any = cloneDeep(mediaItemEntityFromServer);
-          mediaItems.push(mediaItem as MediaItem);
-
-        }
-        dispatch(addMediaItems(mediaItems));
-      });
-  };
 };
 
 const replaceMediaItems = (mediaItemEntitiesFromServer: MediaItem[]): any => {

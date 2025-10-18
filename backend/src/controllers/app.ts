@@ -5,70 +5,40 @@ import * as fse from 'fs-extra';
 import { promisify } from 'util';
 
 import { version } from '../version';
+
+import * as mediaRepo from '../repositories/mediaItem.repo';
+
 import {
-  getMediaItemsToDisplayFromDb,
   getAllKeywordDataFromDb,
   createKeywordDocument,
   createKeywordNodeDocument,
   setRootKeywordNodeDb,
   getMediaItemsToDisplayFromDbUsingSearchSpec,
   updateKeywordNodeDb,
-  updateMediaItemsFieldsInDb,
   // getAllAlbumsFromDb,
   // addAlbumToDb,
-  getMediaItemsForPhotoStateFromDb,
-  getMediaItemCountByPhotoStateFromDb,
-  getMediaItemCountByAlbumNodeFromDb,
-  getMediaItemCountByPhotoStateByAlbumNodeIdFromDb,
-  getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb,
 } from './dbInterface';
 import {
   Keyword,
   KeywordData,
   KeywordNode,
+  MatchRule,
   MediaItem,
-  MediaItemCountByPhotoStateByAlbumNodeId,
-  MediaItemCountByUndecidedGroupPerAlbumNode,
-  MediaItemCounts, SearchRule, SearchSpec, StringToNumberLUT
+  SearchRule, SearchSpec
 } from '../types';
 import {
   deleteDirectory,
 } from '../utilities';
-import { MatchRule, PhotoState } from 'enums';
 import path from 'path';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {
     serverVersion: version,
   };
   response.json(data);
-};
-
-export const getMediaItemsForPhotoState = async (request: Request, response: Response) => {
-  const photoStates: PhotoState[] = JSON.parse(request.query.photoStates as string);
-  const albumNodeIdsAsStr: string = request.query.albumNodeIds as string;
-  const albumNodeIds: string[] = albumNodeIdsAsStr.split(',');
-  const groupUndecidedPhotos: boolean = request.query.groupUndecidedPhotos === 'true';
-  const undecidedGroupIdsAsStr: string = request.query.undecidedGroupIds as string;
-  const undecidedGroupIds: string[] = undecidedGroupIdsAsStr === '' ? [] : undecidedGroupIdsAsStr.split(',');
-  const mediaItems: MediaItem[] = await getMediaItemsForPhotoStateFromDb(albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds);
-  response.json(mediaItems);
-}
-
-export const getMediaItemsToDisplay = async (request: Request, response: Response) => {
-
-  const specifyDateRange: boolean = JSON.parse(request.query.specifyDateRange as string);
-  const startDate: string | null = request.query.startDate ? request.query.startDate as string : null;
-  const endDate: string | null = request.query.endDate ? request.query.endDate as string : null;
-
-  const mediaItems: MediaItem[] = await getMediaItemsToDisplayFromDb(
-    specifyDateRange,
-    startDate,
-    endDate,
-  );
-  response.json(mediaItems);
 };
 
 export const getMediaItemsToDisplayFromSearchSpec = async (request: Request, response: Response) => {
@@ -162,31 +132,31 @@ export const setRootKeywordNode = async (request: Request, response: Response, n
 
 export const setPhotoStateEndpoint = async (request: Request, response: Response, next: any) => {
   const { mediaItemIds, photoState } = request.body;
-  const updates: Partial<MediaItem> = {
+  const updates: Partial<MediaItemDTO> = {
     photoState
   };
 
-  await updateMediaItemsFieldsInDb(mediaItemIds, updates);
+  await mediaRepo.updateMediaItemsFieldsInDb(mediaItemIds, updates);
   response.sendStatus(200);
 }
 
 export const setAlbumNodeIdEndpoint = async (request: Request, response: Response, next: any) => {
   const { mediaItemIds, albumNodeId } = request.body;
-  const updates: Partial<MediaItem> = {
+  const updates: Partial<MediaItemDTO> = {
     albumNodeId
   };
 
-  await updateMediaItemsFieldsInDb(mediaItemIds, updates);
+  await mediaRepo.updateMediaItemsFieldsInDb(mediaItemIds, updates);
   response.sendStatus(200);
 }
 
 export const setMediaItemNotesEndpoint = async (request: Request, response: Response, next: any) => {
   const { uniqueId, notes } = request.body;
-  const updates: Partial<MediaItem> = {
+  const updates: Partial<MediaItemDTO> = {
     notes
   };
 
-  await updateMediaItemsFieldsInDb([uniqueId], updates);
+  await mediaRepo.updateMediaItemsFieldsInDb([uniqueId], updates);
   response.sendStatus(200);
 }
 
@@ -264,37 +234,3 @@ export const mergePeopleTakeoutEndpoint = async (request: Request, response: Res
   }
 }
 
-export const getMediaItemCountByAlbumNode = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByAlbumNodeFromDb();
-  response.json(counts);
-};
-
-export const getMediaItemCountByPhotoState = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByPhotoStateFromDb();
-  response.json(counts);
-};
-
-export const getMediaItemCountByPhotoStateByAlbumNodeId = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByPhotoStateByAlbumNodeIdFromDb();
-  response.json(counts);
-};
-
-export const getMediaItemCountByUndecidedGroupPerAlbumNode = async (request: Request, response: Response, next: any) => {
-  const counts: any = await getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb();
-  response.json(counts);
-};
-
-export const getMediaItemCounts = async (request: Request, response: Response, next: any) => {
-  const mediaItemCountByAlbumNode: StringToNumberLUT = await getMediaItemCountByAlbumNodeFromDb();
-  const mediaItemCountByPhotoState: StringToNumberLUT = await getMediaItemCountByPhotoStateFromDb();
-  const mediaItemCountByPhotoStateByAlbumNodeId: MediaItemCountByPhotoStateByAlbumNodeId = await getMediaItemCountByPhotoStateByAlbumNodeIdFromDb();
-  const mediaItemCountByUndecidedGroupPerAlbumNode: MediaItemCountByUndecidedGroupPerAlbumNode[] = await getMediaItemCountByUndecidedGroupPerAlbumNodeFromDb();
-  response.json(
-    {
-      mediaItemCountByAlbumNode,
-      mediaItemCountByPhotoState,
-      mediaItemCountByPhotoStateByAlbumNodeId,
-      mediaItemCountByUndecidedGroupPerAlbumNode
-    } as MediaItemCounts
-  );
-};

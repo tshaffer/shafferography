@@ -7,6 +7,7 @@ import { v4 as uuidv4 } from 'uuid';
 import {
   FileToImport, MediaItem,
   MediaItemPropertiesFromExif,
+  MediaItemStored,
   PhotoState
 } from '../types';
 import { Tags } from 'exiftool-vendored';
@@ -187,26 +188,26 @@ export function getLastModifiedUTCISO(filePath: string): string {
   return DateTime.fromJSDate(mtime).toUTC().toISO();
 }
 
-// async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItem | null> {
+async function rebuildLocalStorageMediaItem(id: string, filePath: string): Promise<MediaItemStored | null> {
 
-//   const exifData: Tags = await retrieveExifData(filePath);
-//   const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
+  const exifData: Tags = await retrieveExifData(filePath);
+  const mappedExif: MediaItemPropertiesFromExif = await mapExifToMediaItem(exifData);
 
-//   const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
-//   const geoData: GeoData | null = await extractGeoData(exifData);
+  const isoCreateDate: string | null = await convertCreateDateToISO(exifData);
+  const geoData: GeoData | null = await extractGeoData(exifData);
 
-//   const updates: Partial<MediaItem> = {
-//     width: exifData.ImageWidth,
-//     height: exifData.ImageHeight,
-//     takenAt: isoCreateDate,
-//     lastModified: getLastModifiedUTCISO(filePath),
-//     // geoData,
-//     orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
-//   };
+  const updates: Partial<MediaItem> = {
+    width: exifData.ImageWidth,
+    height: exifData.ImageHeight,
+    takenAt: isoCreateDate,
+    lastModified: getLastModifiedUTCISO(filePath),
+    // geoData,
+    orientation: isNil(exifData) ? null : valueOrNull(exifData.Orientation),
+  };
 
-//   const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
-//   return updatedItem;
-// }
+  const updatedItem = await updateSingleMediaItemFieldsInDb(id, updates);
+  return updatedItem;
+}
 
 export const reimportPhotosEndpoint = async (request: Request, response: Response, next: any) => {
 
@@ -240,8 +241,7 @@ export const reimportPhotosEndpoint = async (request: Request, response: Respons
     } else {
       console.error('HEIC file does not exist:', heicFilePath);
     }
-    // const updatedItem: MediaItem | null = await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
-    const updatedItem: MediaItem | null = null;
+    const updatedItem: MediaItem | null = await rebuildLocalStorageMediaItem(mediaItem.uniqueId, mediaFilePath);
     if (!updatedItem) {
       console.error('Failed to update media item:', mediaItem.uniqueId);
       return response.status(500).json({ error: 'Failed to update media item' });

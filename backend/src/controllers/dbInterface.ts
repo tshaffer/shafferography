@@ -63,6 +63,25 @@ const toDTO = (ret: MediaItemStored): MediaItem => {
   };
 };
 
+function toStored(dto: MediaItem): MediaItemStored {
+  // TODO: map/normalize every field your schema expects
+  const exif = dto.exif || {};
+  return {
+    ...dto,
+    _id: undefined, // let MongoDB create the _id
+    exif: {
+      ...exif,
+      imageWidth: dto.width,
+      imageHeight: dto.height,
+      orientation: dto.orientation,
+      takenAt: dto.takenAt,
+      fileModifiedAt: dto.fileModifiedAt,
+      exifModifiedAt: dto.exifModifiedAt,
+    },
+    // e.g. ensure required fields, normalize types, etc.
+  };
+}
+
 export const getMediaItemFromDb = async (
   mediaItemId: string
 ): Promise<MediaItem | null> => {
@@ -99,6 +118,8 @@ export const getMediaItemsToDisplayFromDb = async (
   startDate: string | null,
   endDate: string | null,
 ): Promise<MediaItem[]> => {
+
+  throw new Error('getMediaItemsToDisplayFromDb not updated yet');
 
   let querySpec = {};
 
@@ -163,6 +184,8 @@ export const getMediaItemsForPhotoStateFromDb = async (
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
   searchSpec: SearchSpec,
 ): Promise<MediaItem[]> => {
+
+  throw new Error('getMediaItemsToDisplayFromDbUsingSearchSpec not updated yet');
 
   const { matchRule, searchRules } = searchSpec;
 
@@ -512,30 +535,20 @@ export const updateMediaItemsFieldsInDb = async (
   }
 };
 
-const addMediaItemToDb = async (mediaItemModel: any, mediaItem: MediaItem): Promise<any> => {
+export async function addMediaItemToMediaItemsDBTable(
+  mediaItem: MediaItem
+): Promise<string | undefined> {
+  const MediaItemModel = getMediaItemModel(connection);
 
   try {
-    return mediaItemModel.collection.insertOne(mediaItem)
-      .then((retVal: any) => {
-        const dbRecordId: string = retVal.insertedId._id.toString();
-        return;
-      })
-      .catch((error: any) => {
-        console.error('db add error: ', error);
-        if (error.code === 11000) {
-          return;
-        } else {
-          debugger;
-        }
-      });
-  } catch (error: any) {
-    debugger;
+    const stored: MediaItemStored = toStored(mediaItem);
+    const doc = await MediaItemModel.create(stored); // schema validation runs
+    // return the Mongo _id as a string (or return doc.uniqueId if that’s your key)
+    return doc._id.toString();
+  } catch (err) {
+    if (err.code === 11000) return undefined;
+    throw err;
   }
-};
-
-export const addMediaItemToMediaItemsDBTable = async (mediaItem: MediaItem): Promise<any> => {
-  const mediaItemModel = getMediaItemModel(connection);
-  return addMediaItemToDb(mediaItemModel, mediaItem);
 };
 
 export const getGoogleAlbumNamesWherePeopleNotRetrieved = async (): Promise<string[]> => {

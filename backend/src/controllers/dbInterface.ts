@@ -1,107 +1,102 @@
 import { v4 as uuidv4 } from 'uuid';
-import { isEmpty, isNil } from 'lodash';
+import { isNil } from 'lodash';
 import {
   getMediaContentTreeModel,
   getKeywordModel,
   getKeywordNodeModel,
   getKeywordTreeModel,
   getUserModel,
-  getMediaItemModel,
 } from '../models';
 import {
-  MediaItem,
+  // MediaItem,
   Keyword,
   KeywordNode,
   SearchSpec,
-  SearchRule,
-  KeywordSearchRule,
-  DateSearchRule,
   KeywordData,
   User,
   UndecidedGroup,
   MediaContentNode,
 } from '../types';
 import { Document } from 'mongoose';
-import { DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, SearchRuleType } from '../types/enums';
 
-import { connection } from "../config"; // your already-initialized, connected mongoose Connection
 
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 
 //
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
   searchSpec: SearchSpec,
-): Promise<MediaItem[]> => {
+): Promise<MediaItemDTO[]> => {
 
   throw new Error('getMediaItemsToDisplayFromDbUsingSearchSpec not updated yet');
 
-  const { matchRule, searchRules } = searchSpec;
+  // const { matchRule, searchRules } = searchSpec;
 
-  let querySpec = {};
-  let dateQuerySpec = {};
-  const keywordNodeIds: string[] = [];
+  // let querySpec = {};
+  // let dateQuerySpec = {};
+  // const keywordNodeIds: string[] = [];
 
-  searchRules.forEach((searchRule: SearchRule) => {
-    if (searchRule.searchRuleType === SearchRuleType.Date) {
-      // only support single Date rule for now
-      const dateSearchRule: DateSearchRule = searchRule.searchRule as DateSearchRule;
-      switch (dateSearchRule.dateSearchRuleType) {
-        case DateSearchRuleType.IsInTheRange:
-          const startDate = dateSearchRule.date;
-          const endDate = dateSearchRule.date2;
-          dateQuerySpec = { creationTime: { $gte: startDate, $lte: endDate } };
-          break;
-        case DateSearchRuleType.IsBefore:
-          dateQuerySpec = { creationTime: { $lt: dateSearchRule.date } };
-          break;
-        case DateSearchRuleType.IsAfter:
-          dateQuerySpec = { creationTime: { $gt: dateSearchRule.date } };
-          break;
-        default:
-          throw new Error('dateSearchRuleType not recognized');
-      }
-    } else if (searchRule.searchRuleType === SearchRuleType.Keyword) {
-      const keywordSearchRule: KeywordSearchRule = searchRule.searchRule as KeywordSearchRule;
-      // only support KeywordSearchRuleType.Contains for now
-      if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.Contains) {
-        keywordNodeIds.push(keywordSearchRule.keywordNodeId);
-      } else if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.AreEmpty) {
-        throw new Error('KeywordSearchRuleType.AreEmpty not supported');
-      } else if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.AreNotEmpty) {
-        throw new Error('KeywordSearchRuleType.AreNotEmpty not supported');
-      } else {
-        throw new Error('keywordSearchRuleType not recognized');
-      }
-    } else {
-      throw new Error('searchRuleType not recognized');
-    }
-  });
+  // searchRules.forEach((searchRule: SearchRule) => {
+  //   if (searchRule.searchRuleType === SearchRuleType.Date) {
+  //     // only support single Date rule for now
+  //     const dateSearchRule: DateSearchRule = searchRule.searchRule as DateSearchRule;
+  //     switch (dateSearchRule.dateSearchRuleType) {
+  //       case DateSearchRuleType.IsInTheRange:
+  //         const startDate = dateSearchRule.date;
+  //         const endDate = dateSearchRule.date2;
+  //         dateQuerySpec = { creationTime: { $gte: startDate, $lte: endDate } };
+  //         break;
+  //       case DateSearchRuleType.IsBefore:
+  //         dateQuerySpec = { creationTime: { $lt: dateSearchRule.date } };
+  //         break;
+  //       case DateSearchRuleType.IsAfter:
+  //         dateQuerySpec = { creationTime: { $gt: dateSearchRule.date } };
+  //         break;
+  //       default:
+  //         throw new Error('dateSearchRuleType not recognized');
+  //     }
+  //   } else if (searchRule.searchRuleType === SearchRuleType.Keyword) {
+  //     const keywordSearchRule: KeywordSearchRule = searchRule.searchRule as KeywordSearchRule;
+  //     // only support KeywordSearchRuleType.Contains for now
+  //     if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.Contains) {
+  //       keywordNodeIds.push(keywordSearchRule.keywordNodeId);
+  //     } else if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.AreEmpty) {
+  //       throw new Error('KeywordSearchRuleType.AreEmpty not supported');
+  //     } else if (keywordSearchRule.keywordSearchRuleType === KeywordSearchRuleType.AreNotEmpty) {
+  //       throw new Error('KeywordSearchRuleType.AreNotEmpty not supported');
+  //     } else {
+  //       throw new Error('keywordSearchRuleType not recognized');
+  //     }
+  //   } else {
+  //     throw new Error('searchRuleType not recognized');
+  //   }
+  // });
 
-  if (!isEmpty(dateQuerySpec)) {
-    querySpec = dateQuerySpec;
-  }
+  // if (!isEmpty(dateQuerySpec)) {
+  //   querySpec = dateQuerySpec;
+  // }
 
-  // TEDTODO - need to take matchRule into account when combining dateQuerySpec and keywordQuerySpec
-  if (keywordNodeIds.length > 0) {
-    if (matchRule === MatchRule.all) {
-      querySpec = { ...querySpec, keywordNodeIds: { $all: keywordNodeIds } };
-    } else {
-      querySpec = { ...querySpec, keywordNodeIds: { $in: keywordNodeIds } };
-    }
-  }
+  // // TEDTODO - need to take matchRule into account when combining dateQuerySpec and keywordQuerySpec
+  // if (keywordNodeIds.length > 0) {
+  //   if (matchRule === MatchRule.all) {
+  //     querySpec = { ...querySpec, keywordNodeIds: { $all: keywordNodeIds } };
+  //   } else {
+  //     querySpec = { ...querySpec, keywordNodeIds: { $in: keywordNodeIds } };
+  //   }
+  // }
 
-  const mediaItemModel = getMediaItemModel(connection);
+  // const mediaItemModel = getMediaItemModel(connection);
 
-  const query = mediaItemModel.find(querySpec);
-  const documents: any = await query.exec();
-  const mediaItems: MediaItem[] = [];
-  for (const document of documents) {
-    const mediaItem: MediaItem = document.toObject() as MediaItem;
-    mediaItem.uniqueId = document.uniqueId.toString();
-    mediaItems.push(mediaItem);
-  }
-  return mediaItems;
+  // const query = mediaItemModel.find(querySpec);
+  // const documents: any = await query.exec();
+  // const mediaItems: MediaItem[] = [];
+  // for (const document of documents) {
+  //   const mediaItem: MediaItem = document.toObject() as MediaItem;
+  //   mediaItem.uniqueId = document.uniqueId.toString();
+  //   mediaItems.push(mediaItem);
+  // }
+  // return mediaItems;
 }
 
 export const getKeywordsFromDb = async (): Promise<Keyword[]> => {

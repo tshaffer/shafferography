@@ -13,19 +13,12 @@ import {
   createKeywordDocument,
   createKeywordNodeDocument,
   setRootKeywordNodeDb,
-  getMediaItemsToDisplayFromDbUsingSearchSpec,
   updateKeywordNodeDb,
-  // getAllAlbumsFromDb,
-  // addAlbumToDb,
 } from './dbInterface';
 import {
   Keyword,
   KeywordData,
-  KeywordNode,
-  MatchRule,
-  MediaItem,
-  SearchRule, SearchSpec
-} from '../types';
+  KeywordNode} from '../types';
 import {
   deleteDirectory,
 } from '../utilities';
@@ -48,16 +41,16 @@ export const getMediaItemsToDisplayFromSearchSpec = async (request: Request, res
     path += '&searchRules=' + JSON.stringify(searchRules);
   */
 
-  const matchRule: MatchRule = request.query.matchRule as MatchRule;
-  const searchRules: SearchRule[] = JSON.parse(request.query.searchRules as string) as SearchRule[];
+  // const matchRule: MatchRule = request.query.matchRule as MatchRule;
+  // const searchRules: SearchRule[] = JSON.parse(request.query.searchRules as string) as SearchRule[];
 
-  const searchSpec: SearchSpec = {
-    matchRule,
-    searchRules,
-  };
+  // const searchSpec: SearchSpec = {
+  //   matchRule,
+  //   searchRules,
+  // };
 
-  const mediaItems: MediaItem[] = await getMediaItemsToDisplayFromDbUsingSearchSpec(searchSpec);
-  response.json(mediaItems);
+  // const mediaItems: MediaItem[] = await getMediaItemsToDisplayFromDbUsingSearchSpec(searchSpec);
+  // response.json(mediaItems);
 };
 
 export const getAllKeywordData = async (request: Request, response: Response, next: any) => {

@@ -46,3 +46,34 @@ export interface MediaItemDTO {
     sourcePathHash?: string | null;
   };
 }
+
+export interface CreateMediaItemInput {
+  uniqueId: string;
+  googleMediaItemId: string;
+  fileName: string;
+  googleAlbumId: string;
+  googleAlbumName: string;
+  filePath?: string;
+  url?: string;
+  mimeType?: string;
+  creationTime?: string;
+  lastModified?: string;
+  peopleRetrievedFromGoogle: boolean;
+  people?: string[];          // accept simple array; we’ll map to [{name}]
+  keywordNodeIds: string[];
+  photoState: PhotoState;
+  albumNodeId: string;
+  undecidedGroupId?: string;
+  notes?: string;
+
+  // subdocuments (optional)
+  exif?: Record<string, unknown>;
+  exifMeta?: {
+    readAtIso: string;
+    tool: string;
+    toolVersion?: string;
+    schemaVersion: number;
+    sourcePathHash?: string;
+  };
+}
+

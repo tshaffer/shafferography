@@ -2,8 +2,8 @@ import { Request, Response } from 'express';
 
 import * as fse from 'fs-extra';
 import { getOriginalMediaItemFilePath } from '../utilities';
-import { MediaItem } from '../types';
 import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 export const fileStat = async (req: Request, res: Response, next: any) => {
 
@@ -12,7 +12,7 @@ export const fileStat = async (req: Request, res: Response, next: any) => {
     const mediaItemId = req.query.mediaItemId as string | undefined;
     if (!mediaItemId) return res.status(400).json({ error: "mediaItemId is required" });
 
-    const mediaItem: MediaItem | undefined = await getMediaItemFromDb(mediaItemId);
+    const mediaItem: MediaItemDTO | undefined = await getMediaItemFromDb(mediaItemId);
     if (!mediaItem) {
       console.error('Media item not found for ID:', mediaItemId);
       return res.status(404).json({ error: 'Media item not found' });

@@ -22,8 +22,8 @@ export const ExifSchema = new Schema(
     fNumber: Number,
     exposureTime: String,     // You can switch to Number seconds later if you prefer
     iso: Number,
-    focalLengthMm: Number,
-    focalLength35mm: Number,
+    focalLengthMm: String,
+    focalLength35mm: String,
 
     // GPS
     gpsLatitude: Number,
@@ -75,8 +75,8 @@ export interface ExifStored {
   fNumber?: number;
   exposureTime?: string; // as stored in schema
   iso?: number;
-  focalLengthMm?: number;
-  focalLength35mm?: number;
+  focalLengthMm?: string;
+  focalLength35mm?: string;
 
   // GPS
   gpsLatitude?: number;

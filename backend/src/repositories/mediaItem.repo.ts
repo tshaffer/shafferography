@@ -3,44 +3,12 @@ import { FilterQuery } from 'mongoose';
 import { PhotoState } from '../types';
 
 import type { MediaItemStored } from '../models/mediaItem.model';
-import type { MediaItemDTO } from '../domain/mediaItem.types';
+import type { CreateMediaItemInput, MediaItemDTO } from '../domain/mediaItem.types';
 
 import { connection } from "../config"; // your already-initialized, connected mongoose Connection
 import { getMediaItemModel } from '../models/getMediaItemModel';
 
 import type { StringToNumberLUT } from '../domain/stats.types';
-
-// What you pass into create/insert from the service.
-// If you already have CreateMediaItem in /domain, use that instead.
-export interface CreateMediaItemInput {
-  uniqueId: string;
-  googleMediaItemId: string;
-  fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
-  filePath?: string;
-  url?: string;
-  mimeType?: string;
-  creationTime?: string;
-  lastModified?: string;
-  peopleRetrievedFromGoogle: boolean;
-  people?: string[];          // accept simple array; we’ll map to [{name}]
-  keywordNodeIds: string[];
-  photoState: PhotoState;
-  albumNodeId: string;
-  undecidedGroupId?: string;
-  notes?: string;
-
-  // subdocuments (optional)
-  exif?: Record<string, unknown>;
-  exifMeta?: {
-    readAtIso: string;
-    tool: string;
-    toolVersion?: string;
-    schemaVersion: number;
-    sourcePathHash?: string;
-  };
-}
 
 type ToDTOOpts = { includeExif?: boolean; includeExifMeta?: boolean };
 
@@ -231,13 +199,13 @@ export async function findForPhotoState(params: FindForPhotoStateParams): Promis
   ];
 
   // preserve your original grouping logic
-  if (photoStates.includes('Undecided' as PhotoState) && groupUndecidedPhotos) {
+  if (photoStates.includes(PhotoState.Undecided) && groupUndecidedPhotos) {
     baseConditions.push({
       $or: [
-        { photoState: { $ne: 'Undecided' } as any },
+        { photoState: { $ne: PhotoState.Undecided } },
         {
           $and: [
-            { photoState: 'Undecided' as any },
+            { photoState: PhotoState.Undecided },
             { undecidedGroupId: { $in: undecidedGroupIds } },
           ],
         },

@@ -1,27 +1,25 @@
 // services/importLocal.service.ts
-import path from 'node:path';
-import fs from 'node:fs';
+import path from 'path';
 import * as fse from 'fs-extra';
 import { v4 as uuidv4 } from 'uuid';
 import { DateTime } from 'luxon';
 import { exiftool, Tags } from 'exiftool-vendored';
 
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
-import { toIsoString } from '../utilities/exifUtils'; // you already have this
-import { extractGeoFromTags } from '../utilities/geo';  // provided below
-import { isImageFile, getLastModifiedUTCISO } from '../utilities/fileUtils'; // provided below
-import { convertHEICFileToJPEGWithEXIF } from '../utilities/heic'; // thin wrapper; sample below
+import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { PhotoState } from '../types';
+import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
+import { CreateMediaItemInput, MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemStored } from '../models/mediaItem.model';
 
-// ---------- Types mirrored from your old code ----------
 export interface FileToImport {
   name: string;         // original filename
   type: string;         // mime (e.g., "image/heic")
   lastModified: number; // epoch millis
 }
 
-type FileStatus = {
+export type FileStatus = {
   status: 'processing' | 'completed' | 'conversion failed';
   filename: string;
 }
@@ -42,7 +40,7 @@ async function buildMediaItemFromLocal(
   isoLastModified: string,
   googleAlbumName = '',
   googleAlbumId = ''
-) {
+): Promise<CreateMediaItemInput> {
   // Read Exif
   const tags: Tags = await exiftool.read(filePath);
 
@@ -52,6 +50,14 @@ async function buildMediaItemFromLocal(
     toIsoString(tags.CreateDate) ??
     undefined;
 
+  // human place
+  const gpsLatitude = tags.GPSLatitude;
+  const gpsLongitude = tags.GPSLongitude;
+  const addr = await reverseGeocode(gpsLatitude, gpsLongitude);
+  const city = addr ? pickCity(addr) : undefined;
+  const state = addr ? pickState(addr) : undefined;
+  const country = addr?.country;
+
   const relativePath = filePath.replace(BASE_MEDIA_PATH, '');
   const url = `${BASE_MEDIA_URL}/${relativePath.startsWith('/') ? relativePath.slice(1) : relativePath}`;
 
@@ -59,10 +65,7 @@ async function buildMediaItemFromLocal(
   const width = (tags.ImageWidth as number | undefined) ?? (tags.ExifImageWidth as number | undefined);
   const height = (tags.ImageHeight as number | undefined) ?? (tags.ExifImageHeight as number | undefined);
 
-  // Geo (same as old extractGeoData)
-  const geoData = extractGeoFromTags(tags);
-
-  const create = {
+  const create: CreateMediaItemInput = {
     uniqueId: uuidv4(),
     googleMediaItemId: '',
     fileName: path.basename(filePath),
@@ -73,9 +76,9 @@ async function buildMediaItemFromLocal(
     mimeType: (tags.MIMEType as string | undefined) ?? undefined,
     creationTime,
     lastModified: isoLastModified,
-    width,
-    height,
-    orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
+    // width,
+    // height,
+    // orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
 
     // Newer schema fields you’ve adopted:
     exif: {
@@ -102,9 +105,9 @@ async function buildMediaItemFromLocal(
       gpsImgDirectionRef: tags.GPSImgDirectionRef,
       gpsSpeed: tags.GPSSpeed,
       gpsSpeedRef: tags.GPSSpeedRef,
-      city: '',
-      state: '',
-      country: '',
+      city,
+      state,
+      country,
     },
 
     exifMeta: {
@@ -126,9 +129,9 @@ async function buildMediaItemFromLocal(
 }
 
 // ---------- Public: single-file import (keeps your newer design) ----------
-export async function importLocalFile(absPath: string, albumNodeId = 'local') {
+export async function importLocalFile(absPath: string, albumNodeId = 'local'): Promise<MediaItemDTO> {
   const isoLastModified = getLastModifiedUTCISO(absPath);
-  const mediaItem = await buildMediaItemFromLocal(absPath, albumNodeId, isoLastModified);
+  const mediaItem: CreateMediaItemInput = await buildMediaItemFromLocal(absPath, albumNodeId, isoLastModified);
   return mediaItemRepo.insert(mediaItem, { includeExif: false });
 }
 
@@ -162,18 +165,20 @@ export async function startDirectoryImport(params: {
     for (const file of files) {
       const fileEntry = processingStatuses[importId]?.files.find(s => s.filename === file.name);
       const inputPath = path.join(baseDirectory, file.name);
-      const ext = path.extname(inputPath).toLowerCase();
+      const ext = path.extname(inputPath);
 
       try {
         let finalPath = inputPath;
 
         // HEIC/HEIF → JPEG+EXIF
-        if (ext === '.heic' || ext === '.heif') {
+        if (ext.toLowerCase() === '.heic' || ext.toLowerCase() === '.heif') {
           const newName = path.basename(inputPath, ext) + '.jpg';
           const outPath = path.join(path.dirname(inputPath), newName);
 
           try {
+            console.log('importLocal.service.ts: Converting HEIC file:', inputPath, '→', outPath);
             await convertHEICFileToJPEGWithEXIF(inputPath, outPath);
+            console.log('importLocal.service.ts: HEIC conversion completed:', outPath);
             finalPath = outPath;
             if (fileEntry) fileEntry.status = 'completed';
           } catch (err) {
@@ -217,15 +222,15 @@ export async function startDirectoryImport(params: {
   return { importId };
 }
 
-export function getImportStatus(importId: string) {
-  return processingStatuses[importId] || { files: [] as FileStatus[] };
+export function getImportStatus(importId: string): FileStatus[] {
+  const importStatus = processingStatuses[importId] || { files: [] as FileStatus[] };
+  return importStatus.files;
 }
 
 // ---------- Public: reimport (refresh JPEG from HEIC if present, then refresh DB fields) ----------
 export async function reimportOneMediaItem(params: {
   uniqueId: string;
-}) {
-  // Lookup current item (repo should offer a "getByUniqueId" — adapt if your repo differs)
+}): Promise<MediaItemStored> {
   const current = await mediaItemRepo.getByUniqueId(params.uniqueId);
   if (!current) return null;
 
@@ -242,7 +247,7 @@ export async function reimportOneMediaItem(params: {
     }
   } else {
     // Not fatal; just proceed to refresh fields
-    // console.warn('HEIC file does not exist for reimport:', heicPath);
+    console.warn('HEIC file does not exist for reimport:', heicPath);
   }
 
   // Refresh exif-derived fields
@@ -256,22 +261,11 @@ export async function reimportOneMediaItem(params: {
     orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
     exif: {
       ...current.exif,
-      takenAt: toIsoString(tags.DateTimeOriginal),
       exifModifiedAt: toIsoString(tags.ModifyDate),
       fileModifiedAt: toIsoString(tags.FileModifyDate),
       imageWidth: (tags.ImageWidth as number | undefined) ?? (tags.ExifImageWidth as number | undefined),
       imageHeight: (tags.ImageHeight as number | undefined) ?? (tags.ExifImageHeight as number | undefined),
-      gpsLatitude: tags.GPSLatitude,
-      gpsLongitude: tags.GPSLongitude,
-      gpsAltitudeM: tags.GPSAltitude,
-      gpsAltitudeRef: tags.GPSAltitudeRef,
-      gpsDateTime: toIsoString(tags.GPSDateTime),
-      gpsImgDirectionDeg: tags.GPSImgDirection,
-      gpsImgDirectionRef: tags.GPSImgDirectionRef,
-      gpsSpeed: tags.GPSSpeed,
-      gpsSpeedRef: tags.GPSSpeedRef,
     },
-    geoData: extractGeoFromTags(tags),
   };
 
   // repo should offer an update-by-uniqueId

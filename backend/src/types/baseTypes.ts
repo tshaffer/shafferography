@@ -1,4 +1,3 @@
-import { MediaItem } from "../types";
 import { Tags } from "exiftool-vendored";
 import { Response } from 'express';
 
@@ -16,10 +15,6 @@ export type StringToNumberLUT = {
 
 export interface FilePathToExifTags {
   [key: string]: Tags;
-}
-
-export type StringToMediaItem = {
-  [key: string]: MediaItem;
 }
 
 export type TypedResponse<T> = Response & {

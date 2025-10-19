@@ -1,5 +1,5 @@
 
-import { Keyword, KeywordData, KeywordNode, MediaItem, PersonInPhoto, StringToStringLUT } from '../types';
+import { Keyword, KeywordData, KeywordNode, PersonInPhoto, StringToStringLUT } from '../types';
 import { isNil } from 'lodash';
 import { getJsonFromFile } from '../utilities';
 import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb } from './dbInterface';
@@ -10,7 +10,7 @@ import { MediaItemDTO } from '../domain/mediaItem.types';
 export const mergePeople = async (baseDirectory: string, albumName: string) => {
 
   try {
-    const mediaItemsInAlbum: MediaItem[] = await getMediaItemsInNamedAlbum(albumName);
+    const mediaItemsInAlbum: MediaItemDTO[] = await getMediaItemsInNamedAlbum(albumName);
 
     const personKeywordNames: Set<string> = new Set<string>();
 
@@ -29,7 +29,6 @@ export const mergePeople = async (baseDirectory: string, albumName: string) => {
     }
 
     let addedKeywordData: KeywordData = null;
-    const addedMediaItems: MediaItem[] = [];
 
     if (personKeywordNames.size > 0) {
       addedKeywordData = await (addAutoPersonKeywordsToDb(personKeywordNames));

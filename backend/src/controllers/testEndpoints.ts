@@ -1,10 +1,10 @@
 import { Request, Response } from 'express';
 
-import { MediaItem } from '../types'
 import { getAllMediaItemsFromDb } from '../repositories/mediaItem.repo';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 export const getAllMediaItems = async (request: Request, response: Response) => {
-  const mediaItems: MediaItem[] = await getAllMediaItemsFromDb();
+  const mediaItems: MediaItemDTO[] = await getAllMediaItemsFromDb();
   response.json(mediaItems);
 };
 

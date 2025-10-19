@@ -7,11 +7,11 @@ export const MediaitemSchema = new Schema(
     uniqueId: { type: String, required: true, unique: true },
     googleMediaItemId: { type: String, required: true },
     fileName: { type: String, required: true },
-    googleAlbumId: { type: String, required: true },
-    googleAlbumName: { type: String, required: true },
     filePath: { type: String, default: '' },
     url: { type: String },
     mimeType: { type: String },
+    googleAlbumId: { type: String, required: true },
+    googleAlbumName: { type: String, required: true },
 
     // Promoted, query-friendly fields (fast filters/sorts)
     creationTime: { type: String },  // canonical, derived from EXIF/FS
@@ -50,11 +50,11 @@ export interface MediaItemStored {
   uniqueId: string;
   googleMediaItemId: string;
   fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
   filePath: string;         // default '' if not provided
   url?: string;
   mimeType?: string;
+  googleAlbumId: string;
+  googleAlbumName: string;
 
   creationTime?: string;
   lastModified?: string;

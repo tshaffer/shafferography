@@ -1,8 +1,8 @@
 import path from "path";
 import * as fse from 'fs-extra';
-import { MediaItem } from '../types';
+import { MediaItemDTO } from "../domain/mediaItem.types";
 
-export const getOriginalMediaItemFilePath = (mediaItem: MediaItem): string => {
+export const getOriginalMediaItemFilePath = (mediaItem: MediaItemDTO): string => {
   let mediaFilePath: string = mediaItem.filePath;
   const fileExtension = path.extname(mediaFilePath);
   const dirname = path.dirname(mediaFilePath); // Extracts the directory path

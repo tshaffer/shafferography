@@ -1,5 +1,5 @@
 import { getUndecidedGroupModel } from '../models';
-import { MediaItemCountByUndecidedGroupPerAlbumNode } from '../types';
+import { MediaItemCountByUndecidedGroupPerAlbumNode, PhotoState } from '../types';
 
 /**
  * For each undecided group and each albumNodeId it belongs to,
@@ -19,8 +19,7 @@ export async function countUndecidedByAlbumPerGroup(): Promise<MediaItemCountByU
               $expr: {
                 $and: [
                   { $eq: ['$albumNodeId', '$$albumNodeId'] },
-                  // IMPORTANT: match your enum casing exactly
-                  { $eq: ['$photoState', 'Undecided'] },
+                  { $eq: ['$photoState', PhotoState.Undecided] },
                   { $eq: ['$undecidedGroupId', { $toString: '$$groupId' }] },
                 ],
               },

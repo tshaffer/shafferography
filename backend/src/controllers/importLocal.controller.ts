@@ -1,20 +1,22 @@
 // controllers/importLocal.controller.ts
 import { Request, Response, NextFunction } from 'express';
-import path from 'node:path';
 
 import {
   importLocalFile,
   startDirectoryImport,
   getImportStatus,
   reimportOneMediaItem,
+  FileStatus,
 } from '../services/importLocal.service';
+import { MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemStored } from '../models/mediaItem.model';
 
 // POST /api/import/local-file
 // body: { absPath: string, albumNodeId?: string }
 export async function importLocalFileEndpoint(req: Request, res: Response, next: NextFunction) {
   try {
     const { absPath, albumNodeId } = req.body;
-    const result = await importLocalFile(absPath, albumNodeId ?? 'local');
+    const result: MediaItemDTO = await importLocalFile(absPath, albumNodeId ?? 'local');
     res.json(result);
   } catch (err) {
     next(err);
@@ -28,7 +30,7 @@ export async function importPhotosEndpoint(req: Request, res: Response, next: Ne
     const { baseDirectory, albumNodeId, files } = req.body;
 
     // start the task without blocking response (returns { importId })
-    const payload = await startDirectoryImport({
+    const payload: { importId: string } = await startDirectoryImport({
       baseDirectory,
       albumNodeId,
       files,
@@ -43,7 +45,8 @@ export async function importPhotosEndpoint(req: Request, res: Response, next: Ne
 // GET /api/import/status/:importId
 export async function getPerFileImportPhotosStatus(req: Request, res: Response) {
   const { importId } = req.params;
-  res.json(getImportStatus(importId));
+  const importStatus: FileStatus[] = getImportStatus(importId);
+  res.json(importStatus);
 }
 
 // POST /api/import/reimport
@@ -54,7 +57,7 @@ export async function reimportPhotosEndpoint(req: Request, res: Response, next: 
     if (!mediaItemIds?.length) return res.status(400).json({ error: 'mediaItemIds required' });
 
     const uniqueId = mediaItemIds[0];
-    const updated = await reimportOneMediaItem({ uniqueId });
+    const updated: MediaItemStored = await reimportOneMediaItem({ uniqueId });
     if (!updated) return res.status(404).json({ error: 'Media item not found' });
 
     res.json(updated);

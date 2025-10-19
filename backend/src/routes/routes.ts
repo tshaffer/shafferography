@@ -12,15 +12,12 @@ import {
   getAlbumNamesWherePeopleNotRetrievedEndpoint,
   setPhotoStateEndpoint,
   mergePeopleTakeoutEndpoint,
-  importPhotosEndpoint,
-  getPerFileImportPhotosStatus,
   getPerFileUploadToGoogleStatus,
   getUndecidedGroups,
   setMediaItemNotesEndpoint,
   getAlbumNodes,
   saveAlbumNodes,
   moveAlbumNode,
-  reimportPhotosEndpoint,
   setAlbumNodeIdEndpoint,
   openInPreview,
   fileStat,
@@ -32,6 +29,7 @@ import { addUndecidedGroup } from '../controllers/';
 import { getMediaItemCounts } from '../controllers/stats.controller';
 import { getMediaItemsForPhotoState as getMediaItemsForPhotoStates, getOne as getMediaItem, assignMediaItemsToUndecidedGroup } from '../controllers/mediaItems.controller';
 import { deleteUndecidedGroup } from '../controllers/undecidedGroups.controller';
+import { getPerFileImportPhotosStatus, importPhotosEndpoint, reimportPhotosEndpoint } from '../controllers/importLocal.controller';
 
 export const createRoutes = (app: express.Application) => {
   app.get('/api/v1/version', getVersion);

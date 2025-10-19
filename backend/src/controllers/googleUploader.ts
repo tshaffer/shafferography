@@ -4,7 +4,7 @@ import { Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
 
 import { getGoogleAlbumsByName, getAlbumMediaItemsFromGoogle, GooglePhotoAPIs } from "./googlePhotos";
-import { BatchCreateGoogleMediaItem, CreateGoogleAlbumResponse, CreateMediaItemsResponse, GoogleAlbum, GoogleMediaItem, MediaItem, NewMediaItemResult, UploadToGoogleResults } from '../types';
+import { BatchCreateGoogleMediaItem, CreateGoogleAlbumResponse, CreateMediaItemsResponse, GoogleAlbum, GoogleMediaItem, NewMediaItemResult, UploadToGoogleResults } from '../types';
 import { isNil } from 'lodash';
 import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import path from 'path';
@@ -13,9 +13,9 @@ import { updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
 import { MediaItemDTO } from '../domain/mediaItem.types';
 
 interface MediaItemDifferences {
-  mediaItemsToUpload: MediaItem[];
+  mediaItemsToUpload: MediaItemDTO[];
   googleMediaItemIdsToRemove: string[];
-  mediaItemsToIgnore: MediaItem[];
+  mediaItemsToIgnore: MediaItemDTO[];
 }
 
 interface GoogleUploadSpec {
@@ -247,7 +247,7 @@ export const uploadToGoogleEndpoint = async (request: Request, response: TypedRe
 
     const uploadId = uuidv4();
 
-    const mediaItemsInAlbum: MediaItem[] = await Promise.all(
+    const mediaItemsInAlbum: MediaItemDTO[] = await Promise.all(
       mediaItemIdsInAlbum.map(async (mediaItemId: string) => getMediaItemFromDb(mediaItemId))
     );
 
@@ -370,7 +370,7 @@ export const getPerFileUploadToGoogleStatus = async (req: Request, res: Response
   res.json(processingStatuses[uploadId] || { files: [] });
 }
 
-const getGoogleUploadSpec = async (googleAccessToken: string, googleAlbumName: string, mediaItems: MediaItem[]): Promise<GoogleUploadSpec> => {
+const getGoogleUploadSpec = async (googleAccessToken: string, googleAlbumName: string, mediaItems: MediaItemDTO[]): Promise<GoogleUploadSpec> => {
 
   let googleAlbumId: string = '';
 
@@ -431,27 +431,27 @@ const getGoogleUploadSpec = async (googleAccessToken: string, googleAlbumName: s
 }
 
 function getMediaItemDifferences(
-  mediaItems: MediaItem[],
+  mediaItems: MediaItemDTO[],
   googleMediaItems: GoogleMediaItem[]
 ): MediaItemDifferences {
 
-  const mediaFileMap: Map<string, MediaItem> = new Map(
+  const mediaFileMap: Map<string, MediaItemDTO> = new Map(
     mediaItems
-      .filter((item: MediaItem) => item.googleMediaItemId !== '') // Exclude empty googleMediaItemId
-      .map((item: MediaItem) => [item.googleMediaItemId as string, item]) // Ensure it's non-empty
+      .filter((item: MediaItemDTO) => item.googleMediaItemId !== '') // Exclude empty googleMediaItemId
+      .map((item: MediaItemDTO) => [item.googleMediaItemId as string, item]) // Ensure it's non-empty
   );
 
   const googleFileMap: Map<string, GoogleMediaItem> = new Map(
     googleMediaItems.map((item: GoogleMediaItem) => [item.id, item])
   );
 
-  const mediaItemsToUpload: MediaItem[] = [
+  const mediaItemsToUpload: MediaItemDTO[] = [
     ...[...mediaFileMap.keys()]
       .filter((googleMediaItemId: string) => !googleFileMap.has(googleMediaItemId))
-      .map((googleMediaItemId: string) => mediaFileMap.get(googleMediaItemId) as MediaItem),
+      .map((googleMediaItemId: string) => mediaFileMap.get(googleMediaItemId) as MediaItemDTO),
 
     // Append mediaItems with googleMediaItemId === ''
-    ...mediaItems.filter((item: MediaItem) => item.googleMediaItemId === ''),
+    ...mediaItems.filter((item: MediaItemDTO) => item.googleMediaItemId === ''),
   ];
 
   const googleMediaItemIdsToRemove: string[] = [...googleFileMap.keys()]
@@ -461,9 +461,9 @@ function getMediaItemDifferences(
       return googleItem.id;
     });
 
-  const mediaItemsToIgnore: MediaItem[] = [...mediaFileMap.keys()]
+  const mediaItemsToIgnore: MediaItemDTO[] = [...mediaFileMap.keys()]
     .filter((googleMediaItemId: string) => googleFileMap.has(googleMediaItemId))
-    .map((googleMediaItemId: string) => mediaFileMap.get(googleMediaItemId) as MediaItem);
+    .map((googleMediaItemId: string) => mediaFileMap.get(googleMediaItemId) as MediaItemDTO);
 
   if ((googleMediaItems.length + mediaItemsToUpload.length - googleMediaItemIdsToRemove.length) !== mediaItems.length) {
     throw new Error('getMediaItemDifferences: unexpected length mismatch 0');

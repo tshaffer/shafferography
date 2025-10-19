@@ -1,87 +1,8 @@
 import { StringToNumberLUT } from "../types";
-import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, PhotoState, MediaContentNodeType } from "./enums";
+import { SearchRuleType, DateSearchRuleType, KeywordSearchRuleType, MatchRule, MediaContentNodeType } from "./enums";
 
 export interface PersonInPhoto {
   name: string;
-}
-
-export interface MediaItemPropertiesFromExif {
-  // Timestamps
-  takenAt?: string;          // DateTimeOriginal/CreateDate
-  fileModifiedAt?: string;   // FileModifyDate
-  exifModifiedAt?: string;   // ModifyDate
-
-  // Dimensions (match schema)
-  imageWidth?: number;       // ImageWidth (current/visible)
-  imageHeight?: number;      // ImageHeight (current/visible)
-  orientation?: number;      // Orientation
-
-  // Exposure / optics
-  fNumber?: number;
-  exposureTime?: string;
-  iso?: number;
-  focalLengthMm?: number;
-  focalLength35mm?: number;
-
-  // Place
-  city?: string;
-  state?: string;
-  country?: string;
-
-  // GPS
-  gpsLatitude?: number;
-  gpsLongitude?: number;
-  gpsAltitudeM?: number;
-  gpsImgDirectionDeg?: number;
-}
-
-export interface MediaItemStored {
-  _id: any;
-  uniqueId: string;
-  googleMediaItemId: string;
-  fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
-  filePath?: string;
-  url?: string;
-  mimeType?: string;
-  peopleRetrievedFromGoogle: boolean;
-  people?: { name: string }[];
-  keywordNodeIds: string[];
-  photoState: string; // or PhotoState
-  albumNodeId: string;
-  undecidedGroupId?: string;
-  notes?: string;
-  exif?: MediaItemPropertiesFromExif;
-}
-
-export interface MediaItem {
-  uniqueId: string;
-  googleMediaItemId: string;
-  fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
-
-  width: number | null;       // from exif.imageWidth
-  height: number | null;      // from exif.imageHeight
-  orientation: number;        // default 0
-  takenAt: string | null;     // from exif.takenAt
-  fileModifiedAt: string | null;   // FileModifyDate
-  exifModifiedAt: string | null;   // ModifyDate
-
-  filePath: string;
-  url: string | null;
-  mimeType: string | null;
-  photoState: string;
-  albumNodeId: string;
-  undecidedGroupId: string | null;
-  notes: string | null;
-  keywordNodeIds: string[];
-  peopleRetrievedFromGoogle: boolean;
-  people: { name: string }[];
-
-  // optional raw exif
-  exif?: MediaItemPropertiesFromExif;
 }
 
 export interface DateRangeSpecification {

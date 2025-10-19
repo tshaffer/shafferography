@@ -358,3 +358,13 @@ export async function clearUndecidedGroupOnItems(undecidedGroupId: string): Prom
     { $unset: { undecidedGroupId: '' } }
   ).exec();
 }
+
+export async function getByUniqueId(uniqueId: string) {
+  return getMediaItemModel(connection).findOne({ uniqueId }).lean().exec();
+}
+
+export async function updateByUniqueId(uniqueId: string, updates: Partial<MediaItemDTO>) {
+  return getMediaItemModel(connection)
+    .updateOne({ uniqueId }, { $set: updates })
+    .exec();
+}

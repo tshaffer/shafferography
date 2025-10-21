@@ -37,57 +37,71 @@ export interface RightPanelDerivedActionCreatorProps {
 
 export interface RightPanelAllProps extends RightPanelDerivedStateProps, RightPanelDerivedActionCreatorProps, RightPanelPropsFromParent { }
 
-// ---- helpers ----
-function formatDateTimeLine(iso: string | null | undefined, opts?: { timeZone?: string }) {
-  if (!iso) return null;
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return null;
+// ---------- helpers ----------
+type TZOpts = { timeZone?: string };
 
-  // We aim for: "<Month> <day>, <year>. <weekday>, <h:mm><AM/PM>"
-  const monthDayYear = new Intl.DateTimeFormat(undefined, {
-    month: 'long',
+function fmtMonthDayYearAbbrev(iso?: string | null, opts?: TZOpts) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return new Intl.DateTimeFormat(undefined, {
+    month: 'short', // Abbrev month
     day: 'numeric',
     year: 'numeric',
     ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
-  }).format(date);
+  }).format(d);
+}
 
+function fmtWeekdayTimeAbbrev(iso?: string | null, opts?: TZOpts) {
+  if (!iso) return null;
+  const d = new Date(iso);
+  if (Number.isNaN(d.getTime())) return null;
   const weekday = new Intl.DateTimeFormat(undefined, {
-    weekday: 'long',
+    weekday: 'short', // Abbrev weekday
     ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
-  }).format(date);
-
+  }).format(d);
   const time = new Intl.DateTimeFormat(undefined, {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
     ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
-  }).format(date);
-
-  return `${monthDayYear}. ${weekday}, ${time}`;
+  }).format(d);
+  return `${weekday}, ${time}`;
 }
 
-function nonEmptyJoin(parts: Array<string | number | null | undefined>, sep: string) {
-  return parts
-    .filter((p) => p !== null && p !== undefined && String(p).trim().length > 0)
-    .join(sep);
+function fmtSingleLineDate(iso?: string | null, opts?: TZOpts) {
+  const date = fmtMonthDayYearAbbrev(iso, opts);
+  const weekdayTime = fmtWeekdayTimeAbbrev(iso, opts);
+  if (!date || !weekdayTime) return null;
+  // "<Mon> <day>, <year>. <Wed>, <h:mm AM/PM>"
+  return `${date}. ${weekdayTime}`;
+}
+
+function nonEmpty(parts: Array<string | number | null | undefined>) {
+  return parts.filter(p => p !== null && p !== undefined && String(p).trim() !== '');
 }
 
 function formatAperture(fNumber?: number) {
   if (fNumber === null || fNumber === undefined) return null;
-  // Show up to one decimal if needed
-  const val = Number.isInteger(fNumber) ? `${fNumber}` : fNumber.toFixed(1);
-  return `f/${val}`;
+  const s = Number.isInteger(fNumber) ? `${fNumber}` : fNumber.toFixed(1);
+  return `f/${s}`;
 }
 
 function formatShutter(exposureTime?: string) {
   if (!exposureTime) return null;
-  return exposureTime; // typically already like "1/120"
+  return exposureTime; // usually already like "1/120"
 }
 
 function formatFocal(focalLengthMm?: number) {
   if (focalLengthMm === null || focalLengthMm === undefined) return null;
-  const val = Number.isInteger(focalLengthMm) ? `${focalLengthMm}` : focalLengthMm.toFixed(1);
-  return `${val} mm`;
+  const s = Number.isInteger(focalLengthMm) ? `${focalLengthMm}` : focalLengthMm.toFixed(1);
+  return `${s} mm`;
+}
+
+function formatLocation(city?: string, state?: string, country?: string) {
+  const stateFiltered = (state && state.trim().toLowerCase() === 'california') ? '' : state;
+  const countryFiltered = (country && country.trim().toLowerCase() === 'united states') ? '' : country;
+  return nonEmpty([city, stateFiltered, countryFiltered]).join(' ');
 }
 
 const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => {
@@ -100,32 +114,23 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
 
   if (!mediaItem) return null;
 
-  console.log('props:', props);
-  
-  // Date/time lines (note: without a known timezone for the photo location,
-  // we fall back to the browser's local timezone).
-  const takenLine = formatDateTimeLine(mediaItem.creationTime ?? mediaItem.takenAt ?? null);
-  const modifiedLine = formatDateTimeLine(mediaItem.lastModified ?? mediaItem.fileModifiedAt ?? null);
+  // If/when you store a true capture timezone (from GPS), pass as { timeZone } below.
+  const takenDate = fmtMonthDayYearAbbrev(mediaItem.creationTime ?? mediaItem.takenAt ?? null);
+  const takenWeekdayTime = fmtWeekdayTimeAbbrev(mediaItem.creationTime ?? mediaItem.takenAt ?? null);
+  const modifiedLine = fmtSingleLineDate(mediaItem.lastModified ?? mediaItem.fileModifiedAt ?? null);
 
-  // Dimensions
-  const dims =
-    mediaItem.width && mediaItem.height
-      ? `${mediaItem.width} x ${mediaItem.height}`
-      : null;
+  const dims = (mediaItem.width && mediaItem.height) ? `${mediaItem.width} x ${mediaItem.height}` : null;
 
-  // Exposure / optics
   const aperture = formatAperture(mediaItem.exif?.fNumber);
   const shutter = formatShutter(mediaItem.exif?.exposureTime);
   const focal = formatFocal(mediaItem.exif?.focalLengthMm);
-  const exposureLine = nonEmptyJoin([aperture, shutter, focal], ' ');
 
-  // Location (no commas per spec; only include present fields)
-  const locationLine = nonEmptyJoin(
-    [mediaItem.exif?.city, mediaItem.exif?.state, mediaItem.exif?.country],
-    ' '
+  const locationLine = formatLocation(
+    mediaItem.exif?.city,
+    mediaItem.exif?.state,
+    mediaItem.exif?.country
   );
 
-  // People
   const peopleLine = (mediaItem.people && mediaItem.people.length > 0)
     ? mediaItem.people.map(p => p.name).join(', ')
     : '';
@@ -169,44 +174,51 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
 
         <Card sx={{ mb: 2 }}>
           <CardContent sx={{ lineHeight: 1.8 }}>
+            {/* <file name> */}
             <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
               {mediaItem.fileName}
             </Typography>
 
+            {/* Photo taken: (two lines following label) */}
+            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+              Photo taken:
+            </Typography>
             <Typography variant="body2">
-              <strong>Photo taken:</strong>{' '}
-              {takenLine ?? '—'}
+              {takenDate ?? '—'}
+            </Typography>
+            <Typography variant="body2">
+              {takenWeekdayTime ?? '—'}
             </Typography>
 
-            <Typography variant="body2">
-              <strong>Last modified:</strong>{' '}
-              {modifiedLine ?? '—'}
+            {/* Last modified: single line with period separator */}
+            <Typography variant="body2" sx={{ mt: 1 }}>
+              <strong>Last modified:</strong> {modifiedLine ?? '—'}
             </Typography>
 
+            {/* Dimensions */}
             <Typography variant="body2">
-              <strong>Dimensions:</strong>{' '}
-              {dims ?? '—'}
+              <strong>Dimensions:</strong> {dims ?? '—'}
             </Typography>
 
+            {/* Exposure lines */}
             <Typography variant="body2">
-              {nonEmptyJoin(
-                [
-                  mediaItem.exif?.fNumber !== undefined ? formatAperture(mediaItem.exif?.fNumber) : null,
-                  mediaItem.exif?.exposureTime ? formatShutter(mediaItem.exif?.exposureTime) : null,
-                  mediaItem.exif?.focalLengthMm !== undefined ? formatFocal(mediaItem.exif?.focalLengthMm) : null
-                ],
-                ' '
-              ) || '—'}
+              <strong>Aperture:</strong> {aperture ?? '—'}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Shutter speed:</strong> {shutter ?? '—'}
+            </Typography>
+            <Typography variant="body2">
+              <strong>Focal length:</strong> {focal ?? '—'}
             </Typography>
 
+            {/* Location */}
             <Typography variant="body2">
-              <strong>Location:</strong>{' '}
-              {locationLine || '—'}
+              <strong>Location:</strong> {locationLine || '—'}
             </Typography>
 
+            {/* People */}
             <Typography variant="body2">
-              <strong>People:</strong>{' '}
-              {peopleLine || '—'}
+              <strong>People:</strong> {peopleLine || '—'}
             </Typography>
           </CardContent>
         </Card>

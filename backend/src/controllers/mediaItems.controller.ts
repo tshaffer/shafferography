@@ -2,6 +2,7 @@ import { Request, Response, NextFunction } from 'express';
 import * as mediaItemsService from '../services/mediaItems.service';
 import * as mediaRepo from '../repositories/mediaItem.repo';
 import { PhotoState } from '../types';
+import { MediaItemDTO } from '../domain/mediaItem.types';
 
 export async function getOne(req: Request, res: Response, next: NextFunction) {
   try {
@@ -50,7 +51,7 @@ export async function getMediaItemsForPhotoState(
       .map(s => s.trim())
       .filter(Boolean);
 
-    const items = await mediaItemsService.getMediaItemsForPhotoState(
+    const items: MediaItemDTO[] = await mediaItemsService.getMediaItemsForPhotoState(
       albumNodeIds,
       photoStates,
       groupUndecidedPhotos,

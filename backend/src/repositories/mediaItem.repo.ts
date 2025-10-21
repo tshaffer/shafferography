@@ -221,7 +221,7 @@ export async function findForPhotoState(params: FindForPhotoStateParams): Promis
     .lean()
     .exec();
 
-  return docs.map(d => toDTO(d, { includeExif: false }));
+  return docs.map(d => toDTO(d, { includeExif: true }));
 }
 
 /** getAllMediaItemsFromDb -> repo.findAll */

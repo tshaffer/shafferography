@@ -4,7 +4,44 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Debug shafferography",
+      "name": "A - Debug shafferography (ts-node + aliases)",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/bootstrap.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only",
+        "-r",
+        "tsconfig-paths/register"
+      ],
+      "envFile": "${workspaceFolder}/backend/.env",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "B - Debug shafferography (built dist)",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/dist/server.js",
+      "runtimeExecutable": "node",
+      "preLaunchTask": "tsc: build - backend",
+      "outFiles": [
+        "${workspaceFolder}/backend/dist/**/*.js"
+      ],
+      "envFile": "${workspaceFolder}/backend/.env",
+      "sourceMaps": true,
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Obsolete Debug shafferography",
       "skipFiles": [
         "<node_internals>/**"
       ],

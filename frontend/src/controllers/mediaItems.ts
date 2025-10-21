@@ -4,7 +4,6 @@ import isEqual from 'lodash/isEqual';
 import {
   TedTaggerAnyPromiseThunkAction,
   TedTaggerDispatch,
-  addMediaItems,
   addKeywordToMediaItemIdsRedux,
   removeKeywordFromMediaItemIdsRedux,
   setPhotoStateRedux,
@@ -18,7 +17,6 @@ import {
   PhotoState,
   PhotoLayout,
 } from '../types';
-import { cloneDeep } from 'lodash';
 import {
   getDisplayedAlbumNodeIds,
   getDisplayedPhotoStates,
@@ -34,7 +32,6 @@ import {
 } from '../selectors';
 import { deselectMediaItems } from './selectMediaItem';
 import { loadMediaItemCounts } from './mediaItemCounts';
-
 
 const deselectHiddenMediaItems = (): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
@@ -97,7 +94,7 @@ export const loadAndReplaceMediaItemsByViewSpec = (): any => {
   }
 };
 
-const replaceMediaItems = (mediaItemEntitiesFromServer: MediaItem[]): any => {
+const replaceMediaItems = (newMediaItems: MediaItem[]): any => {
   return (dispatch: TedTaggerDispatch, getState: any) => {
 
     const state: TedTaggerState = getState();
@@ -107,15 +104,14 @@ const replaceMediaItems = (mediaItemEntitiesFromServer: MediaItem[]): any => {
     const mediaItems: MediaItem[] = [];
     let mediaItemChanges = false;
 
-    if (currentMediaItems.length === mediaItemEntitiesFromServer.length) {
-      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-        const mediaItem: MediaItem = cloneDeep(mediaItemEntityFromServer) as MediaItem;
+    if (currentMediaItems.length === newMediaItems.length) {
+      for (const newMediaItem of newMediaItems) {
 
-        const existingItem = currentMediaItemsMap.get(mediaItem.uniqueId);
+        const existingItem = currentMediaItemsMap.get(newMediaItem.uniqueId);
 
-        if (!existingItem || !isEqual(existingItem, mediaItem)) {
+        if (!existingItem || !isEqual(existingItem, newMediaItem)) {
           mediaItemChanges = true;
-          mediaItems.push(mediaItem); // Add only changed or new items
+          mediaItems.push(newMediaItem); // Add only changed or new items
         }
       }
 
@@ -124,8 +120,8 @@ const replaceMediaItems = (mediaItemEntitiesFromServer: MediaItem[]): any => {
       }
     }
     else {
-      for (const mediaItemEntityFromServer of mediaItemEntitiesFromServer) {
-        mediaItems.push(cloneDeep(mediaItemEntityFromServer) as MediaItem); // Add only changed or new items
+      for (const newMediaItem of newMediaItems) {
+        mediaItems.push(newMediaItem); // Add only changed or new items
       }
       dispatch(updateMediaItemsRedux(mediaItems)); // Dispatch only if there are changes
     }

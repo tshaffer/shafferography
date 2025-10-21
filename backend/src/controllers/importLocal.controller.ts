@@ -9,7 +9,7 @@ import {
   FileStatus,
 } from '../services/importLocal.service';
 import { MediaItemStored } from '../models/mediaItem.model';
-import { MediaItemDTO } from '../../../shared/types/mediaItem';
+import { MediaItemDTO } from '@shared/types/mediaItem';
 
 // POST /api/import/local-file
 // body: { absPath: string, albumNodeId?: string }

@@ -8,8 +8,8 @@ import { connection } from "../config"; // your already-initialized, connected m
 import { getMediaItemModel } from '../models/getMediaItemModel';
 
 import type { StringToNumberLUT } from '../domain/stats.types';
-import { PhotoState } from '../../../shared/types/enums';
-import { MediaItemDTO } from '../../../shared/types/mediaItem';
+import { PhotoState } from '@shared/types/enums';
+import { MediaItemDTO } from '@shared/types/mediaItem';
 
 type ToDTOOpts = { includeExif?: boolean; includeExifMeta?: boolean };
 

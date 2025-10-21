@@ -1,4 +1,4 @@
-import { MediaItemPropertiesFromExif,  } from '@shared/types/mediaItem';
+import { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import { PhotoState } from '@shared/types/enums';
 
 export interface CreateMediaItemInput {

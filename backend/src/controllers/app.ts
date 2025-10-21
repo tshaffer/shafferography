@@ -25,7 +25,7 @@ import {
 import path from 'path';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
-import { MediaItemDTO } from '../../../shared/types/mediaItem';
+import { MediaItemDTO } from '@shared/types/mediaItem';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {

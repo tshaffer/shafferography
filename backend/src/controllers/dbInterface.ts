@@ -21,7 +21,7 @@ import { Document } from 'mongoose';
 
 
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
-import { MediaItemDTO } from '../../../shared/types/mediaItem';
+import { MediaItemDTO } from '@shared/types/mediaItem';
 
 
 //

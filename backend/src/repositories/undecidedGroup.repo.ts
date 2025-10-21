@@ -1,4 +1,4 @@
-import { PhotoState } from '../../../shared/types/enums';
+import { PhotoState } from '@shared/types/enums';
 import { getUndecidedGroupModel } from '../models';
 import { MediaItemCountByUndecidedGroupPerAlbumNode } from '../types';
 

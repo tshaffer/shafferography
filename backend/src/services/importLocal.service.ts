@@ -8,10 +8,11 @@ import { exiftool, Tags } from 'exiftool-vendored';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
-import { PhotoState } from '../types';
 import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
-import { CreateMediaItemInput, MediaItemDTO, MediaItemPropertiesFromExif } from '../domain/mediaItem.types';
+import { CreateMediaItemInput } from '../domain/mediaItem.types';
 import { MediaItemStored } from '../models/mediaItem.model';
+import { MediaItemDTO, MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
+import { PhotoState } from '@shared/types/enums';
 
 export interface FileToImport {
   name: string;         // original filename

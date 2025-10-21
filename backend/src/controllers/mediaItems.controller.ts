@@ -1,8 +1,8 @@
 import { Request, Response, NextFunction } from 'express';
 import * as mediaItemsService from '../services/mediaItems.service';
 import * as mediaRepo from '../repositories/mediaItem.repo';
-import { PhotoState } from '../types';
-import { MediaItemDTO } from '../domain/mediaItem.types';
+import { PhotoState } from '../../../shared/types/enums';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 export async function getOne(req: Request, res: Response, next: NextFunction) {
   try {

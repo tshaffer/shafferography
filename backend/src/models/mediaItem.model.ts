@@ -1,6 +1,12 @@
 import { Schema, model, Types } from 'mongoose';
 import { ExifSchema, ExifMetaSchema, ExifMetaStored, ExifStored } from './exif.model';
-import { PhotoState } from '../types';
+import { PhotoState } from '@shared/types/enums';
+
+// DEBUG — verify what file is being loaded and what it exports
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+console.log('Resolved @shared/types/enums =', require.resolve('@shared/types/enums'));
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+console.log('Module exports =', require('@shared/types/enums'));
 
 export const MediaitemSchema = new Schema(
   {

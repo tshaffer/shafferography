@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import * as fse from 'fs-extra';
 import { getOriginalMediaItemFilePath } from '../utilities';
 import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
-import { MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 export const fileStat = async (req: Request, res: Response, next: any) => {
 

@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { spawn } from "child_process";
 import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import { getOriginalMediaItemFilePath } from '../utilities';
-import { MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 export const openInPreview = async (request: Request, response: Response, next: any) => {
 

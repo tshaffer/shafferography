@@ -1,14 +1,15 @@
 // repositories/mediaItem.repo.ts
 import { FilterQuery } from 'mongoose';
-import { PhotoState } from '../types';
 
 import type { MediaItemStored } from '../models/mediaItem.model';
-import type { CreateMediaItemInput, MediaItemDTO } from '../domain/mediaItem.types';
+import type { CreateMediaItemInput } from '../domain/mediaItem.types';
 
 import { connection } from "../config"; // your already-initialized, connected mongoose Connection
 import { getMediaItemModel } from '../models/getMediaItemModel';
 
 import type { StringToNumberLUT } from '../domain/stats.types';
+import { PhotoState } from '../../../shared/types/enums';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 type ToDTOOpts = { includeExif?: boolean; includeExifMeta?: boolean };
 

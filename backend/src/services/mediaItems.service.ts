@@ -1,7 +1,7 @@
-import { PhotoState } from '../types';
-import { MediaItemDTO } from '../domain/mediaItem.types';
 import * as repo from '../repositories/mediaItem.repo';
 import * as mediaRepo from '../repositories/mediaItem.repo';
+import { MediaItemDTO,  } from '@shared/types/mediaItem';
+import { PhotoState } from '@shared/types/enums';
 
 export function getMediaItem(
   uniqueId: string,

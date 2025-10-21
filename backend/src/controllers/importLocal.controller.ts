@@ -8,8 +8,8 @@ import {
   reimportOneMediaItem,
   FileStatus,
 } from '../services/importLocal.service';
-import { MediaItemDTO } from '../domain/mediaItem.types';
 import { MediaItemStored } from '../models/mediaItem.model';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 // POST /api/import/local-file
 // body: { absPath: string, albumNodeId?: string }

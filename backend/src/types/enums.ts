@@ -20,15 +20,6 @@ export enum DateSearchRuleType {
   IsAfter = 'isAfter',
 }
 
-export enum PhotoState {
-  Unreviewed = 'unreviewed',
-  Undecided = 'undecided',
-  ReadyForUpload = 'readyForUpload',
-  Uploaded = 'uploaded',
-  Deleted='deleted',
-  PendingEdits = 'pendingEdits',
-}
-
 export enum MediaContentNodeType {
   Album = 'album',
   Group = 'group',

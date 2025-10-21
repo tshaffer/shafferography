@@ -5,7 +5,7 @@ import { getJsonFromFile } from '../utilities';
 import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb } from './dbInterface';
 import { getTakeoutMetaDataFilePath } from './app';
 import { getMediaItemsInNamedAlbum, updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
-import { MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 export const mergePeople = async (baseDirectory: string, albumName: string) => {
 

@@ -1,5 +1,6 @@
+import { PhotoState } from '../../../shared/types/enums';
 import { getUndecidedGroupModel } from '../models';
-import { MediaItemCountByUndecidedGroupPerAlbumNode, PhotoState } from '../types';
+import { MediaItemCountByUndecidedGroupPerAlbumNode } from '../types';
 
 /**
  * For each undecided group and each albumNodeId it belongs to,

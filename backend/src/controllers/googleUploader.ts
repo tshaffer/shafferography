@@ -10,7 +10,7 @@ import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import path from 'path';
 import { TypedResponse } from '../types';
 import { updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
-import { MediaItemDTO } from '../domain/mediaItem.types';
+import { MediaItemDTO } from '../../../shared/types/mediaItem';
 
 interface MediaItemDifferences {
   mediaItemsToUpload: MediaItemDTO[];

@@ -10,7 +10,8 @@
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
-      "@types/*": ["src/types/*"]
+      "@types/*": ["src/types/*"],
+      "@shared/types/*": ["../shared/types/*"]
     },
     "lib": ["es2015", "dom"],
     "types": ["node"]

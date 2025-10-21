@@ -40,41 +40,37 @@ export interface RightPanelAllProps extends RightPanelDerivedStateProps, RightPa
 // ---------- helpers ----------
 type TZOpts = { timeZone?: string };
 
-function fmtMonthDayYearAbbrev(iso?: string | null, opts?: TZOpts) {
+function fmtWeekdayMonthDayYearAbbrev(iso?: string | null, opts?: TZOpts) {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  return new Intl.DateTimeFormat(undefined, {
-    month: 'short', // Abbrev month
+
+  const weekday = new Intl.DateTimeFormat(undefined, {
+    weekday: 'short',
+    ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
+  }).format(d);
+
+  const monthDayYear = new Intl.DateTimeFormat(undefined, {
+    month: 'short',
     day: 'numeric',
     year: 'numeric',
     ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
   }).format(d);
+
+  // "<Wed>, <Oct> 21, 2025"
+  return `${weekday}, ${monthDayYear}`;
 }
 
-function fmtWeekdayTimeAbbrev(iso?: string | null, opts?: TZOpts) {
+function fmtTime12h(iso?: string | null, opts?: TZOpts) {
   if (!iso) return null;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return null;
-  const weekday = new Intl.DateTimeFormat(undefined, {
-    weekday: 'short', // Abbrev weekday
-    ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
-  }).format(d);
-  const time = new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(undefined, {
     hour: 'numeric',
     minute: '2-digit',
     hour12: true,
     ...(opts?.timeZone ? { timeZone: opts.timeZone } : {})
   }).format(d);
-  return `${weekday}, ${time}`;
-}
-
-function fmtSingleLineDate(iso?: string | null, opts?: TZOpts) {
-  const date = fmtMonthDayYearAbbrev(iso, opts);
-  const weekdayTime = fmtWeekdayTimeAbbrev(iso, opts);
-  if (!date || !weekdayTime) return null;
-  // "<Mon> <day>, <year>. <Wed>, <h:mm AM/PM>"
-  return `${date}. ${weekdayTime}`;
 }
 
 function nonEmpty(parts: Array<string | number | null | undefined>) {
@@ -89,7 +85,7 @@ function formatAperture(fNumber?: number) {
 
 function formatShutter(exposureTime?: string) {
   if (!exposureTime) return null;
-  return exposureTime; // usually already like "1/120"
+  return exposureTime; // e.g., "1/120"
 }
 
 function formatFocal(focalLengthMm?: number) {
@@ -114,10 +110,15 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
 
   if (!mediaItem) return null;
 
-  // If/when you store a true capture timezone (from GPS), pass as { timeZone } below.
-  const takenDate = fmtMonthDayYearAbbrev(mediaItem.creationTime ?? mediaItem.takenAt ?? null);
-  const takenWeekdayTime = fmtWeekdayTimeAbbrev(mediaItem.creationTime ?? mediaItem.takenAt ?? null);
-  const modifiedLine = fmtSingleLineDate(mediaItem.lastModified ?? mediaItem.fileModifiedAt ?? null);
+  // If you capture real timezones (from GPS), pass { timeZone } to the fmt* helpers.
+  const takenIso = mediaItem.creationTime ?? mediaItem.takenAt ?? null;
+  const modifiedIso = mediaItem.lastModified ?? mediaItem.fileModifiedAt ?? null;
+
+  const takenDateLine = fmtWeekdayMonthDayYearAbbrev(takenIso);
+  const takenTimeLine = fmtTime12h(takenIso);
+
+  const modifiedDateLine = fmtWeekdayMonthDayYearAbbrev(modifiedIso);
+  const modifiedTimeLine = fmtTime12h(modifiedIso);
 
   const dims = (mediaItem.width && mediaItem.height) ? `${mediaItem.width} x ${mediaItem.height}` : null;
 
@@ -179,24 +180,30 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
               {mediaItem.fileName}
             </Typography>
 
-            {/* Photo taken: (two lines following label) */}
+            {/* Photo taken: */}
             <Typography variant="body2" sx={{ fontWeight: 600 }}>
               Photo taken:
             </Typography>
             <Typography variant="body2">
-              {takenDate ?? '—'}
+              {takenDateLine ?? '—'}
             </Typography>
             <Typography variant="body2">
-              {takenWeekdayTime ?? '—'}
+              {takenTimeLine ?? '—'}
             </Typography>
 
-            {/* Last modified: single line with period separator */}
-            <Typography variant="body2" sx={{ mt: 1 }}>
-              <strong>Last modified:</strong> {modifiedLine ?? '—'}
+            {/* Last modified: */}
+            <Typography variant="body2" sx={{ fontWeight: 600, mt: 1 }}>
+              Last modified:
+            </Typography>
+            <Typography variant="body2">
+              {modifiedDateLine ?? '—'}
+            </Typography>
+            <Typography variant="body2">
+              {modifiedTimeLine ?? '—'}
             </Typography>
 
             {/* Dimensions */}
-            <Typography variant="body2">
+            <Typography variant="body2" sx={{ mt: 1 }}>
               <strong>Dimensions:</strong> {dims ?? '—'}
             </Typography>
 

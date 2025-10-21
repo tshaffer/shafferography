@@ -10,7 +10,7 @@ import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/e
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { PhotoState } from '../types';
 import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
-import { CreateMediaItemInput, MediaItemDTO } from '../domain/mediaItem.types';
+import { CreateMediaItemInput, MediaItemDTO, MediaItemPropertiesFromExif } from '../domain/mediaItem.types';
 import { MediaItemStored } from '../models/mediaItem.model';
 
 export interface FileToImport {
@@ -81,7 +81,7 @@ async function buildMediaItemFromLocal(
     // orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
 
     // Newer schema fields you’ve adopted:
-    exif: {
+    exif: <MediaItemPropertiesFromExif> {
       takenAt: toIsoString(tags.DateTimeOriginal),
       exifModifiedAt: toIsoString(tags.ModifyDate),
       fileModifiedAt: toIsoString(tags.FileModifyDate),
@@ -99,7 +99,7 @@ async function buildMediaItemFromLocal(
       gpsLatitude: tags.GPSLatitude,
       gpsLongitude: tags.GPSLongitude,
       gpsAltitudeM: tags.GPSAltitude,
-      gpsAltitudeRef: tags.GPSAltitudeRef,
+      gpsAltitudeRef: tags.GPSAltitudeRef.toString(),
       gpsDateTime: toIsoString(tags.GPSDateTime),
       gpsImgDirectionDeg: tags.GPSImgDirection,
       gpsImgDirectionRef: tags.GPSImgDirectionRef,

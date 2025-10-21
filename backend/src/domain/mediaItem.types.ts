@@ -37,7 +37,7 @@ export interface MediaItemDTO {
   people: PersonDTO[];
 
   // Optional heavy payloads
-  exif?: Record<string, unknown>;
+  exif?: MediaItemPropertiesFromExif;
   exifMeta?: {
     readAtIso: string;
     tool: string;
@@ -45,6 +45,46 @@ export interface MediaItemDTO {
     schemaVersion: number;
     sourcePathHash?: string | null;
   };
+}
+
+export interface MediaItemPropertiesFromExif {
+  // Timestamps (ISO 8601 strings)
+  takenAt?: string;         // from DateTimeOriginal/CreateDate
+  fileModifiedAt?: string;  // from FileModifyDate
+  exifModifiedAt?: string;  // from ModifyDate
+
+  // Dimensions
+  imageWidth?: number;
+  imageHeight?: number;
+  orientation?: number;
+
+  // Camera metadata
+  fNumber?: number;
+  exposureTime?: string;
+  iso?: number;
+  focalLengthMm?: number | string;
+  focalLength35mm?: number | string;
+
+  // GPS metadata
+  gpsLatitude?: number;
+  gpsLongitude?: number;
+  gpsAltitudeM?: number;
+  gpsAltitudeRef?: string;
+  gpsDateTime?: string;
+  gpsImgDirectionDeg?: number;
+  gpsImgDirectionRef?: string;
+  gpsSpeed?: number;
+  gpsSpeedRef?: string;
+
+  // Offsets
+  offsetTime?: string;
+  offsetTimeOriginal?: string;
+  offsetTimeDigitized?: string;
+
+  // Human place
+  city?: string;
+  state?: string;
+  country?: string;
 }
 
 export interface CreateMediaItemInput {
@@ -67,7 +107,7 @@ export interface CreateMediaItemInput {
   notes?: string;
 
   // subdocuments (optional)
-  exif?: Record<string, unknown>;
+  exif?: MediaItemPropertiesFromExif;
   exifMeta?: {
     readAtIso: string;
     tool: string;

@@ -13,6 +13,53 @@ export interface PersonInPhoto {
   name: string;
 }
 
+export interface PersonDTO { name: string }
+
+export interface MediaItem {
+  // IDs & names
+  uniqueId: string;
+  googleMediaItemId: string;
+  fileName: string;
+  googleAlbumId: string;
+  googleAlbumName: string;
+
+  // Promoted canonical timestamps (good for sorting/filtering)
+  creationTime: string | null;   // derived from EXIF/FS
+  lastModified: string | null;   // usually FS mtime
+
+  // Flattened EXIF bits the UI uses often
+  width: number | null;
+  height: number | null;
+  orientation: number;           // default 0
+  takenAt: string | null;        // EXIF capture time
+  fileModifiedAt: string | null; // EXIF FileModifyDate
+  exifModifiedAt: string | null; // EXIF ModifyDate
+
+  // Paths & misc
+  filePath: string;
+  url: string | null;
+  mimeType: string | null;
+
+  // App state
+  photoState: PhotoState;
+  albumNodeId: string;
+  undecidedGroupId: string | null;
+  notes: string | null;
+  keywordNodeIds: string[];
+  peopleRetrievedFromGoogle: boolean;
+  people: PersonDTO[];
+
+  // Optional heavy payloads
+  exif?: MediaItemPropertiesFromExif;
+  exifMeta?: {
+    readAtIso: string;
+    tool: string;
+    toolVersion?: string;
+    schemaVersion: number;
+    sourcePathHash?: string | null;
+  };
+}
+
 export interface MediaItemPropertiesFromExif {
   // Timestamps
   takenAt?: string;          // DateTimeOriginal/CreateDate
@@ -43,7 +90,7 @@ export interface MediaItemPropertiesFromExif {
   gpsImgDirectionDeg?: number;
 }
 
-export interface MediaItem {
+export interface OldMediaItem {
   uniqueId: string;
   googleMediaItemId: string;
   fileName: string;

@@ -2,8 +2,9 @@ import * as React from 'react';
 import { connect } from 'react-redux';
 
 import axios from 'axios';
-import { getServerUrl, apiUrlFragment, FileToImport, MediaItem } from '../types';
+import { getServerUrl, apiUrlFragment, FileToImport } from '../types';
 import { isNil, isEmpty, isString } from 'lodash';
+import { MediaItem } from '@shared/types/mediaItem';
 
 import DialogTitle from '@mui/material/DialogTitle';
 import Dialog from '@mui/material/Dialog';

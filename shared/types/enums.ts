@@ -1,4 +1,5 @@
 export enum PhotoState {
+  Mixed = 'mixed',
   Unreviewed = 'unreviewed',
   Undecided = 'undecided',
   ReadyForUpload = 'readyForUpload',

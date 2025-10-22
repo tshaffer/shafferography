@@ -8,7 +8,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 // import { TreeView } from '@mui/x-tree-view/TreeView';
 
-import { Keyword, KeywordNodeDeep, KeywordTreeDeep, MediaItem, StringToKeywordLUT, StringToKeywordNodeLUT, StringToStringArrayLUT } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
+import { Keyword, KeywordNodeDeep, KeywordTreeDeep, StringToKeywordLUT, StringToKeywordNodeLUT, StringToStringArrayLUT } from '../types';
 import { TedTaggerDispatch, } from '../models';
 import { getAppInitialized, getKeywordNodesByNodeId, getKeywordRootNodeId, getKeywordsAsTree, getKeywordsById, getMediaItemById, getSelectedMediaItemIds } from '../selectors';
 

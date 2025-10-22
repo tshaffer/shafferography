@@ -11,7 +11,7 @@ import RemoveIcon from '@mui/icons-material/Remove';
 import { surveyRowHeights } from '../constants';
 import { TedTaggerDispatch, setMediaItemZoomFactor } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor, getFullScreenMode } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import { getPhotoUrl } from '../utilities';
 
 const cardMediaStyle = {

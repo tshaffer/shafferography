@@ -5,7 +5,7 @@ import { Grid, Card, GridSize } from '@mui/material';
 import SurveyViewImageContainer from './SurveyViewImageContainer';
 import { TedTaggerDispatch } from '../models';
 import { getSurveyModeZoomFactor } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 const cardStyle = {
   display: 'flex',

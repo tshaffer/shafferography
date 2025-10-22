@@ -1,7 +1,7 @@
+import { MediaItem } from '@shared/types/mediaItem';
 import { StringToKeywordLUT, StringToKeywordNodeLUT, StringToNumberLUT, SurveyViewOrientation } from './base';
 import {
   GoogleUserProfile,
-  MediaItem,
   UndecidedGroup,
   MediaContentNode,
   MediaItemCountByPhotoStateByAlbumNodeId,

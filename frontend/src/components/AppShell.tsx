@@ -22,7 +22,8 @@ import {
   getSelectedMediaItems,
   getSidebarOpen
 } from "../selectors";
-import { getServerUrl, MediaItem, PhotoLayout, PhotoState } from "../types";
+import { MediaItem } from '@shared/types/mediaItem';
+import { getServerUrl, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';
 import TopNavigationBar from './TopNavigationBar';

@@ -5,11 +5,11 @@ import {
   KeywordNodeDeep,
   KeywordsState,
   KeywordTreeDeep,
-  MediaItem,
   StringToKeywordLUT,
   StringToKeywordNodeLUT,
   TedTaggerState,
 } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export function getKeywordRootNodeId(tedTaggerState: TedTaggerState): string {
   // if (tedTaggerState.keywordsState.keywordRootNodeId !== '') {

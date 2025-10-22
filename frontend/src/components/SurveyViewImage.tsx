@@ -4,7 +4,7 @@ import { bindActionCreators } from 'redux';
 import { Menu, MenuItem } from "@mui/material";
 import { deselectMediaItem, TedTaggerDispatch } from '../models';
 import { getSurveyModeZoomFactor, getMediaItemZoomFactor, getFocusedSurveyViewMediaItemId } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 import { borderSizeStr } from '../constants';
 

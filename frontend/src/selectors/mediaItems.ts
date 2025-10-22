@@ -3,9 +3,9 @@ import { createSelector } from 'reselect';
 import {
   FILTERED_MEDIA_ITEM_KEYS,
   FilteredMediaItemPicker,
-  MediaItem,
   TedTaggerState
 } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const getMediaItems = (state: TedTaggerState): MediaItem[] => {
   return state.mediaItemsState.mediaItems;

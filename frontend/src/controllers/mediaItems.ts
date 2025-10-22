@@ -12,8 +12,9 @@ import {
   setMediaItemNotesRedux,
   setAlbumNodeIdRedux
 } from '../models';
+import { MediaItem } from '@shared/types/mediaItem';
 import {
-  getServerUrl, apiUrlFragment, MediaItem, TedTaggerState, MatchRule, SearchRule,
+  getServerUrl, apiUrlFragment, TedTaggerState, MatchRule, SearchRule,
   PhotoState,
   PhotoLayout,
 } from '../types';

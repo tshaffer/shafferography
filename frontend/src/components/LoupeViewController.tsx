@@ -6,7 +6,8 @@ import LoupeView from './LoupeView';
 import { setPhotoState, loadAndReplaceMediaItemsByViewSpec } from '../controllers';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux } from '../models';
 import { getLoupeViewMediaItemId, getLoupeViewMediaItemIds, getMediaItems } from '../selectors';
-import { MediaItem, PhotoState } from '../types';
+import { PhotoState } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export interface LoupeViewControllerProps {
   loupeViewMediaItemId: string;

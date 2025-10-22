@@ -1,4 +1,5 @@
-import { Dimensions, GridRowData, MediaItem } from '../types';
+import { Dimensions, GridRowData } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const getGridRowInfo = (
   availableWidth: number,  // Renamed from rowWidth to match dynamic calculations

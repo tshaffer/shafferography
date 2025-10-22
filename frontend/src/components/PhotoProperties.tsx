@@ -8,7 +8,7 @@ import { Box } from '@mui/material';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import { getFullScreenMediaItemId, getMediaItemById, getSelectedMediaItemIds } from '../selectors';
 import { isNil } from 'lodash';
 import { formatISOString } from '../utilities';

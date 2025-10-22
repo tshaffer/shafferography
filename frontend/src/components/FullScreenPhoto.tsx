@@ -1,7 +1,7 @@
 import { connect } from 'react-redux';
 import { bindActionCreators } from 'redux';
 
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import { TedTaggerDispatch } from '../models';
 import { getMediaItemById, getFullScreenMediaItemId } from '../selectors';
 import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';

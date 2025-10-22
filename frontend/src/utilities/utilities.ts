@@ -1,4 +1,5 @@
-import { AlbumNode, MediaContentNode, MediaItem } from '../types';
+import { AlbumNode, MediaContentNode } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const formatISOString = (ISOString: string): string => {
 

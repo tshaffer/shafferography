@@ -7,7 +7,7 @@ import { isNil } from 'lodash';
 import { Box, Tooltip } from '@mui/material';
 import { TedTaggerDispatch } from '../models';
 import { getLoupeViewMediaItemId, getMediaItemById, getFullScreenMode } from '../selectors';
-import { MediaItem } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';
 
 export interface LoupeViewProps {

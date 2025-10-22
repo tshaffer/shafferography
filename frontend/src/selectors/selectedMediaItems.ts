@@ -1,7 +1,7 @@
 import {
-  MediaItem,
   TedTaggerState
 } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 
 import { getMediaItemById } from './mediaItems';
 

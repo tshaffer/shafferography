@@ -1,7 +1,7 @@
 
 import { TedTaggerDispatch, clearMediaItemSelection, deselectMediaItem, selectMediaItem, selectMediaItems, setLastClickedId } from '../models';
-import { MediaItem } from '../types';
 import { getLastClickedId, getMediaItemIds, getMediaItems, getSelectedMediaItemIds } from '../selectors';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const selectAllPhotos = () => {
   return (dispatch: TedTaggerDispatch, getState: any) => {

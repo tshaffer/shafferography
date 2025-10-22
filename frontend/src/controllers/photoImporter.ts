@@ -1,5 +1,6 @@
 import axios from "axios";
-import { getServerUrl, apiUrlFragment, TedTaggerState, MediaItem, PhotoLayout } from "../types";
+import { getServerUrl, apiUrlFragment, TedTaggerState, PhotoLayout } from "../types";
+import { MediaItem } from '@shared/types/mediaItem';
 import { replaceMediaItemRedux, TedTaggerDispatch } from "../models";
 import { getLoupeViewMediaItemId, getPhotoLayout, getSelectedMediaItemIds } from "../selectors";
 

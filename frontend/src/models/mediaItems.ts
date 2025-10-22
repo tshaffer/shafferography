@@ -1,7 +1,8 @@
 import { cloneDeep, isNil } from 'lodash';
 
-import { MediaItem, MediaItemsState, PhotoState } from '../types';
+import { MediaItemsState, PhotoState } from '../types';
 import { TedTaggerAction, TedTaggerModelBaseAction } from './baseAction';
+import { MediaItem } from '@shared/types/mediaItem';
 
 // ------------------------------------
 // Constants

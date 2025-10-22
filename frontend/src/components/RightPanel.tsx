@@ -7,11 +7,12 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import { MediaItem } from "../types";
+import { MediaItem } from '@shared/types/mediaItem';
 import { TedTaggerDispatch } from '../models';
 import { getMediaItemNotes } from '../selectors';
 import { drawerWidth } from '../constants';
 import { setMediaItemNotes } from '../controllers';
+import { isString } from 'lodash';
 
 const DrawerHeader = styled('div')(({ theme }) => ({
   display: 'flex',
@@ -88,8 +89,11 @@ function formatShutter(exposureTime?: string) {
   return exposureTime; // e.g., "1/120"
 }
 
-function formatFocal(focalLengthMm?: number) {
+function formatFocal(focalLengthMm?: number | string) {
   if (focalLengthMm === null || focalLengthMm === undefined) return null;
+  if (isString(focalLengthMm)) {
+    return `${focalLengthMm} mm`;
+  }
   const s = Number.isInteger(focalLengthMm) ? `${focalLengthMm}` : focalLengthMm.toFixed(1);
   return `${s} mm`;
 }

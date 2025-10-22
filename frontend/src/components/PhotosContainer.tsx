@@ -5,8 +5,9 @@ import '../styles/TedTagger.css';
 import LoupeViewController from './LoupeViewController';
 import SurveyView from './SurveyView';
 import { getAppInitialized, getFilteredMediaItems, getMediaItems, getPhotoLayout } from '../selectors';
-import { PhotoLayout, MediaItem, FilteredMediaItemPropertyName } from '../types';
+import { PhotoLayout, FilteredMediaItemPropertyName } from '../types';
 import GridViewContainer from './GridViewContainer';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export interface PhotosContainerProps {
   appInitialized: boolean;

@@ -6,7 +6,8 @@ import SurveyViewGridItem from './SurveyViewGridItem';
 import { Box, Grid } from '@mui/material';
 import { setFocusedSurveyViewMediaItemId, TedTaggerDispatch } from '../models';
 import { getAppInitialized, getFocusedSurveyViewMediaItemId, getFullScreenMode, getSelectedMediaItems, getSurveyViewMediaItemIds, getSurveyViewOrientation } from '../selectors';
-import { MediaItem, PhotoState, SurveyViewOrientation, SurveyViewOrientations } from '../types';
+import { PhotoState, SurveyViewOrientation, SurveyViewOrientations } from '../types';
+import { MediaItem } from '@shared/types/mediaItem';
 import React from 'react';
 import { loadAndReplaceMediaItemsByViewSpec, setPhotoState } from '../controllers';
 

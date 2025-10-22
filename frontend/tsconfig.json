@@ -4,6 +4,11 @@
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
     "lib": ["dom", "es2015"],
+    "baseUrl": ".",
+    "paths": {
+      "@shared/*": ["../shared/*"]           // <-- change
+    },
     "jsx": "react-jsx"
-  }
+  },
+  "include": ["src", "../shared"]            // <-- add
 }

@@ -3,8 +3,9 @@ import { bindActionCreators } from "redux";
 import { useState } from 'react';
 
 import { Dialog, DialogTitle, DialogContent, DialogActions, Button, MenuItem, TextField } from "@mui/material";
-import { MediaContentNode, MediaContentNodeType, MediaItem } from "../types";
+import { MediaContentNode, MediaContentNodeType } from "../types";
 import { TedTaggerDispatch } from "../models";
+import { MediaItem } from '@shared/types/mediaItem';
 
 
 export interface MovePhotosDialogProps {

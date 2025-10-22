@@ -21,13 +21,13 @@ import { Document } from 'mongoose';
 
 
 import { getUndecidedGroupModel } from '../models/UndecidedGroup';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 
 //
 export const getMediaItemsToDisplayFromDbUsingSearchSpec = async (
   searchSpec: SearchSpec,
-): Promise<MediaItemDTO[]> => {
+): Promise<MediaItem[]> => {
 
   throw new Error('getMediaItemsToDisplayFromDbUsingSearchSpec not updated yet');
 

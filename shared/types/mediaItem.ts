@@ -2,7 +2,7 @@ import { PhotoState } from "./enums";
 
 export interface PersonDTO { name: string }
 
-export interface MediaItemDTO {
+export interface MediaItem {
   // IDs & names
   uniqueId: string;
   googleMediaItemId: string;

@@ -9,13 +9,13 @@ import { getMediaItemModel } from '../models/getMediaItemModel';
 
 import type { StringToNumberLUT } from '../domain/stats.types';
 import { PhotoState } from '@shared/types/enums';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 type ToDTOOpts = { includeExif?: boolean; includeExifMeta?: boolean };
 
-function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItemDTO {
+function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItem {
   const exif: any = doc.exif || {};
-  const dto: MediaItemDTO = {
+  const dto: MediaItem = {
     uniqueId: doc.uniqueId,
     googleMediaItemId: doc.googleMediaItemId,
     fileName: doc.fileName,
@@ -58,7 +58,7 @@ function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItemDTO {
 export async function insert(
   create: CreateMediaItemInput,
   opts?: ToDTOOpts
-): Promise<MediaItemDTO> {
+): Promise<MediaItem> {
   // Map simple string[] people into schema’s [{ name }]
   const peopleArray = (create.people ?? []).map((name) => ({ name }));
 
@@ -71,7 +71,7 @@ export async function insert(
 }
 
 /** Fetch by uniqueId. */
-export async function getMediaItemFromDb(uniqueId: string, opts?: ToDTOOpts): Promise<MediaItemDTO | null> {
+export async function getMediaItemFromDb(uniqueId: string, opts?: ToDTOOpts): Promise<MediaItem | null> {
   const projection =
     opts?.includeExif || opts?.includeExifMeta ? {} : { exif: 0, exifMeta: 0 };
   const doc = await getMediaItemModel(connection).findOne({ uniqueId }, projection).lean<MediaItemStored>().exec();
@@ -87,7 +87,7 @@ export async function find(
     skip?: number;
     sort?: Record<string, 1 | -1>;
   }
-): Promise<MediaItemDTO[]> {
+): Promise<MediaItem[]> {
   const projection = options?.includeExif ? undefined : { exif: 0, exifMeta: 0 };
 
   const query = getMediaItemModel(connection).find(filter, projection)
@@ -104,7 +104,7 @@ export async function find(
 export async function listByAlbum(
   albumNodeId: string,
   options?: { includeExif?: boolean; pageSize?: number; page?: number }
-): Promise<MediaItemDTO[]> {
+): Promise<MediaItem[]> {
   const pageSize = options?.pageSize ?? 100;
   const skip = ((options?.page ?? 1) - 1) * pageSize;
   return find({ albumNodeId }, { includeExif: options?.includeExif, limit: pageSize, skip });
@@ -117,7 +117,7 @@ export async function listByAlbum(
 export async function upsertInsertOrGet(
   create: CreateMediaItemInput,
   opts?: ToDTOOpts
-): Promise<MediaItemDTO> {
+): Promise<MediaItem> {
   try {
     return await insert(create, opts);
   } catch (err: any) {
@@ -191,7 +191,7 @@ type FindForPhotoStateParams = {
  * If photoStates includes 'Undecided' and groupUndecidedPhotos=true,
  * only include Undecided items whose undecidedGroupId is in undecidedGroupIds.
  */
-export async function findForPhotoState(params: FindForPhotoStateParams): Promise<MediaItemDTO[]> {
+export async function findForPhotoState(params: FindForPhotoStateParams): Promise<MediaItem[]> {
   const { albumNodeIds, photoStates, groupUndecidedPhotos, undecidedGroupIds } = params;
 
   const baseConditions: any[] = [
@@ -226,7 +226,7 @@ export async function findForPhotoState(params: FindForPhotoStateParams): Promis
 }
 
 /** getAllMediaItemsFromDb -> repo.findAll */
-export async function getAllMediaItemsFromDb(opts?: ToDTOOpts): Promise<MediaItemDTO[]> {
+export async function getAllMediaItemsFromDb(opts?: ToDTOOpts): Promise<MediaItem[]> {
   const projection = opts?.includeExif || opts?.includeExifMeta ? {} : { exif: 0, exifMeta: 0 };
   const docs = await getMediaItemModel(connection).find({}, projection).sort({ creationTime: -1, uniqueId: 1 }).lean<MediaItemStored[]>().exec();
   return docs.map(d => toDTO(d, opts));
@@ -235,8 +235,8 @@ export async function getAllMediaItemsFromDb(opts?: ToDTOOpts): Promise<MediaIte
 /** updateMediaItemFieldsInDb -> repo.updateFieldsByUniqueId ($set partial) */
 export async function updateMediaItemFieldsInDb(
   uniqueId: string,
-  updates: Partial<MediaItemDTO>
-): Promise<MediaItemDTO | null> {
+  updates: Partial<MediaItem>
+): Promise<MediaItem | null> {
   const doc = await getMediaItemModel(connection).findOneAndUpdate(
     { uniqueId },
     { $set: updates },
@@ -250,7 +250,7 @@ export async function updateMediaItemFieldsInDb(
 export const updateSingleMediaItemFieldsInDb = updateMediaItemFieldsInDb;
 
 /** updateMediaItemsFieldsInDb -> repo.updateManyFields */
-export async function updateMediaItemsFieldsInDb(uniqueIds: string[], updates: Partial<MediaItemDTO>) {
+export async function updateMediaItemsFieldsInDb(uniqueIds: string[], updates: Partial<MediaItem>) {
   return getMediaItemModel(connection).updateMany(
     { uniqueId: { $in: uniqueIds } },
     { $set: updates }
@@ -260,7 +260,7 @@ export async function updateMediaItemsFieldsInDb(uniqueIds: string[], updates: P
  * NOTE: in the new flow, inserts usually come from CreateMediaItem (service).
  * This keeps a DTO-based insert for backwards compatibility.
  */
-export async function addMediaItemToMediaItemsDBTable(dto: MediaItemDTO): Promise<string | undefined> {
+export async function addMediaItemToMediaItemsDBTable(dto: MediaItem): Promise<string | undefined> {
   try {
     // Minimal mapping: keep DTO fields that match stored model
     const storedLike: Partial<MediaItemStored> = {
@@ -304,7 +304,7 @@ export async function getGoogleAlbumNamesWherePeopleNotRetrieved(): Promise<stri
 }
 
 /** getMediaItemsInNamedAlbumFromDb -> repo.getMediaItemsInNamedAlbum */
-export async function getMediaItemsInNamedAlbum(googleAlbumName: string): Promise<MediaItemDTO[]> {
+export async function getMediaItemsInNamedAlbum(googleAlbumName: string): Promise<MediaItem[]> {
   const docs = await getMediaItemModel(connection).find({ googleAlbumName })
     .sort({ creationTime: -1, uniqueId: 1 })
     .lean<MediaItemStored[]>()
@@ -332,7 +332,7 @@ export async function getByUniqueId(uniqueId: string) {
   return getMediaItemModel(connection).findOne({ uniqueId }).lean().exec();
 }
 
-export async function updateByUniqueId(uniqueId: string, updates: Partial<MediaItemDTO>) {
+export async function updateByUniqueId(uniqueId: string, updates: Partial<MediaItem>) {
   return getMediaItemModel(connection)
     .updateOne({ uniqueId }, { $set: updates })
     .exec();

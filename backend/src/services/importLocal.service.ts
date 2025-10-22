@@ -11,7 +11,7 @@ import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
 import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
 import { CreateMediaItemInput } from '../domain/mediaItem.types';
 import { MediaItemStored } from '../models/mediaItem.model';
-import { MediaItemDTO, MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
+import { MediaItem, MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import { PhotoState } from '@shared/types/enums';
 
 export interface FileToImport {
@@ -82,7 +82,7 @@ async function buildMediaItemFromLocal(
     // orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
 
     // Newer schema fields you’ve adopted:
-    exif: <MediaItemPropertiesFromExif> {
+    exif: <MediaItemPropertiesFromExif>{
       takenAt: toIsoString(tags.DateTimeOriginal),
       exifModifiedAt: toIsoString(tags.ModifyDate),
       fileModifiedAt: toIsoString(tags.FileModifyDate),
@@ -130,7 +130,7 @@ async function buildMediaItemFromLocal(
 }
 
 // ---------- Public: single-file import (keeps your newer design) ----------
-export async function importLocalFile(absPath: string, albumNodeId = 'local'): Promise<MediaItemDTO> {
+export async function importLocalFile(absPath: string, albumNodeId = 'local'): Promise<MediaItem> {
   const isoLastModified = getLastModifiedUTCISO(absPath);
   const mediaItem: CreateMediaItemInput = await buildMediaItemFromLocal(absPath, albumNodeId, isoLastModified);
   return mediaItemRepo.insert(mediaItem, { includeExif: false });

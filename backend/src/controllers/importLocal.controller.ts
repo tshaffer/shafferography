@@ -9,14 +9,14 @@ import {
   FileStatus,
 } from '../services/importLocal.service';
 import { MediaItemStored } from '../models/mediaItem.model';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 // POST /api/import/local-file
 // body: { absPath: string, albumNodeId?: string }
 export async function importLocalFileEndpoint(req: Request, res: Response, next: NextFunction) {
   try {
     const { absPath, albumNodeId } = req.body;
-    const result: MediaItemDTO = await importLocalFile(absPath, albumNodeId ?? 'local');
+    const result: MediaItem = await importLocalFile(absPath, albumNodeId ?? 'local');
     res.json(result);
   } catch (err) {
     next(err);

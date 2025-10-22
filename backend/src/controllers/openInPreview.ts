@@ -3,7 +3,7 @@ import { Request, Response } from 'express';
 import { spawn } from "child_process";
 import { getMediaItemFromDb } from '../repositories/mediaItem.repo';
 import { getOriginalMediaItemFilePath } from '../utilities';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const openInPreview = async (request: Request, response: Response, next: any) => {
 
@@ -11,7 +11,7 @@ export const openInPreview = async (request: Request, response: Response, next: 
     const { mediaItemId } = request.body as { mediaItemId?: string };
     if (!mediaItemId) return response.status(400).json({ error: "mediaItemId is required" });
 
-    const mediaItem: MediaItemDTO | undefined = await getMediaItemFromDb(mediaItemId);
+    const mediaItem: MediaItem | undefined = await getMediaItemFromDb(mediaItemId);
     if (!mediaItem) {
       console.error('Media item not found for ID:', mediaItemId);
       return response.status(404).json({ error: 'Media item not found' });

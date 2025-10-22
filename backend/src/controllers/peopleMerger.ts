@@ -5,12 +5,12 @@ import { getJsonFromFile } from '../utilities';
 import { addAutoPersonKeywordsToDb, getAutoPersonKeywordNodesFromDb, getKeywordsFromDb } from './dbInterface';
 import { getTakeoutMetaDataFilePath } from './app';
 import { getMediaItemsInNamedAlbum, updateMediaItemFieldsInDb } from '../repositories/mediaItem.repo';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const mergePeople = async (baseDirectory: string, albumName: string) => {
 
   try {
-    const mediaItemsInAlbum: MediaItemDTO[] = await getMediaItemsInNamedAlbum(albumName);
+    const mediaItemsInAlbum: MediaItem[] = await getMediaItemsInNamedAlbum(albumName);
 
     const personKeywordNames: Set<string> = new Set<string>();
 
@@ -70,7 +70,7 @@ export const mergePeople = async (baseDirectory: string, albumName: string) => {
 
       const people: PersonInPhoto[] | null = takeoutMetadata.people ? takeoutMetadata.people : null;
 
-      const updates: Partial<MediaItemDTO> = {
+      const updates: Partial<MediaItem> = {
         people,
         keywordNodeIds,
         peopleRetrievedFromGoogle: true,

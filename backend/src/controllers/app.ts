@@ -18,14 +18,15 @@ import {
 import {
   Keyword,
   KeywordData,
-  KeywordNode} from '../types';
+  KeywordNode
+} from '../types';
 import {
   deleteDirectory,
 } from '../utilities';
 import path from 'path';
 import { BASE_MEDIA_PATH } from '../config';
 import { mergePeople } from './peopleMerger';
-import { MediaItemDTO } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types/mediaItem';
 
 export const getVersion = (request: Request, response: Response, next: any) => {
   const data: any = {
@@ -125,7 +126,7 @@ export const setRootKeywordNode = async (request: Request, response: Response, n
 
 export const setPhotoStateEndpoint = async (request: Request, response: Response, next: any) => {
   const { mediaItemIds, photoState } = request.body;
-  const updates: Partial<MediaItemDTO> = {
+  const updates: Partial<MediaItem> = {
     photoState
   };
 
@@ -135,7 +136,7 @@ export const setPhotoStateEndpoint = async (request: Request, response: Response
 
 export const setAlbumNodeIdEndpoint = async (request: Request, response: Response, next: any) => {
   const { mediaItemIds, albumNodeId } = request.body;
-  const updates: Partial<MediaItemDTO> = {
+  const updates: Partial<MediaItem> = {
     albumNodeId
   };
 
@@ -145,7 +146,7 @@ export const setAlbumNodeIdEndpoint = async (request: Request, response: Respons
 
 export const setMediaItemNotesEndpoint = async (request: Request, response: Response, next: any) => {
   const { uniqueId, notes } = request.body;
-  const updates: Partial<MediaItemDTO> = {
+  const updates: Partial<MediaItem> = {
     notes
   };
 

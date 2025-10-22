@@ -8,5 +8,6 @@ console.log('Resolved @shared/types/enums =', require.resolve('@shared/types/enu
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 console.log('Module exports =', require('@shared/types/enums'));
 
+console.log('__dirname:', __dirname);
 // Now load your real server entry. This will (transitively) import models.
 require('./server'); // or './index' depending on your project

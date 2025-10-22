@@ -297,6 +297,8 @@ const startServer = async () => {
 
   // Serve the SPA on the root route (index.html)
   app.get('/', (req: Request, res: Response) => {
+    console.log('Serving index.html');
+    console.log('__dirname:', __dirname);
     res.sendFile(path.join(__dirname, '../public', 'index.html'));
   });
 
@@ -310,6 +312,11 @@ const startServer = async () => {
     if (req.isAuthenticated()) return next();
     res.redirect('/');
   }
+
+  console.log('Environment Variables:');
+  console.log('PORT:', PORT);
+  console.log('BACKEND_URL:', process.env.BACKEND_URL);
+  console.log('ENABLE_GOOGLE_INTERFACE:', enableGoogleInterface);
 
   // Start the server
   const server: Server<any> = app.listen(PORT, () => {

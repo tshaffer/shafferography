@@ -4,6 +4,85 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "flibbet",
+      "cwd": "${workspaceFolder}/backend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "dev"
+      ],
+      "preLaunchTask": "backend: build",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "console": "integratedTerminal",
+      "skipFiles": [
+        "<node_internals>/**"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "dotLatest",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/server.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only",
+        "-r",
+        "tsconfig-paths/register"
+      ],
+      "preLaunchTask": "backend: build", // define this npm task in .vscode/tasks.json
+      "envFile": "${workspaceFolder}/backend/.env",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "00 - Backend: Debug (ts-node + aliases, build first)",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/server.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only",
+        "-r",
+        "tsconfig-paths/register"
+      ],
+      "preLaunchTask": "tsc: build - backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Backend: Debug (ts-node + aliases)",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/src/server.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--nolazy",
+        "-r",
+        "ts-node/register/transpile-only",
+        "-r",
+        "tsconfig-paths/register"
+      ],
+      "envFile": "${workspaceFolder}/backend/.env",
+      "skipFiles": [
+        "<node_internals>/**"
+      ],
+      "sourceMaps": true
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "A - Debug shafferography (ts-node + aliases)",
       "cwd": "${workspaceFolder}/backend",
       "program": "${workspaceFolder}/backend/src/bootstrap.ts",

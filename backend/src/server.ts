@@ -16,12 +16,24 @@ const bodyParser = require('body-parser');
 import { connectDB } from './config/db';  // ✅ Import first
 import { BASE_MEDIA_PATH } from './config';
 
-dotenv.config({ path: path.resolve(__dirname, '../.env') });
-dotenv.config({ path: path.resolve(__dirname, '../env.public'), override: false });
+console.log('flibbet - starting server.ts');
+
+console.log('__dirname:', __dirname);
+const appRoot = process.cwd();
+console.log('appRoot:', appRoot);
+const myDirname = appRoot;
+console.log('myDirname:', myDirname);
+
+console.log('Loading environment variables from:', path.resolve(myDirname, './.env'));
+console.log('Loading environment variables from:', path.resolve(myDirname, './env.public'));
+
+dotenv.config({ path: path.resolve(myDirname, './.env') });
+dotenv.config({ path: path.resolve(myDirname, './env.public'), override: false });
 
 const enableGoogleInterface = process.env.ENABLE_GOOGLE_INTERFACE === 'true';
 
 const startServer = async () => {
+
   await connectDB();  // ✅ Ensure DB is connected before anything else
 
   // Initialize Express app
@@ -293,16 +305,15 @@ const startServer = async () => {
 
 
   // Serve static files from the /public directory
-  app.use(express.static(path.join(__dirname, '../public')));
+  app.use(express.static(path.join(myDirname, './public')));
 
   // Serve the SPA on the root route (index.html)
   app.get('/', (req: Request, res: Response) => {
     console.log('Serving index.html');
-    console.log('__dirname:', __dirname);
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+    res.sendFile(path.join(myDirname, './public', 'index.html'));
   });
 
-  const staticImagesPath = path.join(__dirname, '../public/images');
+  const staticImagesPath = path.join(myDirname, './public/images');
   console.log('staticImagesPath:', staticImagesPath);
   app.use('/images', express.static(staticImagesPath));
 

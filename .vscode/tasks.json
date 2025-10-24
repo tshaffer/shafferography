@@ -6,7 +6,7 @@
       "type": "npm",
       "script": "build",
       "path": "backend",
-      "problemMatcher": ["$tsc"]
+      "problemMatcher": "$tsc"
     }
   ]
 }

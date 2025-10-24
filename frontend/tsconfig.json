@@ -5,10 +5,15 @@
     "allowSyntheticDefaultImports": true,
     "lib": ["dom", "es2015"],
     "baseUrl": ".",
+    "moduleResolution": "node",
     "paths": {
-      "@shared/*": ["../shared/*"]           // <-- change
+      "@shared/types": ["../shared/types"],
+      "@shared/types/*": ["../shared/types/*"],
+      "@shared/*": ["../shared/*"]
     },
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "resolveJsonModule": true,
+    "skipLibCheck": true
   },
-  "include": ["src", "../shared"]            // <-- add
+  "include": ["src", "../shared/types", "../shared"]
 }

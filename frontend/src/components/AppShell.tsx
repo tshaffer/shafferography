@@ -22,7 +22,7 @@ import {
   getSelectedMediaItems,
   getSidebarOpen
 } from "../selectors";
-import { MediaItem } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types';
 import { getServerUrl, PhotoLayout, PhotoState } from "../types";
 import PhotosContainer from './PhotosContainer';
 import Sidebar from './Sidebar';

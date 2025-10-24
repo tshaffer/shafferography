@@ -5,7 +5,7 @@ import { connect } from 'react-redux';
 import { TedTaggerDispatch, setLoupeViewMediaItemIdRedux, setPhotoLayoutRedux } from '../models';
 
 import '../styles/TedTagger.css';
-import { MediaItem } from '@shared/types/mediaItem';
+import { MediaItem } from '@shared/types';
 import { PhotoLayout, PhotoState } from '../types';
 import { getDisplayMetadata, isMediaItemSelected } from '../selectors';
 import { getCacheBustedPhotoUrl, getPhotoUrl } from '../utilities';

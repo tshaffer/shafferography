@@ -4,7 +4,7 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "flibbet",
+      "name": "shafferography",
       "cwd": "${workspaceFolder}/backend",
       "runtimeExecutable": "npm",
       "runtimeArgs": [

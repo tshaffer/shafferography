@@ -11,6 +11,7 @@
     "baseUrl": ".",
     "paths": {
       "@types/*": ["src/types/*"],
+      "@shared/types": ["../shared/types"],
       "@shared/types/*": ["../shared/types/*"]
     },
     "lib": ["es2015", "dom"],

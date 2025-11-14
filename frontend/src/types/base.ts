@@ -10,16 +10,8 @@ export const getServerUrl = (): string => {
 
 export const apiUrlFragment = '/api/v1/';
 
-export type StringToStringLUT = {
-  [key: string]: string;
-}
-
 export type StringToStringArrayLUT = {
   [key: string]: string[];
-}
-
-export type StringToBooleanLUT = {
-  [key: string]: boolean;
 }
 
 export type StringToKeywordLUT = {

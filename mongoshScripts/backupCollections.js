@@ -3,10 +3,10 @@ use pgPhotos;
 const collections = [
   "mediaitems",
   // "undecidedgroups",
-  // "mediacontenttree",
+  "mediacontenttree",
 ];
 
-const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/withVariants-backup-10-10-1";
+const outputDir = "/Users/tedshaffer/Documents/MongoDBBackups/shafferography/backup-11-07-1";
 
 const fs = require("fs");
 

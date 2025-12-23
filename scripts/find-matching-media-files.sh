@@ -31,15 +31,13 @@ done
 
 LC_ALL=C sort -o "$INDEX_FILE" "$INDEX_FILE"
 
-echo "Scanning inbox and producing report..."
+echo "Scanning inbox..."
 
 find "$LOCAL_ROOT" -type f ! -name '._*' ! -name '.DS_Store' -print0 |
 while IFS= read -r -d '' inbox_file; do
-  inbox_base_orig="$(basename "$inbox_file")"
-  inbox_base="$(printf "%s" "$inbox_base_orig" | tr '[:upper:]' '[:lower:]')"
+  inbox_base="$(basename "$inbox_file" | tr '[:upper:]' '[:lower:]')"
   inbox_size="$(stat -f%z "$inbox_file")"
 
-  # All name matches (exact match on field 1)
   name_matches="$(
     awk -F $'\t' -v n="$inbox_base" '$1==n {print $0}' "$INDEX_FILE"
   )"
@@ -49,7 +47,6 @@ while IFS= read -r -d '' inbox_file; do
     continue
   fi
 
-  # Size matches among the name matches (field 2 equals inbox_size); output field 3 (relative path)
   size_matches="$(
     printf "%s\n" "$name_matches" |
       awk -F $'\t' -v sz="$inbox_size" '$2==sz {print $3}'
@@ -78,7 +75,20 @@ while IFS= read -r -d '' inbox_file; do
   fi
 done
 
+# -------- Summary counts --------
+ZERO_COUNT="$(wc -l < "$ZERO_TMP" | tr -d ' ')"
+MATCH_COUNT="$(grep -c '^/' "$MATCH_TMP" || true)"
+MISMATCH_COUNT="$(grep -c '^/' "$MISMATCH_TMP" || true)"
+
+# -------- Final report --------
 {
+  echo "Summary"
+  echo "======="
+  echo "Zero Matches:        $ZERO_COUNT"
+  echo "One or More Matches: $MATCH_COUNT"
+  echo "File Size Mismatch:  $MISMATCH_COUNT"
+  echo
+
   echo "Zero Matches"
   echo "============"
   if [ -s "$ZERO_TMP" ]; then

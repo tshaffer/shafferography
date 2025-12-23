@@ -4,29 +4,33 @@ set -euo pipefail
 LOCAL_ROOT="/Users/tedshaffer/Pictures/ShafferographyInbox"
 MEDIA_ROOT="/Volumes/ShMedia/Shafferography/ShafferographyMedia"
 
-# Safety checks
-[ -d "$LOCAL_ROOT" ] || { echo "Missing $LOCAL_ROOT"; exit 1; }
-[ -d "$MEDIA_ROOT" ] || { echo "Missing $MEDIA_ROOT"; exit 1; }
+INDEX_FILE="$(mktemp /tmp/media-index.XXXXXX)"
 
-declare -A media_index
+cleanup() {
+  rm -f "$INDEX_FILE"
+}
+trap cleanup EXIT
 
 echo "Indexing media files..."
 
-# Build index: filename(lowercase) -> list of relative paths
+# Build index: lowercase filename + tab + relative path
+find "$MEDIA_ROOT" -type f ! -name '._*' -print0 |
 while IFS= read -r -d '' file; do
-  name="$(basename "$file" | tr '[:upper:]' '[:lower:]')"
+  base="$(basename "$file" | tr '[:upper:]' '[:lower:]')"
   rel="${file#$MEDIA_ROOT/}"
-  media_index["$name"]+="$rel"$'\n'
-done < <(find "$MEDIA_ROOT" -type f ! -name '._*' -print0)
+  printf "%s\t%s\n" "$base" "$rel" >> "$INDEX_FILE"
+done
 
 echo "Scanning local inbox..."
 
-# Scan local files and report matches
+find "$LOCAL_ROOT" -type f ! -name '._*' -print0 |
 while IFS= read -r -d '' file; do
-  name="$(basename "$file" | tr '[:upper:]' '[:lower:]')"
+  base="$(basename "$file" | tr '[:upper:]' '[:lower:]')"
 
-  if [[ -n "${media_index[$name]:-}" ]]; then
+  matches="$(grep -F $'\t' "$base"$'\t' "$INDEX_FILE" || true)"
+
+  if [ -n "$matches" ]; then
     echo "MATCH: $(basename "$file")"
-    printf "%s" "${media_index[$name]}" | sed 's/^/  /'
+    echo "$matches" | cut -f2 | sed 's/^/  /'
   fi
-done < <(find "$LOCAL_ROOT" -type f ! -name '._*' -print0)
+done

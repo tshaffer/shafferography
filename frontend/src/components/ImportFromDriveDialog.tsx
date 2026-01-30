@@ -103,11 +103,11 @@ const ImportFromDriveDialog = (props: ImportFromDriveDialogProps) => {
         try {
           const response = await axios.get(`/api/v1/import-photos-status/${importId}`);
 
-          if (!response.data || response.data.files.length === 0) return;
+          if (!response.data || response.data.length === 0) return;
 
           const updatedStatuses: FileStatuses = {};
 
-          response.data.files.forEach((file: { filename: string; status: string }) => {
+          response.data.forEach((file: { filename: string; status: string }) => {
             updatedStatuses[file.filename] = file.status as FileStatus;
           });
 

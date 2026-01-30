@@ -100,7 +100,7 @@ async function buildMediaItemFromLocal(
       gpsLatitude: tags.GPSLatitude,
       gpsLongitude: tags.GPSLongitude,
       gpsAltitudeM: tags.GPSAltitude,
-      gpsAltitudeRef: tags.GPSAltitudeRef.toString(),
+      gpsAltitudeRef: tags.GPSAltitudeRef?.toString() ?? "",
       gpsDateTime: toIsoString(tags.GPSDateTime),
       gpsImgDirectionDeg: tags.GPSImgDirection,
       gpsImgDirectionRef: tags.GPSImgDirectionRef,

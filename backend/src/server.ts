@@ -14,7 +14,7 @@ import cors from 'cors';
 const bodyParser = require('body-parser');
 
 import { connectDB } from './config/db';  // ✅ Import first
-import { BASE_MEDIA_PATH } from './config';
+import { BASE_MEDIA_PATH, CANON_MEDIA_PATH } from './config';
 
 console.log('flibbet - starting server.ts');
 
@@ -297,6 +297,13 @@ const startServer = async () => {
   //   maxAge: 86400000 // 24 hours in milliseconds
   // }));
   app.use('/shafferographyMedia', express.static(BASE_MEDIA_PATH, {
+    etag: true,                // Enable ETag-based validation
+    lastModified: true,        // Enable Last-Modified header
+    maxAge: '30d',             // Cache for 30 days if not busted manually
+    immutable: false           // Allow revalidation if client adds headers like If-Modified-Since
+  }));
+
+  app.use('/canonicalMedia', express.static(CANON_MEDIA_PATH, {
     etag: true,                // Enable ETag-based validation
     lastModified: true,        // Enable Last-Modified header
     maxAge: '30d',             // Cache for 30 days if not busted manually

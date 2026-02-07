@@ -96,8 +96,9 @@ const GridCell = (props: GridCellProps) => {
       return null;
     }
 
-    const creationDate: Dayjs = dayjs(mediaItem.exif?.takenAt!);
-    const formattedCreationDate: string = creationDate.format('MM/DD/YYYY hh:mm A');
+    const takenIso = mediaItem.creationTime ?? mediaItem.exif?.takenAt ?? null;
+    const creationDate: Dayjs = dayjs(takenIso ?? undefined);
+    const formattedCreationDate: string = takenIso ? creationDate.format('MM/DD/YYYY hh:mm A') : '';
     // const keywords: string = props.keywordLabels.join(', ');
 
     let icon: JSX.Element | null = null;

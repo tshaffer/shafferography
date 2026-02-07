@@ -17,6 +17,7 @@ function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItem {
   const exif: any = doc.exif || {};
   const dto: MediaItem = {
     uniqueId: doc.uniqueId,
+    contentHash: doc.contentHash ?? null,
     googleMediaItemId: doc.googleMediaItemId,
     fileName: doc.fileName,
     googleAlbumId: doc.googleAlbumId,
@@ -265,6 +266,7 @@ export async function addMediaItemToMediaItemsDBTable(dto: MediaItem): Promise<s
     // Minimal mapping: keep DTO fields that match stored model
     const storedLike: Partial<MediaItemStored> = {
       uniqueId: dto.uniqueId,
+      contentHash: dto.contentHash ?? undefined,
       googleMediaItemId: dto.googleMediaItemId,
       fileName: dto.fileName,
       googleAlbumId: dto.googleAlbumId,

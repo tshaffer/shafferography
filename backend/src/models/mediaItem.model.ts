@@ -11,6 +11,7 @@ console.log('Module exports =', require('@shared/types/enums'));
 export const MediaitemSchema = new Schema(
   {
     uniqueId: { type: String, required: true, unique: true },
+    contentHash: { type: String },
     googleMediaItemId: { type: String, required: true },
     fileName: { type: String, required: true },
     filePath: { type: String, default: '' },
@@ -54,6 +55,7 @@ export interface MediaItemStored {
   _id: Types.ObjectId;
 
   uniqueId: string;
+  contentHash?: string;
   googleMediaItemId: string;
   fileName: string;
   filePath: string;         // default '' if not provided

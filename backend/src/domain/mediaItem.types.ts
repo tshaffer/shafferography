@@ -3,6 +3,7 @@ import { PhotoState } from '@shared/types/enums';
 
 export interface CreateMediaItemInput {
   uniqueId: string;
+  contentHash?: string;
   googleMediaItemId: string;
   fileName: string;
   googleAlbumId: string;
@@ -30,4 +31,3 @@ export interface CreateMediaItemInput {
     sourcePathHash?: string;
   };
 }
-

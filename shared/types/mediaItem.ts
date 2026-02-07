@@ -5,6 +5,7 @@ export interface PersonDTO { name: string }
 export interface MediaItem {
   // IDs & names
   uniqueId: string;
+  contentHash?: string | null;
   googleMediaItemId: string;
   fileName: string;
   googleAlbumId: string;
@@ -86,4 +87,3 @@ export interface MediaItemPropertiesFromExif {
   state?: string;
   country?: string;
 }
-

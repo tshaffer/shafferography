@@ -10,16 +10,26 @@ use pgPhotos
 // Optional: see existing indexes first
 db.mediaitems.getIndexes()
 
-// Create a partial unique index: unique only when contentHash is a string
-// NOTE: $ne "" is not supported in partial index expressions on Atlas (error: Expression not supported in partial index: $not ... $eq "")
+// Create a partial unique index: unique only when contentHash is a non-empty string
+// NOTE: On Atlas, $ne "" in partialFilterExpression can error. If you hit that, use the alternate command below.
 db.mediaitems.createIndex(
   { contentHash: 1 },
   {
     name: "uniq_contentHash_when_present",
     unique: true,
-    partialFilterExpression: { contentHash: { $type: "string" } }
+    partialFilterExpression: { contentHash: { $type: "string", $ne: "" } }
   }
 )
+
+// Alternate (Atlas-compatible) partial filter:
+// db.mediaitems.createIndex(
+//   { contentHash: 1 },
+//   {
+//     name: "uniq_contentHash_when_present",
+//     unique: true,
+//     partialFilterExpression: { contentHash: { $type: "string" } }
+//   }
+// )
 
 // Verify index exists
 db.mediaitems.getIndexes().filter(ix => ix.name === "uniq_contentHash_when_present")
@@ -140,10 +150,10 @@ Copy / paste the following from the non-preview view of this file.
 - `--since <ISO>`: only import files with mtime after this timestamp
 - `--limit <N>`: cap number of files processed
 - `--dryRun`: no DB writes
+- `--noGeocode`: skip reverse geocoding (city/state/country)
 
 Notes:
-- If `--googleAlbumId` / `--googleAlbumName` are empty, the importer uses `canon` placeholders to satisfy required schema fields.
-- `googleMediaItemId` is set to `canon:<sha>` for canonical imports.
+- Canon imports use empty-string placeholders for `googleMediaItemId`, `googleAlbumId`, and `googleAlbumName`.
 
 ## Static mounts
 

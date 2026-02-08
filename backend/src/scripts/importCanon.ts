@@ -2,6 +2,7 @@
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { v4 as uuidv4 } from 'uuid';
+import { exiftool, Tags } from 'exiftool-vendored';
 
 import { connectDB } from '../config/db';
 import { CANON_MEDIA_PATH, CANON_MEDIA_URL } from '../config';
@@ -9,7 +10,10 @@ import { getMediaItemModel } from '../models/getMediaItemModel';
 import { connection } from '../config';
 import { PhotoState } from '@shared/types/enums';
 import type { CreateMediaItemInput } from '../domain/mediaItem.types';
+import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
+import { getLastModifiedUTCISO } from '../utilities';
+import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 
 const HASHED_FILENAME_RE = /^([0-9a-fA-F]{64})\.([^./\\]+)$/;
 
@@ -21,6 +25,7 @@ type CliArgs = {
   dryRun: boolean;
   limit?: number;
   since?: Date;
+  noGeocode: boolean;
 };
 
 function parseArgs(argv: string[]): CliArgs {
@@ -45,6 +50,7 @@ function parseArgs(argv: string[]): CliArgs {
   const dryRun = Boolean(args.dryRun);
   const limit = args.limit ? Number(args.limit) : undefined;
   const since = args.since ? new Date(String(args.since)) : undefined;
+  const noGeocode = Boolean(args.noGeocode);
 
   if (!albumNodeId) {
     throw new Error('Missing required --albumNodeId');
@@ -64,6 +70,7 @@ function parseArgs(argv: string[]): CliArgs {
     dryRun,
     limit,
     since,
+    noGeocode,
   };
 }
 
@@ -115,8 +122,12 @@ async function main() {
 
   let scanned = 0;
   let imported = 0;
-  let skipped = 0;
+  let skippedExisting = 0;
+  let updatedExisting = 0;
   let missingSidecar = 0;
+  let exifErrors = 0;
+  let geocodeSkipped = 0;
+  let geocodeErrors = 0;
   let errors = 0;
 
   for (const filePath of mediaFiles) {
@@ -129,6 +140,8 @@ async function main() {
     if (!match) continue;
 
     const shaLower = match[1].toLowerCase();
+    const ext = path.extname(base);
+    const canonFileName = `${shaLower}${ext}`;
 
     try {
       const stat = await fs.stat(filePath);
@@ -138,8 +151,37 @@ async function main() {
 
       const existing = await MediaItemModel.findOne({ contentHash: shaLower }).lean().exec();
       if (existing) {
-        skipped += 1;
-        console.log(`SKIP existing contentHash ${shaLower} uniqueId=${existing.uniqueId}`);
+        const updates: Record<string, unknown> = {};
+
+        if (!existing.url) updates.url = toCanonUrl(canonFileName);
+        if (!existing.filePath) updates.filePath = filePath;
+
+        const sidecar = await readSidecar(filePath);
+        if (!sidecar) missingSidecar += 1;
+
+        const people: string[] = Array.isArray(sidecar?.people)
+          ? sidecar.people.filter((p: unknown) => typeof p === 'string')
+          : [];
+
+        if (existing.peopleRetrievedFromGoogle === false) {
+          updates.peopleRetrievedFromGoogle = true;
+          updates.people = people.map((name) => ({ name }));
+        }
+
+        if (Object.keys(updates).length > 0) {
+          if (args.dryRun) {
+            updatedExisting += 1;
+            console.log(`DRY RUN update existing contentHash ${shaLower} uniqueId=${existing.uniqueId}`);
+          } else {
+            await MediaItemModel.updateOne({ _id: existing._id }, { $set: updates }).exec();
+            updatedExisting += 1;
+            console.log(`UPDATED existing contentHash ${shaLower} uniqueId=${existing.uniqueId}`);
+          }
+        } else {
+          skippedExisting += 1;
+          console.log(`SKIP existing contentHash ${shaLower} uniqueId=${existing.uniqueId}`);
+        }
+
         continue;
       }
 
@@ -150,22 +192,98 @@ async function main() {
         ? sidecar.people.filter((p: unknown) => typeof p === 'string')
         : [];
 
-      const fileName = sidecar?.original?.filename || base;
-      const url = toCanonUrl(base);
-      const googleAlbumId = args.googleAlbumId || 'canon';
-      const googleAlbumName = args.googleAlbumName || 'canon';
+      const fileName = sidecar?.original?.filename || canonFileName;
+      const url = toCanonUrl(canonFileName);
+
+      let tags: Tags | null = null;
+      try {
+        tags = await exiftool.read(filePath);
+      } catch (err) {
+        exifErrors += 1;
+        console.error(`EXIF read failed for ${filePath}:`, err);
+      }
+
+      const creationTime =
+        toIsoString(tags?.DateTimeOriginal) ??
+        toIsoString(tags?.CreateDate) ??
+        undefined;
+
+      const width = (tags?.ImageWidth as number | undefined) ?? (tags?.ExifImageWidth as number | undefined);
+      const height = (tags?.ImageHeight as number | undefined) ?? (tags?.ExifImageHeight as number | undefined);
+
+      let city: string | undefined;
+      let state: string | undefined;
+      let country: string | undefined;
+
+      const gpsLatitude = tags?.GPSLatitude as number | undefined;
+      const gpsLongitude = tags?.GPSLongitude as number | undefined;
+
+      if (args.noGeocode) {
+        if (gpsLatitude != null && gpsLongitude != null) geocodeSkipped += 1;
+      } else if (gpsLatitude != null && gpsLongitude != null) {
+        try {
+          const addr = await reverseGeocode(gpsLatitude, gpsLongitude);
+          city = addr ? pickCity(addr) : undefined;
+          state = addr ? pickState(addr) : undefined;
+          country = addr?.country;
+        } catch (err) {
+          geocodeErrors += 1;
+          console.error(`Geocode failed for ${filePath}:`, err);
+        }
+      }
+
+      const exif: MediaItemPropertiesFromExif | undefined = tags
+        ? {
+          takenAt: toIsoString(tags.DateTimeOriginal),
+          exifModifiedAt: toIsoString(tags.ModifyDate),
+          fileModifiedAt: toIsoString(tags.FileModifyDate),
+          offsetTime: tags.OffsetTime,
+          offsetTimeOriginal: tags.OffsetTimeOriginal,
+          offsetTimeDigitized: tags.OffsetTimeDigitized,
+          imageWidth: width,
+          imageHeight: height,
+          orientation: typeof tags.Orientation === 'number' ? tags.Orientation : undefined,
+          fNumber: tags.FNumber,
+          exposureTime: tags.ExposureTime,
+          iso: tags.ISO,
+          focalLengthMm: tags.FocalLength,
+          focalLength35mm: tags.FocalLengthIn35mmFormat,
+          gpsLatitude: tags.GPSLatitude,
+          gpsLongitude: tags.GPSLongitude,
+          gpsAltitudeM: tags.GPSAltitude,
+          gpsAltitudeRef: tags.GPSAltitudeRef?.toString() ?? '',
+          gpsDateTime: toIsoString(tags.GPSDateTime),
+          gpsImgDirectionDeg: tags.GPSImgDirection,
+          gpsImgDirectionRef: tags.GPSImgDirectionRef,
+          gpsSpeed: tags.GPSSpeed,
+          gpsSpeedRef: tags.GPSSpeedRef,
+          city,
+          state,
+          country,
+        }
+        : undefined;
 
       const create: CreateMediaItemInput = {
         uniqueId: uuidv4(),
         contentHash: shaLower,
-        googleMediaItemId: `canon:${shaLower}`,
+        googleMediaItemId: '',
         fileName,
-        googleAlbumId,
-        googleAlbumName,
+        googleAlbumId: args.googleAlbumId,
+        googleAlbumName: args.googleAlbumName,
         filePath,
         url,
-        creationTime: undefined,
-        lastModified: new Date(stat.mtimeMs).toISOString(),
+        mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
+        creationTime,
+        lastModified: getLastModifiedUTCISO(filePath),
+        exif,
+        exifMeta: tags
+          ? {
+            readAtIso: new Date().toISOString(),
+            tool: 'exiftool-vendored',
+            toolVersion: (await exiftool.version()).toString?.(),
+            schemaVersion: 1,
+          }
+          : undefined,
         peopleRetrievedFromGoogle: true,
         people,
         keywordNodeIds: [],
@@ -191,8 +309,12 @@ async function main() {
   console.log('--- Canon import summary ---');
   console.log(`Scanned: ${scanned}`);
   console.log(`Imported: ${imported}`);
-  console.log(`Skipped: ${skipped}`);
+  console.log(`Skipped existing: ${skippedExisting}`);
+  console.log(`Updated existing: ${updatedExisting}`);
   console.log(`Missing sidecar: ${missingSidecar}`);
+  console.log(`EXIF errors: ${exifErrors}`);
+  console.log(`Geocode skipped: ${geocodeSkipped}`);
+  console.log(`Geocode errors: ${geocodeErrors}`);
   console.log(`Errors: ${errors}`);
 
   process.exit(errors > 0 ? 1 : 0);

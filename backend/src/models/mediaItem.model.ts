@@ -12,13 +12,13 @@ export const MediaitemSchema = new Schema(
   {
     uniqueId: { type: String, required: true, unique: true },
     contentHash: { type: String },
-    googleMediaItemId: { type: String, required: true },
+    googleMediaItemId: { type: String, default: '' },
     fileName: { type: String, required: true },
     filePath: { type: String, default: '' },
     url: { type: String },
     mimeType: { type: String },
-    googleAlbumId: { type: String, required: true },
-    googleAlbumName: { type: String, required: true },
+    googleAlbumId: { type: String, default: '' },
+    googleAlbumName: { type: String, default: '' },
 
     // Promoted, query-friendly fields (fast filters/sorts)
     creationTime: { type: String },  // canonical, derived from EXIF/FS

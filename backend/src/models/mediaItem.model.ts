@@ -11,14 +11,28 @@ console.log('Module exports =', require('@shared/types/enums'));
 export const MediaitemSchema = new Schema(
   {
     uniqueId: { type: String, required: true, unique: true },
+    source: {
+      type: String,
+      required: true,
+      enum: ['canon', 'google', 'local'],
+      default: 'local',
+    },
     contentHash: { type: String },
     googleMediaItemId: { type: String, default: '' },
     fileName: { type: String, required: true },
     filePath: { type: String, default: '' },
     url: { type: String },
     mimeType: { type: String },
-    googleAlbumId: { type: String, default: '' },
-    googleAlbumName: { type: String, default: '' },
+    googleAlbumId: {
+      type: String,
+      default: null,
+      set: (v: unknown) => (v == null ? null : (typeof v === 'boolean' ? null : String(v))),
+    },
+    googleAlbumName: {
+      type: String,
+      default: null,
+      set: (v: unknown) => (v == null ? null : (typeof v === 'boolean' ? null : String(v))),
+    },
 
     // Promoted, query-friendly fields (fast filters/sorts)
     creationTime: { type: String },  // canonical, derived from EXIF/FS
@@ -55,14 +69,15 @@ export interface MediaItemStored {
   _id: Types.ObjectId;
 
   uniqueId: string;
+  source: 'canon' | 'google' | 'local';
   contentHash?: string;
   googleMediaItemId: string;
   fileName: string;
   filePath: string;         // default '' if not provided
   url?: string;
   mimeType?: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
+  googleAlbumId: string | null;
+  googleAlbumName: string | null;
 
   creationTime?: string;
   lastModified?: string;

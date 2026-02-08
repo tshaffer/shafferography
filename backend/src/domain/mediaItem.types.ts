@@ -3,11 +3,12 @@ import { PhotoState } from '@shared/types/enums';
 
 export interface CreateMediaItemInput {
   uniqueId: string;
+  source?: 'canon' | 'google' | 'local';
   contentHash?: string;
   googleMediaItemId: string;
   fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
+  googleAlbumId: string | null;
+  googleAlbumName: string | null;
   filePath?: string;
   url?: string;
   mimeType?: string;

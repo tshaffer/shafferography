@@ -163,7 +163,7 @@ async function main() {
           ? sidecar.people.filter((p: unknown) => typeof p === 'string')
           : [];
 
-        if (existing.peopleRetrievedFromGoogle === false) {
+        if (people.length > 0 && existing.peopleRetrievedFromGoogle === false) {
           updates.peopleRetrievedFromGoogle = true;
           updates.people = people.map((name) => ({ name }));
         }
@@ -265,11 +265,12 @@ async function main() {
 
       const create: CreateMediaItemInput = {
         uniqueId: uuidv4(),
+        source: 'canon',
         contentHash: shaLower,
-        googleMediaItemId: '',
+        googleMediaItemId: `canon:${shaLower}`,
         fileName,
-        googleAlbumId: args.googleAlbumId,
-        googleAlbumName: args.googleAlbumName,
+        googleAlbumId: null,
+        googleAlbumName: null,
         filePath,
         url,
         mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
@@ -284,12 +285,21 @@ async function main() {
             schemaVersion: 1,
           }
           : undefined,
-        peopleRetrievedFromGoogle: true,
+        peopleRetrievedFromGoogle: people.length > 0,
         people,
         keywordNodeIds: [],
         photoState: PhotoState.Unreviewed,
         albumNodeId: args.albumNodeId,
       };
+
+      if (create.source === 'canon') {
+        if (!create.googleMediaItemId.startsWith('canon:')) {
+          throw new Error(`Invalid canon googleMediaItemId for ${filePath}`);
+        }
+        if (create.googleAlbumId !== null || create.googleAlbumName !== null) {
+          throw new Error(`Canon items must have null googleAlbumId/googleAlbumName for ${filePath}`);
+        }
+      }
 
       if (args.dryRun) {
         imported += 1;

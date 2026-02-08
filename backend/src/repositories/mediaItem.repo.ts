@@ -17,11 +17,12 @@ function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItem {
   const exif: any = doc.exif || {};
   const dto: MediaItem = {
     uniqueId: doc.uniqueId,
+    source: doc.source ?? 'local',
     contentHash: doc.contentHash ?? null,
     googleMediaItemId: doc.googleMediaItemId,
     fileName: doc.fileName,
-    googleAlbumId: doc.googleAlbumId,
-    googleAlbumName: doc.googleAlbumName,
+    googleAlbumId: doc.googleAlbumId ?? null,
+    googleAlbumName: doc.googleAlbumName ?? null,
 
     creationTime: doc.creationTime ?? null,
     lastModified: doc.lastModified ?? null,

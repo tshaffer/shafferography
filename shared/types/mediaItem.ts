@@ -5,11 +5,12 @@ export interface PersonDTO { name: string }
 export interface MediaItem {
   // IDs & names
   uniqueId: string;
+  source: "canon" | "google" | "local";
   contentHash?: string | null;
   googleMediaItemId: string;
   fileName: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
+  googleAlbumId: string | null;
+  googleAlbumName: string | null;
 
   // Promoted canonical timestamps (good for sorting/filtering)
   creationTime: string | null;   // derived from EXIF/FS

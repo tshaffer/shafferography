@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node backend/dist/server.js",
+    "canon-import": "npm --prefix backend run canon-import --",
     "build": "cd frontend && npm install && npm run build && cd ..",
     "heroku-postbuild": "cd backend && npm install && npm run build && cd ../frontend && npm install && npm run build"
   },

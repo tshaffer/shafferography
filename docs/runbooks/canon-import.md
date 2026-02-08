@@ -141,6 +141,10 @@ Copy / paste the following from the non-preview view of this file.
 - `--limit <N>`: cap number of files processed
 - `--dryRun`: no DB writes
 
+Notes:
+- If `--googleAlbumId` / `--googleAlbumName` are empty, the importer uses `canon` placeholders to satisfy required schema fields.
+- `googleMediaItemId` is set to `canon:<sha>` for canonical imports.
+
 ## Static mounts
 
 - `/shafferographyMedia` → `BASE_MEDIA_PATH`

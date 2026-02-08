@@ -152,14 +152,16 @@ async function main() {
 
       const fileName = sidecar?.original?.filename || base;
       const url = toCanonUrl(base);
+      const googleAlbumId = args.googleAlbumId || 'canon';
+      const googleAlbumName = args.googleAlbumName || 'canon';
 
       const create: CreateMediaItemInput = {
         uniqueId: uuidv4(),
         contentHash: shaLower,
-        googleMediaItemId: '',
+        googleMediaItemId: `canon:${shaLower}`,
         fileName,
-        googleAlbumId: args.googleAlbumId,
-        googleAlbumName: args.googleAlbumName,
+        googleAlbumId,
+        googleAlbumName,
         filePath,
         url,
         creationTime: undefined,

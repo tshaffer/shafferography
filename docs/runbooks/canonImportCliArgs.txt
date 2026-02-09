@@ -1,11 +1,4 @@
-albumName:
-  12-94 to 11-95
-parentAlbumNodeName:
-  By Date
-googleAlbumName:
-  Dedupe 12-94 11-95
-runDir:
-  2026-02-07_11_22__takeout_ingest
+From codex:
 
 npm run canon-import -- \
   --runDir "2026-02-07_11_22__takeout_ingest" \
@@ -22,3 +15,53 @@ npm run canon-import -- \
   --googleAlbumName "Dedupe 3-96 5-98" \
   --dryRun \
   --limit 25
+
+
+Actual runs:
+
+Run 1:
+
+albumName:
+  12-94 to 11-95
+parentAlbumName:
+  By Date
+googleAlbumName:
+Dedupe 12-94 11-95
+  Dedupe 12-94 11-95
+
+  npm run canon-import -- \
+  --runDir "2026-02-07_11_22__takeout_ingest" \
+  --albumName "12-94 to 11-95" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 12-94 11-95" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-07_11_22__takeout_ingest" \
+  --albumName "12-94 to 11-95" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 12-94 11-95"
+
+Run 2:
+
+albumName:
+  12-94 to 11-95
+parentAlbumName:
+  By Date
+googleAlbumName:
+  Dedupe 3-96 5-98
+
+  npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
+  --albumName "3-96 to 5-98" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 3-96 5-98" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
+  --albumName "3-96 to 5-98" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 3-96 5-98"

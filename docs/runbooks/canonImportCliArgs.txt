@@ -20,5 +20,16 @@ googleAlbumName:
   --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumId "" \
   --googleAlbumName "Dedupe 12-94 11-95" \
+
+
+
+
+  npm run canon-import -- \
+  --albumName "3-96 5-98" \
+  --parentAlbumNodeName "By Date" \
+  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
+  --googleAlbumId "" \
+  --googleAlbumName "Dedupe 3-96 5-98" \
+  --dryRun \
   --limit 25
 

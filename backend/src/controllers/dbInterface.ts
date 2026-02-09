@@ -431,7 +431,50 @@ export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Pr
   await treeDoc.save();
 }
 
-export const findOrCreateAlbumNodeInDb = async (params: {
+export const findAlbumNodeByNameStrict = async (parentAlbumNodeName: string): Promise<{
+  albumNodeId: string;
+}> => {
+  const normalizedName = parentAlbumNodeName.trim();
+  if (!normalizedName) {
+    throw new Error('parentAlbumNodeName must be non-empty');
+  }
+
+  const albumTreeModel = await getMediaContentTreeModel();
+  const treeDoc = await albumTreeModel.findOne().exec();
+  if (!treeDoc) {
+    throw new Error('Album tree not found');
+  }
+
+  type Match = { id: string; path: string; type: string };
+  const matches: Match[] = [];
+
+  const walk = (nodes: MediaContentNode[], pathParts: string[]) => {
+    for (const node of nodes) {
+      const currentPath = [...pathParts, node.name];
+      if (node.name.trim() === normalizedName) {
+        matches.push({ id: node.id, path: currentPath.join(' / '), type: node.type });
+      }
+      if (node.type === 'group') {
+        walk(node.children, currentPath);
+      }
+    }
+  };
+
+  walk(treeDoc.nodes, []);
+
+  const groupMatches = matches.filter((m) => m.type === 'group');
+  if (groupMatches.length === 0) {
+    throw new Error(`Parent album not found: ${parentAlbumNodeName}`);
+  }
+  if (groupMatches.length > 1) {
+    const details = groupMatches.map((m) => `${m.id} (${m.path})`).join(', ');
+    throw new Error(`Parent album name is ambiguous: ${parentAlbumNodeName}. Matches: ${details}`);
+  }
+
+  return { albumNodeId: groupMatches[0].id };
+};
+
+export const findOrCreateAlbumNodeUnderParent = async (params: {
   albumName: string;
   parentAlbumNodeId: string;
 }): Promise<{ albumNodeId: string; created: boolean }> => {

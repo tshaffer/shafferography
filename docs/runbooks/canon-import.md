@@ -133,7 +133,7 @@ npm run canon-import -- \
 ```
 npm run canon-import -- \
   --albumName "Imported Feb 2026" \
-  --parentAlbumNodeId <parentId> \
+  --parentAlbumNodeName "<parentName>" \
   --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
@@ -173,13 +173,13 @@ npm run canon-import -- \
 - `--noGeocode`: skip reverse geocoding (city/state/country)
 - `--googleAlbumName <string>`: override googleAlbumName for all imported items
 - `--albumNodeId <id>`: attach items to an existing album node
-- `--albumName <name>` + `--parentAlbumNodeId <id>`: find or create album under parent and attach items
+- `--albumName <name>` + `--parentAlbumNodeName <name>`: find or create album under parent (by name) and attach items
 
 Notes:
 - Canon imports set `googleMediaItemId` to `canon:<hash>`.
 - `googleAlbumId` is always null for canon imports; `googleAlbumName` is only set when the CLI flag is provided.
-- `--albumNodeId` is mutually exclusive with `--albumName` + `--parentAlbumNodeId`.
-- `--albumName` and `--parentAlbumNodeId` must be provided together.
+- `--albumNodeId` is mutually exclusive with `--albumName` + `--parentAlbumNodeName`.
+- `--albumName` and `--parentAlbumNodeName` must be provided together.
 
 ## Static mounts
 

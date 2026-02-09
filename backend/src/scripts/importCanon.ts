@@ -12,7 +12,7 @@ import { PhotoState } from '@shared/types/enums';
 import type { CreateMediaItemInput } from '../domain/mediaItem.types';
 import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
-import { findOrCreateAlbumNodeInDb } from '../controllers/dbInterface';
+import { findAlbumNodeByNameStrict, findOrCreateAlbumNodeUnderParent } from '../controllers/dbInterface';
 import { getLastModifiedUTCISO } from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 
@@ -22,7 +22,7 @@ type CliArgs = {
   canonDir: string;
   albumNodeId?: string;
   albumName?: string;
-  parentAlbumNodeId?: string;
+  parentAlbumNodeName?: string;
   googleAlbumName?: string;
   dryRun: boolean;
   limit?: number;
@@ -48,21 +48,21 @@ function parseArgs(argv: string[]): CliArgs {
   const canonDir = (args.canonDir as string) || CANON_MEDIA_PATH;
   const albumNodeId = (args.albumNodeId as string | undefined) || undefined;
   const albumName = (args.albumName as string | undefined) || undefined;
-  const parentAlbumNodeId = (args.parentAlbumNodeId as string | undefined) || undefined;
+  const parentAlbumNodeName = (args.parentAlbumNodeName as string | undefined) || undefined;
   const googleAlbumName = (args.googleAlbumName as string | undefined) || undefined;
   const dryRun = Boolean(args.dryRun);
   const limit = args.limit ? Number(args.limit) : undefined;
   const since = args.since ? new Date(String(args.since)) : undefined;
   const noGeocode = Boolean(args.noGeocode);
 
-  if (albumNodeId && (albumName || parentAlbumNodeId)) {
-    throw new Error('Use either --albumNodeId OR --albumName + --parentAlbumNodeId (not both)');
+  if (albumNodeId && (albumName || parentAlbumNodeName)) {
+    throw new Error('Use either --albumNodeId OR --albumName + --parentAlbumNodeName (not both)');
   }
-  if ((albumName && !parentAlbumNodeId) || (!albumName && parentAlbumNodeId)) {
-    throw new Error('Both --albumName and --parentAlbumNodeId are required together');
+  if ((albumName && !parentAlbumNodeName) || (!albumName && parentAlbumNodeName)) {
+    throw new Error('Both --albumName and --parentAlbumNodeName are required together');
   }
-  if (!albumNodeId && !albumName && !parentAlbumNodeId) {
-    throw new Error('Provide --albumNodeId or --albumName + --parentAlbumNodeId');
+  if (!albumNodeId && !albumName && !parentAlbumNodeName) {
+    throw new Error('Provide --albumNodeId or --albumName + --parentAlbumNodeName');
   }
   if (limit !== undefined && Number.isNaN(limit)) {
     throw new Error('Invalid --limit');
@@ -75,7 +75,7 @@ function parseArgs(argv: string[]): CliArgs {
     canonDir,
     albumNodeId,
     albumName,
-    parentAlbumNodeId,
+    parentAlbumNodeName,
     googleAlbumName,
     dryRun,
     limit,
@@ -129,13 +129,14 @@ async function main() {
   if (args.albumNodeId) {
     finalAlbumNodeId = args.albumNodeId;
     albumMode = `existing albumNodeId=${args.albumNodeId}`;
-  } else if (args.albumName && args.parentAlbumNodeId) {
-    const resolved = await findOrCreateAlbumNodeInDb({
+  } else if (args.albumName && args.parentAlbumNodeName) {
+    const parent = await findAlbumNodeByNameStrict(args.parentAlbumNodeName);
+    const resolved = await findOrCreateAlbumNodeUnderParent({
       albumName: args.albumName,
-      parentAlbumNodeId: args.parentAlbumNodeId,
+      parentAlbumNodeId: parent.albumNodeId,
     });
     finalAlbumNodeId = resolved.albumNodeId;
-    albumMode = `findOrCreate(albumName="${args.albumName.trim()}" under parent=${args.parentAlbumNodeId})`;
+    albumMode = `findParentByName("${args.parentAlbumNodeName.trim()}") + findOrCreateChild("${args.albumName.trim()}")`;
   }
 
   const googleAlbumNameFinal = args.googleAlbumName?.trim();

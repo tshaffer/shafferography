@@ -1,0 +1,24 @@
+albumName:
+  12-94 to 11-95
+parentAlbumName:
+  By Date
+googleAlbumName:
+  Dedupe 12-94 11-95
+
+  npm run canon-import -- \
+  --albumName "12-94 to 11-95" \
+  --parentAlbumNodeName "By Date" \
+  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
+  --googleAlbumId "" \
+  --googleAlbumName "Dedupe 12-94 11-95" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --albumName "12-94 to 11-95" \
+  --parentAlbumNodeName "By Date" \
+  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
+  --googleAlbumId "" \
+  --googleAlbumName "Dedupe 12-94 11-95" \
+  --limit 25
+

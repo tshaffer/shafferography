@@ -34,6 +34,7 @@ export interface MediaItem {
   albumNodeId: string;
   undecidedGroupId: string | null;
   notes: string | null;
+  importRun?: string | null;
   keywordNodeIds: string[];
   peopleRetrievedFromGoogle: boolean;
   people: PersonDTO[];

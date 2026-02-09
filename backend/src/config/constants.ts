@@ -2,3 +2,4 @@ export const BASE_MEDIA_PATH = "/Volumes/ShMedia/Shafferography/ShafferographyMe
 export const BASE_MEDIA_URL = "http://localhost:8080/shafferographyMedia/";
 export const CANON_MEDIA_PATH = "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash";
 export const CANON_MEDIA_URL = "http://localhost:8080/canonicalMedia";
+export const PHOTO_ARCHIVE_PATH = "/Volumes/ShMedia/PHOTO_ARCHIVE";

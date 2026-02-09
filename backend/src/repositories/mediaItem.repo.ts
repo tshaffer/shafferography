@@ -42,6 +42,7 @@ function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItem {
     albumNodeId: doc.albumNodeId,
     undecidedGroupId: doc.undecidedGroupId ?? null,
     notes: doc.notes ?? null,
+    importRun: doc.importRun ?? null,
     keywordNodeIds: doc.keywordNodeIds ?? [],
     peopleRetrievedFromGoogle: !!doc.peopleRetrievedFromGoogle,
     people: (doc.people || []).map(p => ({ name: p?.name ?? '' })),

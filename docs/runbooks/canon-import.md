@@ -86,8 +86,8 @@ npm run build
 
 ```
 node dist/scripts/importCanon.js \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId <id> \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -98,8 +98,8 @@ node dist/scripts/importCanon.js \
 ```
 cd backend
 TS_NODE_PROJECT=./tsconfig.json npx ts-node -r tsconfig-paths/register ./src/scripts/importCanon.ts \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId <id> \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -110,8 +110,8 @@ TS_NODE_PROJECT=./tsconfig.json npx ts-node -r tsconfig-paths/register ./src/scr
 ```
 cd backend
 npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId <id> \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -121,8 +121,8 @@ npm run canon-import -- \
 
 ```
 npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId <id> \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -134,7 +134,7 @@ npm run canon-import -- \
 npm run canon-import -- \
   --albumName "Imported Feb 2026" \
   --parentAlbumNodeName "<parentName>" \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -144,8 +144,8 @@ npm run canon-import -- \
 
 ```
 npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId <id> \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -158,8 +158,8 @@ Example (real run, edit values):
 
 ```
 npm run canon-import -- \
+  --runDir "2026-02-09_07_27__takeout_ingest" \
   --albumNodeId "3deb1782-e88f-4a08-b693-1afb39c917d3" \
-  --canonDir "/Volumes/ShMedia/PHOTO_ARCHIVE/CANONICAL/by-hash" \
   --googleAlbumName "My Album" \
   --dryRun \
   --limit 25
@@ -167,6 +167,7 @@ npm run canon-import -- \
 
 ### Optional flags
 
+- `--runDir <RUN_DIR_NAME>`: REQUIRED. Reads `$PHOTO_ARCHIVE/MANIFESTS/<RUN_DIR>/dedup_plan__unique.csv`
 - `--since <ISO>`: only import files with mtime after this timestamp
 - `--limit <N>`: cap number of files processed
 - `--dryRun`: no DB writes
@@ -180,6 +181,7 @@ Notes:
 - `googleAlbumId` is always null for canon imports; `googleAlbumName` is only set when the CLI flag is provided.
 - `--albumNodeId` is mutually exclusive with `--albumName` + `--parentAlbumNodeName`.
 - `--albumName` and `--parentAlbumNodeName` must be provided together.
+- Canon imports set `importRun` to the CSV `runLabel` (validated to match `--runDir`).
 
 ## Static mounts
 

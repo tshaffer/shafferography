@@ -21,6 +21,7 @@ export interface CreateMediaItemInput {
   albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
+  importRun?: string;
 
   // subdocuments (optional)
   exif?: MediaItemPropertiesFromExif;

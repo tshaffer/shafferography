@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { exiftool, Tags } from 'exiftool-vendored';
 
 import { connectDB } from '../config/db';
-import { CANON_MEDIA_PATH, CANON_MEDIA_URL } from '../config';
+import { CANON_MEDIA_URL, PHOTO_ARCHIVE_PATH } from '../config';
 import { getMediaItemModel } from '../models/getMediaItemModel';
 import { connection } from '../config';
 import { PhotoState } from '@shared/types/enums';
@@ -15,11 +15,10 @@ import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { findAlbumNodeByNameStrict, findOrCreateAlbumNodeUnderParent } from '../controllers/dbInterface';
 import { getLastModifiedUTCISO } from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
-
-const HASHED_FILENAME_RE = /^([0-9a-fA-F]{64})\.([^./\\]+)$/;
+import { parse } from 'csv-parse/sync';
 
 type CliArgs = {
-  canonDir: string;
+  runDir: string;
   albumNodeId?: string;
   albumName?: string;
   parentAlbumNodeName?: string;
@@ -45,7 +44,7 @@ function parseArgs(argv: string[]): CliArgs {
     }
   }
 
-  const canonDir = (args.canonDir as string) || CANON_MEDIA_PATH;
+  const runDir = (args.runDir as string) || '';
   const albumNodeId = (args.albumNodeId as string | undefined) || undefined;
   const albumName = (args.albumName as string | undefined) || undefined;
   const parentAlbumNodeName = (args.parentAlbumNodeName as string | undefined) || undefined;
@@ -61,8 +60,8 @@ function parseArgs(argv: string[]): CliArgs {
   if ((albumName && !parentAlbumNodeName) || (!albumName && parentAlbumNodeName)) {
     throw new Error('Both --albumName and --parentAlbumNodeName are required together');
   }
-  if (!albumNodeId && !albumName && !parentAlbumNodeName) {
-    throw new Error('Provide --albumNodeId or --albumName + --parentAlbumNodeName');
+  if (!runDir) {
+    throw new Error('Missing required --runDir');
   }
   if (limit !== undefined && Number.isNaN(limit)) {
     throw new Error('Invalid --limit');
@@ -72,7 +71,7 @@ function parseArgs(argv: string[]): CliArgs {
   }
 
   return {
-    canonDir,
+    runDir,
     albumNodeId,
     albumName,
     parentAlbumNodeName,
@@ -82,25 +81,6 @@ function parseArgs(argv: string[]): CliArgs {
     since,
     noGeocode,
   };
-}
-
-async function walkDir(root: string): Promise<string[]> {
-  const results: string[] = [];
-
-  async function walk(current: string) {
-    const entries = await fs.readdir(current, { withFileTypes: true });
-    for (const entry of entries) {
-      const fullPath = path.join(current, entry.name);
-      if (entry.isDirectory()) {
-        await walk(fullPath);
-      } else if (entry.isFile()) {
-        results.push(fullPath);
-      }
-    }
-  }
-
-  await walk(root);
-  return results;
 }
 
 function toCanonUrl(filename: string): string {
@@ -123,8 +103,15 @@ async function main() {
   await connectDB();
   const MediaItemModel = getMediaItemModel(connection);
 
+  const manifestDir = path.join(PHOTO_ARCHIVE_PATH, 'MANIFESTS', args.runDir);
+  const manifestPath = path.join(manifestDir, 'dedup_plan__unique.csv');
+  const manifestRaw = await fs.readFile(manifestPath, 'utf8').catch(() => null);
+  if (!manifestRaw) {
+    throw new Error(`Manifest not found: ${manifestPath}`);
+  }
+
   let finalAlbumNodeId: string | undefined;
-  let albumMode = 'none';
+  let albumMode = 'none (default local)';
 
   if (args.albumNodeId) {
     finalAlbumNodeId = args.albumNodeId;
@@ -142,42 +129,68 @@ async function main() {
   const googleAlbumNameFinal = args.googleAlbumName?.trim();
   const googleAlbumNameForItems = googleAlbumNameFinal ? googleAlbumNameFinal : null;
 
+  const records = parse(manifestRaw, {
+    columns: true,
+    skip_empty_lines: true,
+    trim: true,
+  }) as Array<Record<string, string>>;
+
+  const deduped: Array<Record<string, string>> = [];
+  const seen = new Set<string>();
+
+  for (const row of records) {
+    const runLabel = row.runLabel?.trim();
+    if (runLabel !== args.runDir) {
+      throw new Error(`Manifest runLabel mismatch. Expected ${args.runDir}, got ${runLabel}`);
+    }
+    const sha = row.sha256?.trim();
+    const ext = row.ext?.trim();
+    if (!sha || !ext) continue;
+    const key = `${sha}${ext}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(row);
+  }
+
+  console.log(`Run dir: ${args.runDir}`);
+  console.log(`Manifest: ${manifestPath}`);
+  console.log(`Rows: ${records.length}; Deduped: ${deduped.length}`);
   console.log(
     `Album attachment: ${albumMode}; googleAlbumName: ${googleAlbumNameForItems ?? '(none)'}`
   );
-
-  const files = await walkDir(args.canonDir);
-  const mediaFiles = files.filter((file) => {
-    const base = path.basename(file);
-    if (base.endsWith('.shafferography.json')) return false;
-    return HASHED_FILENAME_RE.test(base);
-  });
 
   let scanned = 0;
   let imported = 0;
   let skippedExisting = 0;
   let updatedExisting = 0;
   let missingSidecar = 0;
+  let missingCanonical = 0;
+  let alreadyImported = 0;
   let exifErrors = 0;
   let geocodeSkipped = 0;
   let geocodeErrors = 0;
   let errors = 0;
 
-  for (const filePath of mediaFiles) {
+  for (const row of deduped) {
     if (args.limit !== undefined && scanned >= args.limit) break;
 
     scanned += 1;
 
-    const base = path.basename(filePath);
-    const match = base.match(HASHED_FILENAME_RE);
-    if (!match) continue;
-
-    const shaLower = match[1].toLowerCase();
-    const ext = path.extname(base);
+    const shaLower = row.sha256?.trim().toLowerCase();
+    const extRaw = row.ext?.trim();
+    if (!shaLower || !extRaw) continue;
+    const ext = extRaw.startsWith('.') ? extRaw : `.${extRaw}`;
     const canonFileName = `${shaLower}${ext}`;
+    const canonicalPath = path.join(PHOTO_ARCHIVE_PATH, 'CANONICAL/by-hash', canonFileName);
+    const absPath = row.absPath?.trim();
 
     try {
-      const stat = await fs.stat(filePath);
+      const stat = await fs.stat(canonicalPath).catch(() => null);
+      if (!stat) {
+        missingCanonical += 1;
+        console.warn(`Missing canonical: ${canonFileName} canonicalPath=${canonicalPath} absPath=${absPath ?? ''}`);
+        continue;
+      }
       if (args.since && stat.mtime <= args.since) {
         continue;
       }
@@ -187,9 +200,9 @@ async function main() {
         const updates: Record<string, unknown> = {};
 
         if (!existing.url) updates.url = toCanonUrl(canonFileName);
-        if (!existing.filePath) updates.filePath = filePath;
+        if (!existing.filePath) updates.filePath = canonicalPath;
 
-        const sidecar = await readSidecar(filePath);
+        const sidecar = await readSidecar(canonicalPath);
         if (!sidecar) missingSidecar += 1;
 
         const people: string[] = Array.isArray(sidecar?.people)
@@ -218,7 +231,14 @@ async function main() {
         continue;
       }
 
-      const sidecar = await readSidecar(filePath);
+      const existingByPath = await MediaItemModel.findOne({ filePath: canonicalPath }).lean().exec();
+      if (existingByPath) {
+        alreadyImported += 1;
+        console.log(`SKIP already imported filePath ${canonicalPath}`);
+        continue;
+      }
+
+      const sidecar = await readSidecar(canonicalPath);
       if (!sidecar) missingSidecar += 1;
 
       const people: string[] = Array.isArray(sidecar?.people)
@@ -230,10 +250,10 @@ async function main() {
 
       let tags: Tags | null = null;
       try {
-        tags = await exiftool.read(filePath);
+        tags = await exiftool.read(canonicalPath);
       } catch (err) {
         exifErrors += 1;
-        console.error(`EXIF read failed for ${filePath}:`, err);
+        console.error(`EXIF read failed for ${canonicalPath}:`, err);
       }
 
       const creationTime =
@@ -261,7 +281,7 @@ async function main() {
           country = addr?.country;
         } catch (err) {
           geocodeErrors += 1;
-          console.error(`Geocode failed for ${filePath}:`, err);
+          console.error(`Geocode failed for ${canonicalPath}:`, err);
         }
       }
 
@@ -304,11 +324,12 @@ async function main() {
         fileName,
         googleAlbumId: null,
         googleAlbumName: googleAlbumNameForItems,
-        filePath,
+        filePath: canonicalPath,
         url,
         mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
         creationTime,
-        lastModified: getLastModifiedUTCISO(filePath),
+        lastModified: getLastModifiedUTCISO(canonicalPath),
+        importRun: args.runDir,
         exif,
         exifMeta: tags
           ? {
@@ -322,30 +343,30 @@ async function main() {
         people,
         keywordNodeIds: [],
         photoState: PhotoState.Unreviewed,
-        albumNodeId: finalAlbumNodeId as string,
+        albumNodeId: finalAlbumNodeId ?? 'local',
       };
 
       if (create.source === 'canon') {
         if (!create.googleMediaItemId.startsWith('canon:')) {
-          throw new Error(`Invalid canon googleMediaItemId for ${filePath}`);
+          throw new Error(`Invalid canon googleMediaItemId for ${canonicalPath}`);
         }
         if (create.googleAlbumId !== null) {
-          throw new Error(`Canon items must have null googleAlbumId for ${filePath}`);
+          throw new Error(`Canon items must have null googleAlbumId for ${canonicalPath}`);
         }
       }
 
       if (args.dryRun) {
         imported += 1;
-        console.log(`DRY RUN import contentHash ${shaLower} file=${base}`);
+        console.log(`DRY RUN import contentHash ${shaLower} file=${canonFileName}`);
         continue;
       }
 
       await mediaItemRepo.insert(create, { includeExif: false });
       imported += 1;
-      console.log(`IMPORTED contentHash ${shaLower} file=${base}`);
+      console.log(`IMPORTED contentHash ${shaLower} file=${canonFileName}`);
     } catch (err) {
       errors += 1;
-      console.error(`ERROR importing ${filePath}:`, err);
+      console.error(`ERROR importing ${canonicalPath}:`, err);
     }
   }
 
@@ -355,6 +376,8 @@ async function main() {
   console.log(`Skipped existing: ${skippedExisting}`);
   console.log(`Updated existing: ${updatedExisting}`);
   console.log(`Missing sidecar: ${missingSidecar}`);
+  console.log(`Missing canonical: ${missingCanonical}`);
+  console.log(`Already imported: ${alreadyImported}`);
   console.log(`EXIF errors: ${exifErrors}`);
   console.log(`Geocode skipped: ${geocodeSkipped}`);
   console.log(`Geocode errors: ${geocodeErrors}`);

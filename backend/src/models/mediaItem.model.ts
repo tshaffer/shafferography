@@ -60,9 +60,12 @@ export const MediaitemSchema = new Schema(
     albumNodeId: { type: String, required: true },
     undecidedGroupId: { type: String },
     notes: { type: String },
+    importRun: { type: String },
   },
   { timestamps: true }
 );
+
+MediaitemSchema.index({ importRun: 1 });
 
 // ---- Stored doc type that matches the schema ----
 export interface MediaItemStored {
@@ -92,6 +95,7 @@ export interface MediaItemStored {
   albumNodeId: string;
   undecidedGroupId?: string;
   notes?: string;
+  importRun?: string;
 
   createdAt?: Date;         // added by { timestamps: true }
   updatedAt?: Date;         // added by { timestamps: true }

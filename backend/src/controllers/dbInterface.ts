@@ -430,3 +430,59 @@ export const moveAlbumNodeInDb = async (nodeId: string, newParentId: string): Pr
 
   await treeDoc.save();
 }
+
+export const findOrCreateAlbumNodeInDb = async (params: {
+  albumName: string;
+  parentAlbumNodeId: string;
+}): Promise<{ albumNodeId: string; created: boolean }> => {
+  const albumName = params.albumName.trim();
+  if (!albumName) {
+    throw new Error('albumName must be non-empty');
+  }
+
+  const albumTreeModel = await getMediaContentTreeModel();
+  const treeDoc = await albumTreeModel.findOne().exec();
+  if (!treeDoc) {
+    throw new Error('Album tree not found');
+  }
+
+  const findNodeById = (nodes: MediaContentNode[], id: string): MediaContentNode | null => {
+    for (const node of nodes) {
+      if (node.id === id) return node;
+      if (node.type === 'group') {
+        const found = findNodeById(node.children, id);
+        if (found) return found;
+      }
+    }
+    return null;
+  };
+
+  const parentNode = findNodeById(treeDoc.nodes, params.parentAlbumNodeId);
+  if (!parentNode) {
+    throw new Error(`parentAlbumNodeId not found: ${params.parentAlbumNodeId}`);
+  }
+  if (parentNode.type !== 'group') {
+    throw new Error(`parentAlbumNodeId must reference a group node: ${params.parentAlbumNodeId}`);
+  }
+
+  const normalizedName = albumName.toLowerCase();
+  const existing = parentNode.children.find(
+    (child: MediaContentNode) =>
+      child.type === 'album' && child.name.trim().toLowerCase() === normalizedName
+  );
+
+  if (existing) {
+    return { albumNodeId: existing.id, created: false };
+  }
+
+  const newAlbum: MediaContentNode = {
+    id: uuidv4(),
+    name: albumName,
+    type: 'album',
+  } as MediaContentNode;
+
+  parentNode.children.push(newAlbum as any);
+  await treeDoc.save();
+
+  return { albumNodeId: newAlbum.id, created: true };
+};

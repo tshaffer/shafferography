@@ -12,6 +12,7 @@ import { PhotoState } from '@shared/types/enums';
 import type { CreateMediaItemInput } from '../domain/mediaItem.types';
 import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
+import { findOrCreateAlbumNodeInDb } from '../controllers/dbInterface';
 import { getLastModifiedUTCISO } from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 
@@ -19,9 +20,10 @@ const HASHED_FILENAME_RE = /^([0-9a-fA-F]{64})\.([^./\\]+)$/;
 
 type CliArgs = {
   canonDir: string;
-  albumNodeId: string;
-  googleAlbumId: string;
-  googleAlbumName: string;
+  albumNodeId?: string;
+  albumName?: string;
+  parentAlbumNodeId?: string;
+  googleAlbumName?: string;
   dryRun: boolean;
   limit?: number;
   since?: Date;
@@ -44,16 +46,23 @@ function parseArgs(argv: string[]): CliArgs {
   }
 
   const canonDir = (args.canonDir as string) || CANON_MEDIA_PATH;
-  const albumNodeId = (args.albumNodeId as string) || '';
-  const googleAlbumId = (args.googleAlbumId as string) || '';
-  const googleAlbumName = (args.googleAlbumName as string) || '';
+  const albumNodeId = (args.albumNodeId as string | undefined) || undefined;
+  const albumName = (args.albumName as string | undefined) || undefined;
+  const parentAlbumNodeId = (args.parentAlbumNodeId as string | undefined) || undefined;
+  const googleAlbumName = (args.googleAlbumName as string | undefined) || undefined;
   const dryRun = Boolean(args.dryRun);
   const limit = args.limit ? Number(args.limit) : undefined;
   const since = args.since ? new Date(String(args.since)) : undefined;
   const noGeocode = Boolean(args.noGeocode);
 
-  if (!albumNodeId) {
-    throw new Error('Missing required --albumNodeId');
+  if (albumNodeId && (albumName || parentAlbumNodeId)) {
+    throw new Error('Use either --albumNodeId OR --albumName + --parentAlbumNodeId (not both)');
+  }
+  if ((albumName && !parentAlbumNodeId) || (!albumName && parentAlbumNodeId)) {
+    throw new Error('Both --albumName and --parentAlbumNodeId are required together');
+  }
+  if (!albumNodeId && !albumName && !parentAlbumNodeId) {
+    throw new Error('Provide --albumNodeId or --albumName + --parentAlbumNodeId');
   }
   if (limit !== undefined && Number.isNaN(limit)) {
     throw new Error('Invalid --limit');
@@ -65,7 +74,8 @@ function parseArgs(argv: string[]): CliArgs {
   return {
     canonDir,
     albumNodeId,
-    googleAlbumId,
+    albumName,
+    parentAlbumNodeId,
     googleAlbumName,
     dryRun,
     limit,
@@ -112,6 +122,28 @@ async function main() {
 
   await connectDB();
   const MediaItemModel = getMediaItemModel(connection);
+
+  let finalAlbumNodeId: string | undefined;
+  let albumMode = 'none';
+
+  if (args.albumNodeId) {
+    finalAlbumNodeId = args.albumNodeId;
+    albumMode = `existing albumNodeId=${args.albumNodeId}`;
+  } else if (args.albumName && args.parentAlbumNodeId) {
+    const resolved = await findOrCreateAlbumNodeInDb({
+      albumName: args.albumName,
+      parentAlbumNodeId: args.parentAlbumNodeId,
+    });
+    finalAlbumNodeId = resolved.albumNodeId;
+    albumMode = `findOrCreate(albumName="${args.albumName.trim()}" under parent=${args.parentAlbumNodeId})`;
+  }
+
+  const googleAlbumNameFinal = args.googleAlbumName?.trim();
+  const googleAlbumNameForItems = googleAlbumNameFinal ? googleAlbumNameFinal : null;
+
+  console.log(
+    `Album attachment: ${albumMode}; googleAlbumName: ${googleAlbumNameForItems ?? '(none)'}`
+  );
 
   const files = await walkDir(args.canonDir);
   const mediaFiles = files.filter((file) => {
@@ -270,7 +302,7 @@ async function main() {
         googleMediaItemId: `canon:${shaLower}`,
         fileName,
         googleAlbumId: null,
-        googleAlbumName: null,
+        googleAlbumName: googleAlbumNameForItems,
         filePath,
         url,
         mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
@@ -289,15 +321,15 @@ async function main() {
         people,
         keywordNodeIds: [],
         photoState: PhotoState.Unreviewed,
-        albumNodeId: args.albumNodeId,
+        albumNodeId: finalAlbumNodeId as string,
       };
 
       if (create.source === 'canon') {
         if (!create.googleMediaItemId.startsWith('canon:')) {
           throw new Error(`Invalid canon googleMediaItemId for ${filePath}`);
         }
-        if (create.googleAlbumId !== null || create.googleAlbumName !== null) {
-          throw new Error(`Canon items must have null googleAlbumId/googleAlbumName for ${filePath}`);
+        if (create.googleAlbumId !== null) {
+          throw new Error(`Canon items must have null googleAlbumId for ${filePath}`);
         }
       }
 

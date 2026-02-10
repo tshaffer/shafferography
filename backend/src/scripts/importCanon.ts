@@ -13,7 +13,13 @@ import type { CreateMediaItemInput } from '../domain/mediaItem.types';
 import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { findAlbumNodeByNameStrict, findOrCreateAlbumNodeUnderParent } from '../controllers/dbInterface';
-import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
+import {
+  convertHEICFileToJPEGWithEXIF,
+  detectContainerType,
+  getLastModifiedUTCISO,
+  isImageFile,
+  normalizeMisnamedHeic,
+} from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { parse } from 'csv-parse/sync';
 
@@ -181,6 +187,10 @@ async function main() {
     if (!shaLower || !extRaw) continue;
     const ext = extRaw.startsWith('.') ? extRaw : `.${extRaw}`;
     const canonFileName = `${shaLower}${ext}`;
+    const baseName = path.basename(canonFileName);
+    if (baseName.startsWith('._') || baseName === '.DS_Store') {
+      continue;
+    }
     const canonicalPath = path.join(PHOTO_ARCHIVE_PATH, 'CANONICAL/by-hash', canonFileName);
     const absPath = row.absPath?.trim();
 
@@ -198,17 +208,26 @@ async function main() {
       let finalPath = canonicalPath;
       let finalFileName = canonFileName;
 
-      // HEIC/HEIF → JPEG+EXIF (mirror importLocal behavior)
-      if (ext.toLowerCase() === '.heic' || ext.toLowerCase() === '.heif') {
-        const outPath = path.join(path.dirname(canonicalPath), `${shaLower}.jpg`);
+      // Normalize misnamed HEIC that is actually JPEG (canonical tree only)
+      const normalization = await normalizeMisnamedHeic(finalPath, { allowRename: true });
+      finalPath = normalization.normalizedPath;
+      finalFileName = path.basename(finalPath);
+
+      // HEIC/HEIF → JPEG+EXIF (based on actual container type)
+      const containerType = normalization.actualType === 'UNKNOWN'
+        ? await detectContainerType(finalPath)
+        : normalization.actualType;
+
+      if (containerType === 'HEIF') {
+        const outPath = path.join(path.dirname(finalPath), `${shaLower}.jpg`);
         try {
-          console.log(`importCanon: Converting HEIC file: ${canonicalPath} → ${outPath}`);
-          await convertHEICFileToJPEGWithEXIF(canonicalPath, outPath);
+          console.log(`importCanon: Converting HEIC file: ${finalPath} → ${outPath}`);
+          await convertHEICFileToJPEGWithEXIF(finalPath, outPath);
           console.log(`importCanon: HEIC conversion completed: ${outPath}`);
           finalPath = outPath;
-          finalFileName = `${shaLower}.jpg`;
+          finalFileName = path.basename(outPath);
         } catch (err) {
-          console.error(`HEIC conversion failed: ${canonicalPath}`, err);
+          console.error(`HEIC conversion failed: ${finalPath}`, err);
           continue;
         }
       }
@@ -217,6 +236,8 @@ async function main() {
         continue;
       }
 
+      const sidecarPath = normalization.didRename ? finalPath : canonicalPath;
+
       const existing = await MediaItemModel.findOne({ contentHash: shaLower }).lean().exec();
       if (existing) {
         const updates: Record<string, unknown> = {};
@@ -224,7 +245,7 @@ async function main() {
         if (!existing.url) updates.url = toCanonUrl(finalFileName);
         if (!existing.filePath) updates.filePath = finalPath;
 
-        const sidecar = await readSidecar(canonicalPath);
+        const sidecar = await readSidecar(sidecarPath);
         if (!sidecar) missingSidecar += 1;
 
         const people: string[] = Array.isArray(sidecar?.people)
@@ -260,7 +281,7 @@ async function main() {
         continue;
       }
 
-      const sidecar = await readSidecar(canonicalPath);
+      const sidecar = await readSidecar(sidecarPath);
       if (!sidecar) missingSidecar += 1;
 
       const people: string[] = Array.isArray(sidecar?.people)

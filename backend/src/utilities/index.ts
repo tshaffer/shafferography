@@ -3,5 +3,7 @@ export * from './exifUtils';
 export * from './fileUtils';
 export * from './fsUtils';
 export * from './heicConverter';
+export * from './detectContainerType';
+export * from './normalizeMisnamedHeic';
 export * from './mediaFiles';
 export * from './utilities';

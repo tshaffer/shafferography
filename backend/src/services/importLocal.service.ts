@@ -8,7 +8,13 @@ import { exiftool, Tags } from 'exiftool-vendored';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { BASE_MEDIA_PATH, BASE_MEDIA_URL } from '../config';
-import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
+import {
+  convertHEICFileToJPEGWithEXIF,
+  detectContainerType,
+  getLastModifiedUTCISO,
+  isImageFile,
+  normalizeMisnamedHeic,
+} from '../utilities';
 import { CreateMediaItemInput } from '../domain/mediaItem.types';
 import { MediaItemStored } from '../models/mediaItem.model';
 import { MediaItem, MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
@@ -131,8 +137,13 @@ async function buildMediaItemFromLocal(
 
 // ---------- Public: single-file import (keeps your newer design) ----------
 export async function importLocalFile(absPath: string, albumNodeId = 'local'): Promise<MediaItem> {
-  const isoLastModified = getLastModifiedUTCISO(absPath);
-  const mediaItem: CreateMediaItemInput = await buildMediaItemFromLocal(absPath, albumNodeId, isoLastModified);
+  const normalizedBase = path.resolve(BASE_MEDIA_PATH);
+  const normalizedInput = path.resolve(absPath);
+  const allowRename = normalizedInput.startsWith(normalizedBase + path.sep);
+  const normalization = await normalizeMisnamedHeic(absPath, { allowRename });
+  const finalPath = normalization.normalizedPath;
+  const isoLastModified = getLastModifiedUTCISO(finalPath);
+  const mediaItem: CreateMediaItemInput = await buildMediaItemFromLocal(finalPath, albumNodeId, isoLastModified);
   return mediaItemRepo.insert(mediaItem, { includeExif: false });
 }
 
@@ -168,17 +179,33 @@ export async function startDirectoryImport(params: {
       const inputPath = path.join(baseDirectory, file.name);
       const ext = path.extname(inputPath);
 
+      const baseName = path.basename(inputPath);
+      if (baseName.startsWith('._') || baseName === '.DS_Store') {
+        if (fileEntry) fileEntry.status = 'completed';
+        continue;
+      }
+
       try {
         let finalPath = inputPath;
 
+        const normalizedBase = path.resolve(BASE_MEDIA_PATH);
+        const normalizedInput = path.resolve(finalPath);
+        const allowRename = normalizedInput.startsWith(normalizedBase + path.sep);
+        const normalization = await normalizeMisnamedHeic(finalPath, { allowRename });
+        finalPath = normalization.normalizedPath;
+
+        const containerType = normalization.actualType === 'UNKNOWN'
+          ? await detectContainerType(finalPath)
+          : normalization.actualType;
+
         // HEIC/HEIF → JPEG+EXIF
-        if (ext.toLowerCase() === '.heic' || ext.toLowerCase() === '.heif') {
-          const newName = path.basename(inputPath, ext) + '.jpg';
-          const outPath = path.join(path.dirname(inputPath), newName);
+        if (containerType === 'HEIF') {
+          const newName = path.basename(finalPath, path.extname(finalPath)) + '.jpg';
+          const outPath = path.join(path.dirname(finalPath), newName);
 
           try {
-            console.log('importLocal.service.ts: Converting HEIC file:', inputPath, '→', outPath);
-            await convertHEICFileToJPEGWithEXIF(inputPath, outPath);
+            console.log('importLocal.service.ts: Converting HEIC file:', finalPath, '→', outPath);
+            await convertHEICFileToJPEGWithEXIF(finalPath, outPath);
             console.log('importLocal.service.ts: HEIC conversion completed:', outPath);
             finalPath = outPath;
             if (fileEntry) fileEntry.status = 'completed';
@@ -186,7 +213,7 @@ export async function startDirectoryImport(params: {
             if (fileEntry) fileEntry.status = 'conversion failed';
             // Skip inserting this one
             // eslint-disable-next-line no-console
-            console.error('HEIC conversion failed:', inputPath, err);
+            console.error('HEIC conversion failed:', finalPath, err);
             continue;
           }
         }

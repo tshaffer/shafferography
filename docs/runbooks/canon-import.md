@@ -183,6 +183,18 @@ Notes:
 - `--albumName` and `--parentAlbumNodeName` must be provided together.
 - Canon imports set `importRun` to the CSV `runLabel` (validated to match `--runDir`).
 
+### Optional validation helpers
+
+#### testNormalizeMisnamedHeic
+
+Quick smoke test for the HEIC/JPEG mismatch normalizer. It creates a temp `.heic` file with JPEG header bytes plus a sidecar, then verifies the file and sidecar are renamed to `.jpg`.
+
+```bash
+npx ts-node backend/src/scripts/testNormalizeMisnamedHeic.ts
+```
+
+Expected result: exits 0 and logs a `normalizeMisnamedHeic OK` line.
+
 ## Static mounts
 
 - `/shafferographyMedia` → `BASE_MEDIA_PATH`

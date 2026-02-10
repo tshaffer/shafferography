@@ -1,10 +1,18 @@
 const { promisify } = require('util');
 const fs = require('fs');
 import convert from 'heic-convert';
-import { copyExifTags } from '../utilities';
+import { copyExifTags, detectContainerType } from '../utilities';
 
 export const convertHEICFileToJPEGWithEXIF = async (inputFilePath: string, outputFilePath: string): Promise<void> => {
   try {
+    const containerType = await detectContainerType(inputFilePath);
+    if (containerType === 'JPEG') {
+      console.warn(`heicConvert.ts: Input is JPEG by signature, skipping conversion: ${inputFilePath}`);
+      return;
+    }
+    if (containerType !== 'HEIF') {
+      throw new Error(`Not a HEIF/HEIC container by signature: ${inputFilePath}`);
+    }
     console.log(`heicConvert.ts: convertHEICFileToJPEGWithEXIF: ${inputFilePath} to ${outputFilePath}`);
     await convertHEICFileToJPEG(inputFilePath, outputFilePath);
     console.log('heicConvert.ts: convertHEICFileToJPEGWithEXIF: conversion done, copying EXIF tags');

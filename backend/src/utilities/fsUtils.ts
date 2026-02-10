@@ -38,6 +38,10 @@ export const getImageFilePaths = (rootPath: string): string[] => {
   const files = getFilesInDirectory(rootPath);
   // TEDTODO - use regex?
   for (const file of files) {
+    const baseName = path.basename(file);
+    if (baseName.startsWith('._') || baseName === '.DS_Store') {
+      continue;
+    }
     const extension: string = path.extname(file);
     if (imageFileExtensions.includes(extension)) {
       imageFiles.push(file);
@@ -47,6 +51,10 @@ export const getImageFilePaths = (rootPath: string): string[] => {
 }
 
 export const isImageFile = (fileSpec: string): boolean => {
+  const baseName = path.basename(fileSpec);
+  if (baseName.startsWith('._') || baseName === '.DS_Store') {
+    return false;
+  }
   const extension: string = path.extname(fileSpec);
   return (imageFileExtensions.includes(extension));
 }
@@ -173,6 +181,10 @@ export const getConvertibleImageFilePaths = (convertibleImageFileExtensions: str
   const imageFiles: string[] = [];
   const files = getFilesInDirectory(rootPath);
   for (const file of files) {
+    const baseName = path.basename(file);
+    if (baseName.startsWith('._') || baseName === '.DS_Store') {
+      continue;
+    }
     const extension: string = path.extname(file);
     if (convertibleImageFileExtensions.includes(extension)) {
       imageFiles.push(file);

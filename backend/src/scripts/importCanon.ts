@@ -191,11 +191,19 @@ async function main() {
     if (baseName.startsWith('._') || baseName === '.DS_Store') {
       continue;
     }
-    const canonicalPath = path.join(PHOTO_ARCHIVE_PATH, 'CANONICAL/by-hash', canonFileName);
+    let canonicalPath = path.join(PHOTO_ARCHIVE_PATH, 'CANONICAL/by-hash', canonFileName);
     const absPath = row.absPath?.trim();
 
     try {
-      const stat = await fs.stat(canonicalPath).catch(() => null);
+      let stat = await fs.stat(canonicalPath).catch(() => null);
+      if (!stat && (ext.toLowerCase() === '.heic' || ext.toLowerCase() === '.heif')) {
+        const jpgFallback = path.join(PHOTO_ARCHIVE_PATH, 'CANONICAL/by-hash', `${shaLower}.jpg`);
+        const jpgStat = await fs.stat(jpgFallback).catch(() => null);
+        if (jpgStat) {
+          canonicalPath = jpgFallback;
+          stat = jpgStat;
+        }
+      }
       if (!stat) {
         missingCanonical += 1;
         console.warn(`Missing canonical: ${canonFileName} canonicalPath=${canonicalPath} absPath=${absPath ?? ''}`);
@@ -288,7 +296,17 @@ async function main() {
         ? sidecar.people.filter((p: unknown) => typeof p === 'string')
         : [];
 
-      const fileName = sidecar?.original?.filename || finalFileName;
+      const sidecarOriginal = sidecar?.original?.filename;
+      let fileName = finalFileName;
+      if (sidecarOriginal) {
+        const originalParsed = path.parse(sidecarOriginal);
+        const finalExt = path.extname(finalFileName);
+        if (finalExt) {
+          fileName = `${originalParsed.name}${finalExt}`;
+        } else {
+          fileName = sidecarOriginal;
+        }
+      }
       const url = toCanonUrl(finalFileName);
 
       let tags: Tags | null = null;

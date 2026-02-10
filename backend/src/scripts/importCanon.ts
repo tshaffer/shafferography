@@ -13,7 +13,7 @@ import type { CreateMediaItemInput } from '../domain/mediaItem.types';
 import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { findAlbumNodeByNameStrict, findOrCreateAlbumNodeUnderParent } from '../controllers/dbInterface';
-import { getLastModifiedUTCISO } from '../utilities';
+import { convertHEICFileToJPEGWithEXIF, getLastModifiedUTCISO, isImageFile } from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { parse } from 'csv-parse/sync';
 
@@ -195,12 +195,34 @@ async function main() {
         continue;
       }
 
+      let finalPath = canonicalPath;
+      let finalFileName = canonFileName;
+
+      // HEIC/HEIF → JPEG+EXIF (mirror importLocal behavior)
+      if (ext.toLowerCase() === '.heic' || ext.toLowerCase() === '.heif') {
+        const outPath = path.join(path.dirname(canonicalPath), `${shaLower}.jpg`);
+        try {
+          console.log(`importCanon: Converting HEIC file: ${canonicalPath} → ${outPath}`);
+          await convertHEICFileToJPEGWithEXIF(canonicalPath, outPath);
+          console.log(`importCanon: HEIC conversion completed: ${outPath}`);
+          finalPath = outPath;
+          finalFileName = `${shaLower}.jpg`;
+        } catch (err) {
+          console.error(`HEIC conversion failed: ${canonicalPath}`, err);
+          continue;
+        }
+      }
+
+      if (!isImageFile(finalPath)) {
+        continue;
+      }
+
       const existing = await MediaItemModel.findOne({ contentHash: shaLower }).lean().exec();
       if (existing) {
         const updates: Record<string, unknown> = {};
 
-        if (!existing.url) updates.url = toCanonUrl(canonFileName);
-        if (!existing.filePath) updates.filePath = canonicalPath;
+        if (!existing.url) updates.url = toCanonUrl(finalFileName);
+        if (!existing.filePath) updates.filePath = finalPath;
 
         const sidecar = await readSidecar(canonicalPath);
         if (!sidecar) missingSidecar += 1;
@@ -231,10 +253,10 @@ async function main() {
         continue;
       }
 
-      const existingByPath = await MediaItemModel.findOne({ filePath: canonicalPath }).lean().exec();
+      const existingByPath = await MediaItemModel.findOne({ filePath: finalPath }).lean().exec();
       if (existingByPath) {
         alreadyImported += 1;
-        console.log(`SKIP already imported filePath ${canonicalPath}`);
+        console.log(`SKIP already imported filePath ${finalPath}`);
         continue;
       }
 
@@ -245,15 +267,15 @@ async function main() {
         ? sidecar.people.filter((p: unknown) => typeof p === 'string')
         : [];
 
-      const fileName = sidecar?.original?.filename || canonFileName;
-      const url = toCanonUrl(canonFileName);
+      const fileName = sidecar?.original?.filename || finalFileName;
+      const url = toCanonUrl(finalFileName);
 
       let tags: Tags | null = null;
       try {
-        tags = await exiftool.read(canonicalPath);
+        tags = await exiftool.read(finalPath);
       } catch (err) {
         exifErrors += 1;
-        console.error(`EXIF read failed for ${canonicalPath}:`, err);
+        console.error(`EXIF read failed for ${finalPath}:`, err);
       }
 
       const creationTime =
@@ -281,7 +303,7 @@ async function main() {
           country = addr?.country;
         } catch (err) {
           geocodeErrors += 1;
-          console.error(`Geocode failed for ${canonicalPath}:`, err);
+          console.error(`Geocode failed for ${finalPath}:`, err);
         }
       }
 
@@ -324,11 +346,11 @@ async function main() {
         fileName,
         googleAlbumId: null,
         googleAlbumName: googleAlbumNameForItems,
-        filePath: canonicalPath,
+        filePath: finalPath,
         url,
         mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
         creationTime,
-        lastModified: getLastModifiedUTCISO(canonicalPath),
+        lastModified: getLastModifiedUTCISO(finalPath),
         importRun: args.runDir,
         exif,
         exifMeta: tags
@@ -348,22 +370,22 @@ async function main() {
 
       if (create.source === 'canon') {
         if (!create.googleMediaItemId.startsWith('canon:')) {
-          throw new Error(`Invalid canon googleMediaItemId for ${canonicalPath}`);
+          throw new Error(`Invalid canon googleMediaItemId for ${finalPath}`);
         }
         if (create.googleAlbumId !== null) {
-          throw new Error(`Canon items must have null googleAlbumId for ${canonicalPath}`);
+          throw new Error(`Canon items must have null googleAlbumId for ${finalPath}`);
         }
       }
 
       if (args.dryRun) {
         imported += 1;
-        console.log(`DRY RUN import contentHash ${shaLower} file=${canonFileName}`);
+        console.log(`DRY RUN import contentHash ${shaLower} file=${finalFileName}`);
         continue;
       }
 
       await mediaItemRepo.insert(create, { includeExif: false });
       imported += 1;
-      console.log(`IMPORTED contentHash ${shaLower} file=${canonFileName}`);
+      console.log(`IMPORTED contentHash ${shaLower} file=${finalFileName}`);
     } catch (err) {
       errors += 1;
       console.error(`ERROR importing ${canonicalPath}:`, err);

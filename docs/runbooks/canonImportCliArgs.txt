@@ -89,3 +89,94 @@ googleAlbumName:
   --parentAlbumNodeName "By Date" \
   --googleAlbumName "Dedupe 4-24 1-25"
 
+Run 4:
+
+albumName:
+  4-24 to 1-25
+parentAlbumName:
+  By Date
+googleAlbumName:
+  Dedupe 11-2018 01-2019
+
+  npm run canon-import -- \
+  --runDir "2026-02-10_11_14__takeout_ingest" \
+  --albumName "11-2018 to 01-2019" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 11-2018 01-2019" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-10_11_14__takeout_ingest" \
+  --albumName "11-2018 to 01-2019" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 11-2018 01-2019"
+
+Run 5:
+
+2026-02-11_05_26__takeout_ingest
+Dedupe 09-2017 02-2018
+09-2017 to 02-2018
+
+albumName:
+  4-24 to 1-25
+parentAlbumName:
+  By Date
+googleAlbumName:
+  Dedupe 11-2018 01-2019
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_26__takeout_ingest" \
+  --albumName "09-2017 to 02-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 09-2017 02-2018" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_26__takeout_ingest" \
+  --albumName "09-2017 to 02-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 09-2017 02-2018"
+
+Run 6:
+
+2026-02-11_05_29__takeout_ingest
+07-2018 to 10-2018
+Dedupe 07-2018 10-2018
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_29__takeout_ingest" \
+  --albumName "07-2018 to 10-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 07-2018 10-2018" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_29__takeout_ingest" \
+  --albumName "07-2018 to 10-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 07-2018 10-2018"
+
+
+Run 7:
+
+2026-02-11_05_32__takeout_ingest
+Dedupe 04-2018 06-2018
+04-2018 to 06-2018
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_32__takeout_ingest" \
+  --albumName "04-2018 to 06-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 04-2018 06-2018" \
+  --dryRun \
+  --limit 25
+
+  npm run canon-import -- \
+  --runDir "2026-02-11_05_32__takeout_ingest" \
+  --albumName "04-2018 to 06-2018" \
+  --parentAlbumNodeName "By Date" \
+  --googleAlbumName "Dedupe 04-2018 06-2018"
+

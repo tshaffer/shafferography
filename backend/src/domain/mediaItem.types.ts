@@ -13,6 +13,7 @@ export interface CreateMediaItemInput {
   url?: string;
   mimeType?: string;
   creationTime?: string;
+  googleTakenAtIso?: string;
   lastModified?: string;
   peopleRetrievedFromGoogle: boolean;
   people?: string[];          // accept simple array; we’ll map to [{name}]

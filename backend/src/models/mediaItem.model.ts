@@ -36,6 +36,7 @@ export const MediaitemSchema = new Schema(
 
     // Promoted, query-friendly fields (fast filters/sorts)
     creationTime: { type: String },  // canonical, derived from EXIF/FS
+    googleTakenAtIso: { type: String }, // capture-time fallback from Takeout sidecar
     lastModified: { type: String },  // canonical, usually FS mtime
 
     // Subdocuments
@@ -83,6 +84,7 @@ export interface MediaItemStored {
   googleAlbumName: string | null;
 
   creationTime?: string;
+  googleTakenAtIso?: string;
   lastModified?: string;
 
   exif?: ExifStored;

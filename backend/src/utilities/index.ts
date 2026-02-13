@@ -7,3 +7,4 @@ export * from './detectContainerType';
 export * from './normalizeMisnamedHeic';
 export * from './mediaFiles';
 export * from './utilities';
+export * from './canonSidecar';

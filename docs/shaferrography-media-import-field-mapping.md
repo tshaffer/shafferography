@@ -5,6 +5,10 @@ Commit: 1290fe51b639d470eca5a6a141180f3d3bdd64a0
 
 ## Findings
 
+Update (2026-02-13):
+- Canon sidecar imports now map `sidecar.takenAtIso` into `mediaItem.googleTakenAtIso` and preserve EXIF capture-time precedence.
+- Photo taken display precedence is `EXIF DateTimeOriginal` > `Google Takeout photoTakenTime` (`googleTakenAtIso`) > none.
+
 A) What is uniqueId? Where computed?
 - uniqueId is a UUID v4 generated during local import. It is not a hash and not derived from Google IDs. Computed in `buildMediaItemFromLocal` via `uuidv4()`.
 

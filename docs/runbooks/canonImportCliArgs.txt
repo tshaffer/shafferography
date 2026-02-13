@@ -180,3 +180,17 @@ Dedupe 04-2018 06-2018
   --parentAlbumNodeName "By Date" \
   --googleAlbumName "Dedupe 04-2018 06-2018"
 
+Run 7:
+
+2026-02-13_08_09__takeout_ingest
+Dedupe 06-1998 12-1998
+06-1998 to 12-1998
+
+  npm run canon-import -- \
+  --runDir "2026-02-13_08_09__takeout_ingest" \
+  --albumName "06-1998 to 12-1998" \
+  --parentAlbumNodeName "By Date" \
+  --dryRun \
+  --limit 25 \
+  --googleAlbumName "Dedupe 06-1998 12-1998"
+

@@ -14,6 +14,7 @@ export interface MediaItem {
 
   // Promoted canonical timestamps (good for sorting/filtering)
   creationTime: string | null;   // derived from EXIF/FS
+  googleTakenAtIso?: string | null; // fallback capture time from Google Takeout sidecar
   lastModified: string | null;   // usually FS mtime
 
   // Flattened EXIF bits the UI uses often

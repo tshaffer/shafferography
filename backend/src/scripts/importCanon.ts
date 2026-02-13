@@ -14,11 +14,14 @@ import type { MediaItemPropertiesFromExif } from '@shared/types/mediaItem';
 import * as mediaItemRepo from '../repositories/mediaItem.repo';
 import { findAlbumNodeByNameStrict, findOrCreateAlbumNodeUnderParent } from '../controllers/dbInterface';
 import {
+  CanonSidecar,
   convertHEICFileToJPEGWithEXIF,
   detectContainerType,
   getLastModifiedUTCISO,
   isImageFile,
   normalizeMisnamedHeic,
+  parseSidecarPeople,
+  parseSidecarTakenAtIso,
 } from '../utilities';
 import { pickCity, pickState, reverseGeocode, toIsoString } from '../utilities/exifUtils';
 import { parse } from 'csv-parse/sync';
@@ -93,11 +96,11 @@ function toCanonUrl(filename: string): string {
   return `${CANON_MEDIA_URL.replace(/\/$/, '')}/${filename}`;
 }
 
-async function readSidecar(filePath: string): Promise<any | null> {
+async function readSidecar(filePath: string): Promise<CanonSidecar | null> {
   const sidecarPath = `${filePath}.shafferography.json`;
   try {
     const raw = await fs.readFile(sidecarPath, 'utf8');
-    return JSON.parse(raw);
+    return JSON.parse(raw) as CanonSidecar;
   } catch {
     return null;
   }
@@ -256,13 +259,16 @@ async function main() {
         const sidecar = await readSidecar(sidecarPath);
         if (!sidecar) missingSidecar += 1;
 
-        const people: string[] = Array.isArray(sidecar?.people)
-          ? sidecar.people.filter((p: unknown) => typeof p === 'string')
-          : [];
+        const people = parseSidecarPeople(sidecar);
+        const sidecarTakenAtIso = parseSidecarTakenAtIso(sidecar);
 
         if (people.length > 0 && existing.peopleRetrievedFromGoogle === false) {
           updates.peopleRetrievedFromGoogle = true;
           updates.people = people.map((name) => ({ name }));
+        }
+
+        if (sidecarTakenAtIso && !existing.googleTakenAtIso) {
+          updates.googleTakenAtIso = sidecarTakenAtIso;
         }
 
         if (Object.keys(updates).length > 0) {
@@ -292,11 +298,12 @@ async function main() {
       const sidecar = await readSidecar(sidecarPath);
       if (!sidecar) missingSidecar += 1;
 
-      const people: string[] = Array.isArray(sidecar?.people)
-        ? sidecar.people.filter((p: unknown) => typeof p === 'string')
-        : [];
+      const people = parseSidecarPeople(sidecar);
+      const sidecarTakenAtIso = parseSidecarTakenAtIso(sidecar);
 
-      const sidecarOriginal = sidecar?.original?.filename;
+      const sidecarOriginal = typeof sidecar?.original?.filename === 'string'
+        ? sidecar.original.filename
+        : undefined;
       let fileName = finalFileName;
       if (sidecarOriginal) {
         const originalParsed = path.parse(sidecarOriginal);
@@ -389,6 +396,7 @@ async function main() {
         url,
         mimeType: (tags?.MIMEType as string | undefined) ?? undefined,
         creationTime,
+        googleTakenAtIso: sidecarTakenAtIso,
         lastModified: getLastModifiedUTCISO(finalPath),
         importRun: args.runDir,
         exif,

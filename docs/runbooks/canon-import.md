@@ -182,6 +182,7 @@ Notes:
 - `--albumNodeId` is mutually exclusive with `--albumName` + `--parentAlbumNodeName`.
 - `--albumName` and `--parentAlbumNodeName` must be provided together.
 - Canon imports set `importRun` to the CSV `runLabel` (validated to match `--runDir`).
+- Photo taken display precedence is `EXIF DateTimeOriginal` > `Google Takeout photoTakenTime (sidecar.takenAtIso)` > none.
 
 ### Optional validation helpers
 

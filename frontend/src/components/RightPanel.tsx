@@ -115,7 +115,9 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
   if (!mediaItem) return null;
 
   // If you capture real timezones (from GPS), pass { timeZone } to the fmt* helpers.
-  const takenIso = mediaItem.creationTime ?? mediaItem.takenAt ?? null;
+  const exifTakenIso = mediaItem.exif?.takenAt ?? mediaItem.takenAt ?? null;
+  const takenIso = exifTakenIso ?? mediaItem.googleTakenAtIso ?? null;
+  const takenFromGoogleTakeout = !exifTakenIso && !!mediaItem.googleTakenAtIso;
   const modifiedIso = mediaItem.lastModified ?? mediaItem.fileModifiedAt ?? null;
 
   const takenDateLine = fmtWeekdayMonthDayYearAbbrev(takenIso);
@@ -194,6 +196,11 @@ const RightPanel: React.FC<RightPanelAllProps> = (props: RightPanelAllProps) => 
             <Typography variant="body2">
               {takenTimeLine ?? '—'}
             </Typography>
+            {takenFromGoogleTakeout && (
+              <Typography variant="body2">
+                <strong>Source:</strong> Google Takeout
+              </Typography>
+            )}
 
             {/* Last modified: */}
             <Typography variant="body2" sx={{ fontWeight: 600, mt: 1 }}>

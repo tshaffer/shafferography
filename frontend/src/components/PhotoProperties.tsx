@@ -24,12 +24,13 @@ const PhotoProperties = (props: PhotoPropertiesProps) => {
   }
 
   const renderCreationTime = (): JSX.Element | null => {
-
-    if (isNil(props.mediaItem) || isNil(props.mediaItem.exif) || isNil(props.mediaItem.exif.takenAt) || props.mediaItem.exif.takenAt === '') {
+    const exifTakenAt = props.mediaItem?.exif?.takenAt;
+    const takenAt = exifTakenAt ?? props.mediaItem?.googleTakenAtIso ?? null;
+    if (isNil(takenAt) || takenAt === '') {
       return null;
     }
 
-    const formattedDate = formatISOString(props.mediaItem!.exif.takenAt);
+    const formattedDate = formatISOString(takenAt);
 
     return (
       <React.Fragment>

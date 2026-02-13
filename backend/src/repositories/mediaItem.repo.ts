@@ -25,6 +25,7 @@ function toDTO(doc: MediaItemStored, opts?: ToDTOOpts): MediaItem {
     googleAlbumName: doc.googleAlbumName ?? null,
 
     creationTime: doc.creationTime ?? null,
+    googleTakenAtIso: doc.googleTakenAtIso ?? null,
     lastModified: doc.lastModified ?? null,
 
     width: exif.imageWidth ?? null,
@@ -277,6 +278,7 @@ export async function addMediaItemToMediaItemsDBTable(dto: MediaItem): Promise<s
       url: dto.url ?? undefined,
       mimeType: dto.mimeType ?? undefined,
       creationTime: dto.creationTime ?? undefined,
+      googleTakenAtIso: dto.googleTakenAtIso ?? undefined,
       lastModified: dto.lastModified ?? undefined,
       peopleRetrievedFromGoogle: dto.peopleRetrievedFromGoogle ?? false,
       people: (dto.people ?? []).map(p => ({ name: p.name })),

@@ -1,6 +1,11 @@
+// Adjust if needed
+const OUTPUT_FILE = "duplicate_filenames.json";
+
+const fs = require("fs");
+
 const coll = db.mediaitems;
 
-const cursor = coll.aggregate([
+const results = coll.aggregate([
   { $match: { fileName: { $type: "string", $ne: "" } } },
   {
     $group: {
@@ -18,12 +23,8 @@ const cursor = coll.aggregate([
   },
   { $match: { count: { $gt: 1 } } },
   { $sort: { count: -1, _id: 1 } }
-]);
+]).toArray();
 
-let n = 0;
-cursor.forEach(doc => {
-  n++;
-  print(`\n=== ${doc._id}  (count=${doc.count}) ===`);
-  doc.items.forEach(it => printjson(it));
-});
-print(`\nTotal duplicate-filename groups: ${n}`);
+fs.writeFileSync(OUTPUT_FILE, JSON.stringify(results, null, 2));
+
+print(`Wrote ${results.length} duplicate filename groups to ${OUTPUT_FILE}`);
